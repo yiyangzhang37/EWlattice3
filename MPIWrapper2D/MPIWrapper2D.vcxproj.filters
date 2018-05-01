@@ -15,33 +15,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\modify\LATfield2.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\modify\LATfield2_Field.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\modify\latfield2_lattice.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\modify\LATfield2_parallel2d.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\modify\LATfield2_Site.h">
+    <ClInclude Include="MPIWrapper2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\modify\latfield2_lattice.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\modify\LATfield2_parallel2d.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\modify\LATfield2_Site.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="MPIWrapper2D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
