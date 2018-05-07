@@ -18,9 +18,30 @@
     <ClInclude Include="MPIWrapper2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Test_MPIWrapper2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LATfield3_Field.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LATfield3_Lattice.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LATfield3_Site.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MPIWrapper2D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Test_MPIWrapper2D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LATfield3_Site.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

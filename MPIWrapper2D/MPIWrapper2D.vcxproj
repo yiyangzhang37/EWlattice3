@@ -122,10 +122,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="LATfield3_Field.h" />
+    <ClInclude Include="LATfield3_Lattice.h" />
+    <ClInclude Include="LATfield3_Site.h" />
     <ClInclude Include="MPIWrapper2D.h" />
+    <ClInclude Include="Test_MPIWrapper2D.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="LATfield3_Site.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="MPIWrapper2D.cpp" />
+    <ClCompile Include="Test_MPIWrapper2D.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

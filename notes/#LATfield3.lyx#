@@ -1,0 +1,566 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 1in
+\topmargin 1in
+\rightmargin 1in
+\bottommargin 1in
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+A new lattice library
+\end_layout
+
+\begin_layout Section
+Lattice structure
+\end_layout
+
+\begin_layout Standard
+In this note, I will write all the explicit formula assuming a 3D lattice.
+\end_layout
+
+\begin_layout Subsection
+Global structure
+\end_layout
+
+\begin_layout Standard
+The lattice has size 
+\begin_inset Formula $\left(N_{x},N_{y},N_{z}\right)$
+\end_inset
+
+.
+ The total number of lattice sites is 
+\begin_inset Formula $N_{x}N_{y}N_{z}$
+\end_inset
+
+.
+ The lattice sites can be indexed by the 
+\shape italic
+global index
+\shape default
+, 
+\begin_inset Formula $i_{global}\in\left\{ 0,1,...,N_{x}N_{y}N_{z}-1\right\} $
+\end_inset
+
+.
+ Each lattice site has a coordinate, 
+\begin_inset Formula $\bm{r}=\left(x,y,z\right)$
+\end_inset
+
+, where, 
+\begin_inset Formula $x\in\left\{ 0,1,...,N_{x}-1\right\} $
+\end_inset
+
+, 
+\begin_inset Formula $y\in\{0,1,...,N_{y}-1\}$
+\end_inset
+
+, and 
+\begin_inset Formula $z\in\left\{ 0,1,...,N_{z}-1\right\} $
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+In the 
+\begin_inset Formula $\bm{r}\leftrightarrow i_{global}$
+\end_inset
+
+ correspondence, the first coordinate is assumed to change first.
+ For example, 
+\begin_inset Formula $i_{global}=0\leftrightarrow\bm{r}=\left\{ 0,0,0\right\} $
+\end_inset
+
+, and 
+\begin_inset Formula $i_{global}=1\leftrightarrow\bm{r}=\left\{ 1,0,0\right\} $
+\end_inset
+
+.
+ The global coordinate stride is 
+\begin_inset Formula $S_{global}=\left(1,N_{x},N_{x}N_{y}\right)$
+\end_inset
+
+.
+ Then, the 
+\begin_inset Formula $i_{global}\leftrightarrow\bm{r}$
+\end_inset
+
+ transformation is 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+i_{global}=S_{global}\cdot\bm{r}=x+N_{x}y+N_{x}N_{y}z\label{eq:global-coord2index}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+and
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align}
+z & =i_{global}//N_{x}N_{y}\nonumber \\
+y & =\left(i_{global}-N_{x}N_{y}z\right)//N_{x}=\left(i_{global}\%N_{x}N_{y}\right)//N_{x}\label{eq:global-index2coord}\\
+x & =\left(i_{global}-N_{x}N_{y}z-N_{x}y\right)//1=\left(\left(i_{global}\%N_{x}N_{y}\right)\%N_{x}\right)//1\nonumber 
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Multi-process partition
+\end_layout
+
+\begin_layout Standard
+If the global lattice is partitioned over a bunch of processes, then the
+ partition is done on the last two dimensions of the lattice.
+ For a 3D lattice, the partition is done on the 
+\begin_inset Formula $y$
+\end_inset
+
+ and 
+\begin_inset Formula $z$
+\end_inset
+
+ dimensions.
+ The processes are arranged as a 2D array, with node shape 
+\begin_inset Formula $\left(M_{y},M_{z}\right)$
+\end_inset
+
+.
+ Thus the total number of processes is 
+\begin_inset Formula $M_{y}M_{z}$
+\end_inset
+
+.
+ Each node will have a rank, 
+\begin_inset Formula $\left(m_{y},m_{z}\right)$
+\end_inset
+
+, where 
+\begin_inset Formula $m_{y}\in\left\{ 0,1,...,M_{y}-1\right\} $
+\end_inset
+
+, 
+\begin_inset Formula $m_{z}\in\left\{ 0,1,...,M_{z}-1\right\} $
+\end_inset
+
+.
+ The global lattice is partitioned equally to these processes, in the 
+\begin_inset Formula $y$
+\end_inset
+
+ and 
+\begin_inset Formula $z$
+\end_inset
+
+ dimensions, respectively.
+ So in each node, the (visible) lattice size is 
+\begin_inset Formula $N_{x}\times\left(N_{y}/M_{y}\right)\times\left(N_{z}/M_{z}\right)$
+\end_inset
+
+.
+ We will force that 
+\begin_inset Formula $N_{y}\%M_{y}=0$
+\end_inset
+
+ and 
+\begin_inset Formula $N_{z}\%M_{z}=0$
+\end_inset
+
+ in the code.
+\end_layout
+
+\begin_layout Subsection
+Local memory region
+\end_layout
+
+\begin_layout Standard
+In each node, the stored lattice is larger than 
+\begin_inset Formula $N_{x}\times\left(N_{y}/M_{y}\right)\times\left(N_{z}/M_{z}\right)$
+\end_inset
+
+, because there are also 
+\shape italic
+halo layers
+\shape default
+ on each of the six faces of the local lattice.
+ We will assume that the number of halo layers on each face is the same,
+ denoted as 
+\begin_inset Formula $h$
+\end_inset
+
+.
+ Therefore, the size of the actually stored local lattice is
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align}
+V_{mem} & =L_{x}\times L_{y}\times L_{z}\nonumber \\
+ & =\left(N_{x}+2h\right)\times\left(N_{y}/M_{y}+2h\right)\times\left(N_{z}/M_{z}2h\right)\label{eq:local-mem-size}
+\end{align}
+
+\end_inset
+
+i.e.
+ the computer memory needed for the local lattice.
+ This whole local lattice is indexed by 
+\shape italic
+local memory index
+\shape default
+, 
+\begin_inset Formula $i_{mem}$
+\end_inset
+
+, ranging from 
+\begin_inset Formula $0$
+\end_inset
+
+ to 
+\begin_inset Formula $V_{mem}-1$
+\end_inset
+
+.
+ We can also assign a local memory coordinate for each site, 
+\begin_inset Formula $\bm{r}_{mem}=\left(x_{mem},y_{mem},z_{mem}\right)$
+\end_inset
+
+.
+ The corresponding stride is 
+\begin_inset Formula $S_{mem}=\left(1,L_{x},L_{x}L_{y}\right)$
+\end_inset
+
+.
+ The coordinate-index transformation is 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+i_{mem}=S_{mem}\cdot\bm{r}_{mem}=x_{mem}+L_{x}y_{mem}+L_{x}L_{y}z_{mem}\label{eq:local-mem-coord2index}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+and 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align}
+z_{mem} & =i_{mem}//L_{x}L_{y}\nonumber \\
+y_{mem} & =\left(i_{mem}\%L_{x}L_{y}\right)//L_{x}\label{eq:local-mem-index2coord}\\
+x_{mem} & =\left(\left(i_{mem}\%L_{x}L_{y}z\right)\%L_{x}\right)//1\nonumber 
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Local visible region
+\end_layout
+
+\begin_layout Standard
+The local memory region consists of two parts: the 
+\shape italic
+local visible region
+\shape default
+ and the halo layers.
+ The local visible region is the part that one can manipulate (either read
+ or write); the halo layers are the part that one can only read.
+ The size of the local visible region is 
+\begin_inset Formula 
+\begin{align}
+V_{vis} & =L_{vis,x}\times L_{vis,y}\times L_{vis,z}\nonumber \\
+ & =N_{x}\times\left(N_{y}/M_{y}\right)\times\left(N_{z}/M_{z}\right)\label{eq:local-vis-size}
+\end{align}
+
+\end_inset
+
+The local visible stride is 
+\begin_inset Formula $S_{vis}=\left(1,L_{vis,x},L_{vis,x}L_{vis,y}\right)$
+\end_inset
+
+.
+ The local visible coordinate is denoted as 
+\begin_inset Formula $\bm{r}_{vis}=\left(x_{vis},y_{vis},z_{vis}\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The local visible index is 
+\begin_inset Formula 
+\[
+i_{vis}=x_{vis}+L_{vis,x}y_{vis}+L_{vis,x}L_{vis,y}z_{vis}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Relation of local visible region and local memory region
+\end_layout
+
+\begin_layout Standard
+Given a local memory index 
+\begin_inset Formula $i_{mem}$
+\end_inset
+
+, we can have the corresponding coordinate 
+\begin_inset Formula $\left(x_{mem},y_{mem},z_{mem}\right)$
+\end_inset
+
+, this site is in the local memory region only if 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+h & \le x_{mem}<L_{x}-h\\
+h & \le y_{mem}<L_{y}-h\\
+h & \le z_{mem}<L_{z}-h
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In terms of local memory index and local memory coordinate, 
+\end_layout
+
+\begin_layout Standard
+(1) the first local visible site: coordinate 
+\begin_inset Formula $\left(h,h,h\right)$
+\end_inset
+
+; index 
+\begin_inset Formula $h+L_{x}h+L_{x}L_{y}h$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+(2) the next local visible site of the current one (
+\begin_inset Formula $i_{mem}$
+\end_inset
+
+) is
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+From local memory index 
+\begin_inset Formula $i_{mem}$
+\end_inset
+
+ we have the local memory coordinate 
+\begin_inset Formula $\left(x_{mem},y_{mem},z_{mem}\right)$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+The local visible coordinate is 
+\begin_inset Formula $\left(x_{vis},y_{vis},z_{vis}\right)=\left(x_{mem}-h,y_{mem}-h,z_{mem}-h\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Plain Layout
+The local visible index index is 
+\begin_inset Formula $i_{vis}=\left(x_{mem}-h\right)+\left(y_{mem}-h\right)L_{vis,x}+\left(z_{mem}-h\right)L_{vis,x}L_{vis,y}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Plain Layout
+The index of the next local visible site is 
+\begin_inset Formula $i_{new}=i_{vis}+1$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Plain Layout
+The corresponding coordinate is 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+z_{vis,new} & =\left(z_{mem}-h\right)+\left[1+\left(x_{mem}-h\right)+\left(y_{mem}-h\right)L_{vis,x}\right]//L_{vis,x}L_{vis,y}\\
+y_{vis,new} & =\left[1+\left(x_{mem}-h\right)+\left(y_{mem}-h\right)L_{vis,x}\right]\%L_{vis,x}L_{vis,y}//L_{vis,x}\\
+x_{vis,new} & =\left[1+\left(x_{mem}-h\right)+\left(y_{mem}-h\right)L_{vis,x}\right]\%L_{vis,x}L_{vis,y}\%L_{vis,x}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+Then we have the new local memory index 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+x_{mem,new} & =x_{vis,new}+h\\
+y_{mem,new} & =y_{vis,new}+h\\
+z_{mem,new} & =z_{vis,new}+h
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+Finally we will have the new local memory index.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+(3) the last local visible site: coordinate 
+\begin_inset Formula $\left(L_{x}-1-h,L_{y}-1-h,L_{z}-1-h\right)$
+\end_inset
+
+; index 
+\begin_inset Formula $\left(L_{x}-1-h\right)+L_{x}\left(L_{y}-1-h\right)+L_{x}L_{y}\left(L_{z}-1-h\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The above rules works for 
+\begin_inset Formula $h\ge0$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+In terms of local memory index and local memory coordinate,
+\end_layout
+
+\begin_layout Standard
+(1) the first local halo site: coordinate 
+\end_layout
+
+\begin_layout Standard
+(2) 
+\end_layout
+
+\end_body
+\end_document
