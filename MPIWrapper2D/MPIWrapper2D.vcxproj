@@ -129,7 +129,6 @@
     <ClInclude Include="Test_MPIWrapper2D.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="LATfield3_Site.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MPIWrapper2D.cpp" />
     <ClCompile Include="Test_MPIWrapper2D.cpp" />

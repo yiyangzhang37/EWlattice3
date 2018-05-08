@@ -26,8 +26,12 @@ int Test_Build_Lattice3D(
                 const int grid_loc[2]);
 
 int Test_Lattice3D_Global_Coordinate_Transformation();
-int Test_Local_Visible_Loop_Single_Process();
+int Test_Local_Visible_Loop_Single_Process(
+	const int rounds = 1, 
+	const bool use_hash_table = false);
+
 int Test_Local_Visible_Loop_Pseudo_Multi_Processes();
+int Test_Local_Halo_Loop_Multi_Processes();
 
 //helper functions -------------------
 /*

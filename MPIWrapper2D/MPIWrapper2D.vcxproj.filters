@@ -41,8 +41,5 @@
     <ClCompile Include="Test_MPIWrapper2D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LATfield3_Site.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>

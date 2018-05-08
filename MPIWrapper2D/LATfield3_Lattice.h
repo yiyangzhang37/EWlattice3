@@ -2,9 +2,12 @@
 #define LATFIELD3_LATTICE_H
 
 #include <cassert>
+#include <iostream>
 #include <numeric>
 #include <algorithm>
 #include <functional>
+#include <unordered_map>
+#include <vector>
 
 namespace LATfield3{
 
@@ -32,6 +35,24 @@ namespace LATfield3{
         ~Lattice();
         
         /*
+        make hash maps. to accelerate index query.
+        normally, the table size should have the next-to-last site, to avoid out-of-range error.
+        */
+        void make_vis2mem_index_table();
+        void delete_vis2mem_index_table();
+       
+        void make_mem2vis_index_table();
+        void delete_mem2vis_index_table();
+
+        void make_all_index_tables(){
+            make_vis2mem_index_table();
+            make_mem2vis_index_table();
+        }
+        void delete_all_index_tables(){
+            delete_vis2mem_index_table();
+            delete_mem2vis_index_table();
+        }
+        /*
         helper function to transform Parallel2D grid_rank to grid_loc in this class.
         */
         int* transform_gridrank_to_gridloc(const int grid_rank[2], int grid_loc[2]) const;
@@ -52,6 +73,10 @@ namespace LATfield3{
         move the current position (global_index) with specific steps in some direction.
         periodic boundary condition is assumed.
         */
+        IndexType* global_move(
+            IndexType* global_coord, 
+            const int steps, 
+            const int direction) const; 
         IndexType global_move(
 			const IndexType global_index, 
 			const int steps, 
@@ -65,7 +90,12 @@ namespace LATfield3{
         in some direction.
         locally periodic boundary condition is assumed.
         */
-		IndexType local_mem_move(const IndexType local_mem_index,
+        IndexType* local_mem_move(
+            IndexType* local_mem_coord,
+            const int steps, 
+            const int direction) const;
+		IndexType local_mem_move(
+            const IndexType local_mem_index,
 			const int steps,
 			const int direction) const;
 
@@ -92,6 +122,24 @@ namespace LATfield3{
         IndexType* global_coord_to_local_vis_coord(
             const IndexType* global_coord,
             IndexType* local_vis_coord) const;
+
+		/*
+		transformation between three kinds of indices.
+		/ when transforming from global_index to local_vis_index,
+		the global_index is assumed to be in the local visible region.
+		/ when transforming from local_mem_index to local_vis_index,
+		the local_mem_index is assumed to be in the local visible region.
+		*/
+		IndexType local_vis_index_to_local_mem_index(
+			const IndexType local_vis_index) const;
+		IndexType local_mem_index_to_local_vis_index(
+			const IndexType local_mem_index) const;
+
+		IndexType global_index_to_local_vis_index(
+			const IndexType global_index) const;
+		IndexType local_vis_index_to_global_index(
+			const IndexType local_vis_index) const;
+
 
         
 		/*
@@ -166,13 +214,6 @@ namespace LATfield3{
         //The local_mem_index of the next of the last visible local site
         IndexType local_visible_site_next_to_last_;
 
-		/*
-		The first local mem site in global index is 
-
-		The last local mem site in global index is 
-
-		*/
-
         //MPI related variables
         //The total number of MPI processes used to distribute the lattice
         int total_nodes_ = 1;
@@ -190,7 +231,22 @@ namespace LATfield3{
         */
         int grid_loc_[2] = {0, 0};  
         int& loc_row_ = grid_loc_[0]; 
-        int& loc_col_ = grid_loc_[1];   
+        int& loc_col_ = grid_loc_[1];  
+
+        /*
+        index containers, to accelerate query.
+        */ 
+        bool activate_vis2mem_index_table_ = false;
+        std::vector<IndexType> vis2mem_index_table_;
+        
+        bool activate_mem2vis_index_table_ = false;
+        std::vector<IndexType> mem2vis_index_table_; /*unordered map is too slow*/
+        //std::unordered_map<IndexType, IndexType> mem2vis_index_table_;
+
+        /*TODO later: this does not add more functions; 
+        just intended to improve efficiency.*/
+        bool activate_vis2glb_index_table_ = false;
+        std::vector<IndexType> vis2glb_index_table_;
     };
 
     template<int DIM>
@@ -274,6 +330,48 @@ namespace LATfield3{
     }
 
     template<int DIM>
+    void Lattice<DIM>::make_vis2mem_index_table() {
+        vis2mem_index_table_ = std::vector<IndexType>(this->visible_local_sites_ + 1);
+        auto lv_idx = this->get_local_visible_first();
+        IndexType count = 0;
+        while(lv_idx < this->get_local_visible_next_to_last()){
+            vis2mem_index_table_[count] = lv_idx;
+            lv_idx = this->get_local_visible_next(lv_idx);
+            count++;
+        }
+        *(vis2mem_index_table_.rbegin()) = this->get_local_visible_next_to_last();
+        activate_vis2mem_index_table_ = true;
+    }
+
+    template<int DIM>
+    void Lattice<DIM>::delete_vis2mem_index_table(){
+        vis2mem_index_table_ = std::vector<IndexType>();
+        activate_vis2mem_index_table_ = false;
+    }
+
+    template<int DIM>
+    void Lattice<DIM>::make_mem2vis_index_table(){
+        mem2vis_index_table_ = std::vector<IndexType>(this->local_mem_sites_, 0);
+        auto lv_idx = this->get_local_visible_first();
+        IndexType count = 0;
+        while(lv_idx < this->get_local_visible_next_to_last()){
+            mem2vis_index_table_[lv_idx] = count;
+            lv_idx = this->get_local_visible_next(lv_idx);
+            count++;
+        }
+        //the next-to-last element should be treated separately.
+        //since get_local_visible_next(idx) is not well-defined beyond the last point. 
+        mem2vis_index_table_[this->get_local_visible_next_to_last()] = count;
+        activate_mem2vis_index_table_ = true;
+    }
+
+    template<int DIM>
+    void Lattice<DIM>::delete_mem2vis_index_table(){
+        activate_mem2vis_index_table_ = false;
+        mem2vis_index_table_ = std::unordered_map<IndexType, IndexType>();
+    }
+
+    template<int DIM>
     int* Lattice<DIM>::transform_gridrank_to_gridloc(const int grid_rank[2], int grid_loc[2]) const {
         grid_loc[0] = grid_rank[1];
         grid_loc[1] = grid_rank[0];
@@ -297,17 +395,26 @@ namespace LATfield3{
         return global_coord;
     }
 
+    template<int DIM>
+    IndexType* Lattice<DIM>::global_move(
+        IndexType* global_coord,
+		const int steps,
+		const int direction) const {
+        const auto& i = direction;
+        global_coord[i] = 
+            ( (global_coord[i] + steps) % this->global_size_[i] + this->global_size_[i] ) 
+            % this->global_size_[i];
+        return global_coord;
+    }
+
 	template<int DIM>
 	IndexType Lattice<DIM>::global_move(
 		const IndexType global_index,
 		const int steps,
 		const int direction) const {
         IndexType global_coord[DIM];
-        const auto& i = direction;
         global_index2coord(global_index, global_coord);
-        global_coord[i] = 
-            ( (global_coord[i] + steps) % this->global_size_[i] + this->global_size_[i] ) 
-            % this->global_size_[i];
+        this->global_move(global_coord, steps, direction);
         return global_coord2index(global_coord);
 	}
 
@@ -329,14 +436,23 @@ namespace LATfield3{
     }
 
     template<int DIM>
+    IndexType* Lattice<DIM>::local_mem_move(
+        IndexType* local_mem_coord,
+        const int steps,
+        const int direction) const {
+        const auto& i = direction;
+        local_mem_coord[i] = ( (local_mem_coord[i]+steps) % this->local_mem_size_[i] + this->local_mem_size_[i] )
+                    % this->local_mem_size_[i];
+        return local_mem_coord;
+    }
+
+    template<int DIM>
     IndexType Lattice<DIM>::local_mem_move(const IndexType local_mem_index,
 			const int steps,
 			const int direction) const{
-        const auto& i = direction;
         IndexType lm_coord[DIM];
         local_mem_index2coord(local_mem_index, lm_coord);
-        lm_coord[i] = ( (lm_coord[i]+steps) % this->local_mem_size_[i] + this->local_mem_size_[i] )
-                    % this->local_mem_size_[i];
+        this->local_mem_move(lm_coord, steps, direction);
         return local_mem_coord2index(lm_coord);
     }
 
@@ -436,24 +552,66 @@ namespace LATfield3{
         return local_vis_coord;
     }
 
-    
+    template<int DIM>
+	IndexType Lattice<DIM>::local_vis_index_to_local_mem_index(
+		const IndexType local_vis_index) const {
+        if(activate_vis2mem_index_table_ == true){
+            return vis2mem_index_table_.at(local_vis_index);
+        }
+        else{
+            IndexType lv_coord[DIM], lm_coord[DIM];
+            local_vis_index2coord(local_vis_index, lv_coord);
+            local_vis_coord_to_local_mem_coord(lv_coord, lm_coord);
+            return local_mem_coord2index(lm_coord);
+        }
+	}
+
+	template<int DIM>
+	IndexType Lattice<DIM>::local_mem_index_to_local_vis_index(
+        const IndexType local_mem_index) const {
+        if(activate_mem2vis_index_table_){
+            return mem2vis_index_table_.at(local_mem_index);
+        }
+        else{
+            IndexType lv_coord[DIM], lm_coord[DIM];
+            local_mem_index2coord(local_mem_index, lm_coord);
+            local_mem_coord_to_local_vis_coord(lm_coord, lv_coord);
+            return local_vis_coord2index(lv_coord);
+        }
+	}
+
+	template<int DIM>
+	IndexType Lattice<DIM>::global_index_to_local_vis_index(
+		const IndexType global_index) const {
+		IndexType global_coord[DIM], local_vis_coord[DIM];
+		global_index2coord(global_index, global_coord);
+		global_coord_to_local_vis_coord(global_coord, local_vis_coord);
+		return local_vis_coord2index(local_vis_coord);
+	}
+
+	template<int DIM>
+	IndexType Lattice<DIM>::local_vis_index_to_global_index(
+		const IndexType local_vis_index) const {
+		IndexType global_coord[DIM], lv_coord[DIM];
+		local_vis_index2coord(local_vis_index, lv_coord);
+		local_vis_coord_to_global_coord(lv_coord, global_coord);
+		return global_coord2index(global_coord);
+	}
+
     template<int DIM>
     IndexType Lattice<DIM>::get_local_visible_next(const IndexType local_mem_index) const {
-        IndexType local_mem_coord[DIM];
-        IndexType local_vis_coord[DIM];
-        local_mem_index2coord(local_mem_index, local_mem_coord);
-        local_mem_coord_to_local_vis_coord(local_mem_coord, local_vis_coord);
-        auto local_vis_index_new = local_vis_coord2index(local_vis_coord) + 1;
-        local_vis_index2coord(local_vis_index_new, local_vis_coord);
-        local_vis_coord_to_local_mem_coord(local_vis_coord, local_mem_coord);
-        return local_mem_coord2index(local_mem_coord);
+		auto local_vis_index_new = local_mem_index_to_local_vis_index(local_mem_index) + 1;
+		return local_vis_index_to_local_mem_index(local_vis_index_new);
     }
 
     template<int DIM>
     IndexType Lattice<DIM>::get_local_halo_next(const IndexType local_mem_index) const{
         IndexType local_mem_coord[DIM];
-        local_mem_index2coord(local_mem_index, local_mem_coord);
-        //TODO
+        local_mem_index2coord(local_mem_index + 1, local_mem_coord);
+		if (local_mem_coord[0] == this->halo_) {
+			local_mem_coord[0] = this->local_mem_size_[0] - this->halo_;
+		}
+		return local_mem_coord2index(local_mem_coord);
     }
 
     template<int DIM>

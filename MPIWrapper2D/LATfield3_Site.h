@@ -54,39 +54,50 @@ namespace LATfield3{
 		specific Site object move within the local_mem region,
 		based on the current Site::index_.
 		The object should not move out of the local_mem region.
+		All the move operations should not have any relation with global index.
+		Since the Site::index_ is not defined beyond the local_mem_region.
+		Note: it is allowed to move to the halo layers.
 		*/
         Site& move(const int direction, const int steps);
+		Site move(const int direction, const int steps) const;
         Site operator+(const int direction) const;
         Site operator-(const int direction) const;
         Site& operator+(const int direction);
         Site& operator-(const int direction);
-        void index_advance(const IndexType steps);
+
 		void set_index(const IndexType new_index) {
 			this->index_ = new_index;
 		}
-        bool set_coord(const int* r);
+		/*
+		set the Site object to the global coordinate.
+		return true if this coordinate is in the local visible region.
+		otherwise return false and index_ unchanged.
+		*/
+        bool set_coord(const IndexType* global_coord);
 
 		/*
 		get the global coordinate of the Site object.
 		*/
-		IndexType* coord() const;
+		IndexType* coord(IndexType* global_coord) const;
         IndexType coord(const int direction) const;
 
 		/*
 		get the local (visible) coordinate of the Site object
 		*/
-        IndexType coord_local(const int direction) const;
+		IndexType* coord_local_vis(IndexType* local_vis_coord) const;
+        IndexType coord_local_vis(const int direction) const;
 
 		/*
 		get the local mem coordinate of the Site object
 		*/
+		IndexType* coord_local_mem(IndexType* local_mem_coord) const;
 		IndexType coord_local_mem(const int direction) const;
 
         template<int DIM>
         const Lattice<DIM>& get_lattice() const {return *(this->lattice_);}
         template<int DIM>
         Lattice<DIM>& get_lattice() const {return const_cast<Lattice>(*(this->lattice_));}
-        const IndexType get_index() const {return this->index_;}
+        constexpr IndexType get_index() const {return this->index_;}
 
     private:
         const Lattice<DIM>* lattice_;
@@ -98,7 +109,7 @@ namespace LATfield3{
     };
 
 	template<int DIM>
-	Site::Site(const Lattice<DIM>& lattice) 
+	Site<DIM>::Site(const Lattice<DIM>& lattice) 
 		:
 		lattice_(lattice),
 		index_(0)
@@ -107,41 +118,135 @@ namespace LATfield3{
 	}
 
 	template<int DIM>
-	Site::~Site() {
-
+	Site<DIM>::~Site() {
+		;
 	}
 
 	template<int DIM>
-	Site& Site::first() {
+	Site& Site<DIM>::move(const int direction, const int steps){
+		this->index_ = this->lattice_->local_mem_move(this->index_, steps, direction);
+		return *this;
+	}
+
+	template<int DIM>
+	Site Site<DIM>::move(const int direction, const int steps) const {
+		this->index_ = this->lattice_->local_mem_move(this->index_, steps, direction);
+		return *this;
+	}
+
+	template<int DIM>
+	Site Site<DIM>::operator+(const int direction) const {
+		return this->move(direction, 1);
+	}
+
+	template<int DIM>
+	Site& Site<DIM>::operator+(const int direction) {
+		return this->move(direction, 1);
+	}
+
+	template<int DIM>
+	Site Site<DIM>::operator-(const int direction) const {
+		return this->move(direction, -1);
+	}
+
+	template<int DIM>
+	Site& Site<DIM>::operator-(const int direction) {
+		return this->move(direction, -1);
+	}
+
+	template<int DIM>
+	bool Site<DIM>::set_coord(const IndexType* global_coord) {
+		auto global_index = this->lattice_->global_coord2index(global_coord);
+		auto is_local = this->lattice_->is_local(global_index);
+		if (is_local) {
+			IndexType lv_coord[DIM], lm_coord[DIM];
+			this->lattice_->global_coord_to_local_vis_coord(global_coord, lv_coord);
+			this->lattice_->local_vis_coord_to_local_mem_coord(lv_coord, lm_coord);
+			this->index_ = this->lattice_->local_mem_coord2index(lm_coord);
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	template<int DIM>
+	IndexType* Site<DIM>::coord(IndexType* global_coord) const{
+		IndexType lm_coord[DIM];
+		IndexType lv_coord[DIM];
+		this->lattice_->local_mem_index2coord(this->index_, lm_coord);
+		this->lattice_->local_mem_coord_to_local_vis_coord(lm_coord, lv_coord);
+		this->lattice_->local_vis_coord_to_global_coord(lv_coord, global_coord);
+		return global_coord;
+	}
+
+	template<int DIM>
+	IndexType Site<DIM>::coord(const int direction) const{
+		IndexType global_coord[DIM];
+		coord(global_coord);
+		return global_coord[direction];
+	}
+
+	template<int DIM>
+	IndexType* Site<DIM>::coord_local_vis(IndexType* local_vis_coord) const{
+		IndexType lm_coord[DIM];
+		this->lattice_->local_mem_index2coord(this->index_, lm_coord);
+		this->lattice_->local_mem_coord_to_local_vis_coord(lm_coord, local_vis_coord);
+		return local_vis_coord;
+	}
+	
+	template<int DIM>
+	IndexType Site<DIM>::coord_local_vis(const int direction) const {
+		IndexType lv_coord[DIM];
+		coord_local_vis(lv_coord);
+		return lv_coord[direction];
+	}
+
+	template<int DIM>
+	IndexType* Site<DIM>::coord_local_mem(IndexType* local_mem_coord) const{
+		this->lattice_->local_mem_index2coord(this->index_, local_mem_coord);
+		return local_mem_coord;
+	}
+
+	template<int DIM>
+	IndexType Site<DIM>::coord_local_mem(const int direction) const {
+		IndexType lm_coord[DIM];
+		coord_local_mem(lm_coord);
+		return lm_coord[direction];
+	}
+
+
+	template<int DIM>
+	Site& Site<DIM>::first() {
 		this->index_ = this->lattice_.get_local_visible_first();
 		return *this;
 	}
 
 	template<int DIM>
-	Site& Site::next() {
+	Site& Site<DIM>::next() {
 		this->index_ = this->lattice_.get_local_visible_next(this->index_);
 		return *this;
 	}
 
 	template<int DIM>
-	bool Site::test() const {
+	bool Site<DIM>::test() const {
 		return this->index_ < this->lattice_.get_local_visible_next_to_last();
 	}
 	
 	template<int DIM>
-	Site& Site::halo_first() {
+	Site& Site<DIM>::halo_first() {
 		this->index_ = this->lattice_.get_local_halo_first();
 		return *this;
 	}
 
 	template<int DIM>
-	Site& Site::halo_next() {
+	Site& Site<DIM>::halo_next() {
 		this->index_ = this->lattice_.get_local_halo_next(this->index_);
 		return *this;
 	}
 
 	template<int DIM>
-	bool Site::halo_test() const {
+	bool Site<DIM>::halo_test() const {
 		return this->index_ < this->lattice_.get_local_halo_next_to_last();
 	}
 }

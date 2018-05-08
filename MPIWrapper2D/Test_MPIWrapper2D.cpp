@@ -356,25 +356,32 @@ int Test_Lattice3D_Global_Coordinate_Transformation(){
 	return status;
 }
 
-int Test_Local_Visible_Loop_Single_Process(){
-	unsigned int size[] = {11,16,23};
+int Test_Local_Visible_Loop_Single_Process(
+	const int rounds, 
+	const bool use_hash_table){
+	unsigned int size[] = {100,100,100};
 	int node_size[] = {1,1};
 	int loc[] = {0,0};
 	Lattice<3> lat(size, 1, node_size, loc);
 	int status = 1;
-
-	auto first_lv = lat.get_local_visible_first();
-	auto next_last_lv = lat.get_local_visible_next_to_last();
-	IndexType count = 0;
-	IndexType lm_coord[3];
-	for(auto i = first_lv; i < next_last_lv; i = lat.get_local_visible_next(i)){
-		count++;
-		status = compare_results(i, 
-							lat.local_mem_coord2index(lat.local_mem_index2coord(i, lm_coord)), 
-							"Visible sites loop index-coordinate transformation", false) && status;
+	if(use_hash_table){
+		lat.make_vis2mem_index_table();
+		lat.make_mem2vis_index_table();
 	}
-	status = compare_results<IndexType>(lat.get_visible_local_sites(), count, 
-				"Visible sites loop count") && status;
+	for(auto i = 0; i < rounds; ++i){
+		auto first_lv = lat.get_local_visible_first();
+		auto next_last_lv = lat.get_local_visible_next_to_last();
+		IndexType count = 0;
+		IndexType lm_coord[3];
+		for(auto i = first_lv; i < next_last_lv; i = lat.get_local_visible_next(i)){
+			count++;
+			status = compare_results(i, 
+								lat.local_mem_coord2index(lat.local_mem_index2coord(i, lm_coord)), 
+								"Visible sites loop index-coordinate transformation", false) && status;
+		}
+		status = compare_results<IndexType>(lat.get_visible_local_sites(), count, 
+					"Visible sites loop count") && status;
+	}
 	return status;
 }
 
