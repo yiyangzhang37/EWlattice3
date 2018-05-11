@@ -1,6 +1,5 @@
-#include "MPIWrapper2D.h"
 #include "Test_MPIWrapper2D.h"
-#include "LATfield3_Lattice.h"
+#include "ParaLattice.h"
 #include <iostream>
 #include <thread>
 #include <chrono>
@@ -40,20 +39,29 @@ int main(int argc, char** argv) {
 
 	status = Test_SendDown(n_rows, n_cols) && status;
 	*/
-	unsigned int lat_size[] = {11,16,23};
-	int node_size[] = {1,1};
-	int loc[] = {0,0};
+
+	//unsigned int lat_size[] = {11,16,23};
+	//int node_size[] = {1,1};
+	//int loc[] = {0,0};
 	//status = Test_Build_Lattice3D(lat_size, 2, node_size, loc) && status;
 
 	//status = Test_Lattice3D_Global_Coordinate_Transformation() && status;
-	
+	/*
 	auto start = std::chrono::system_clock::now();
 	status = Test_Local_Visible_Loop_Single_Process(1, true) && status;
 	auto end = std::chrono::system_clock::now();
  	std::chrono::duration<double> elapsed_seconds = end-start;
 	std::cout<< "Time cost (seconds): " << elapsed_seconds.count() << std::endl;
-
+	*/
 	//status = Test_Local_Visible_Loop_Pseudo_Multi_Processes() && status;
+	
+	//status = Test_Local_Visible_Loop(n_rows, n_cols) && status;
+
+	//status = Test_Halo_Loop(n_rows, n_cols) && status;
+
+	//Test_Site_Move(n_rows, n_cols);
+
+	Test_UpdateHalo(n_rows, n_cols);
 
 	// summerize results
 	int overall_status = 1;

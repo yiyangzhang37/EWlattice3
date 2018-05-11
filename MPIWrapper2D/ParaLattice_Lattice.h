@@ -1,17 +1,37 @@
-#ifndef LATFIELD3_LATTICE_H
-#define LATFIELD3_LATTICE_H
+#ifndef PARA_LATTICE_LATTICE_H
+#define PARA_LATTICE_LATTICE_H
 
 #include <cassert>
 #include <iostream>
 #include <numeric>
 #include <algorithm>
 #include <functional>
-#include <unordered_map>
 #include <vector>
+#include <cstdint>
 
-namespace LATfield3{
+namespace ParaLattice{
 
-    typedef unsigned int IndexType;
+    //IndexType and GridIndexType should be SIGNED integer types.
+    //sizeof(GridIndexType) < sizeof(IndexType)
+    typedef int64_t IndexType;
+    typedef int32_t GridIndexType;
+
+    /*
+    helper function to transform Parallel2D grid_rank to grid_loc in this class.
+    The grid_loc definition is independent of the Parallel2D implementation.
+    If Parallel2D convention changes, we only need to change the following 2 functions.
+    */
+    inline GridIndexType* transform_gridrank_to_gridloc(const GridIndexType grid_rank[2], GridIndexType grid_loc[2]){
+        grid_loc[0] = grid_rank[1];
+        grid_loc[1] = grid_rank[0];
+        return grid_loc;
+    }
+
+    inline GridIndexType* transform_gridloc_to_gridrank(const GridIndexType grid_loc[2], GridIndexType grid_rank[2]){
+        grid_rank[0] = grid_loc[1];
+        grid_rank[1] = grid_loc[0];
+        return grid_rank;
+    }
 
     /*
     class Lattice:
@@ -19,20 +39,25 @@ namespace LATfield3{
     The indexing convention is [x,y,z,...], with x changes first.
     A parallalization is assumed in the last 2 dimensions.
     e.g., for 3D lattice, the y and z dimensions are scattered to a number of MPI processes.
+    y will be identified with the MPI row, z will be identified with the MPI column.
     */
     template<int DIM>
     class Lattice{
     public:
         Lattice() = delete;
-        Lattice(const IndexType size[DIM], 
+        Lattice(const IndexType* size, 
                 const IndexType halo, 
-                const int* node_size = nullptr, 
-                const int* grid_loc = nullptr);
+                const GridIndexType* node_size = nullptr, 
+                const GridIndexType* grid_loc = nullptr);
         Lattice(const IndexType size, 
                 const IndexType halo, 
-                const int* node_size = nullptr,
-                const int* grid_loc = nullptr);
+                const GridIndexType* node_size = nullptr,
+                const GridIndexType* grid_loc = nullptr); // need test
         ~Lattice();
+        void init(const IndexType* size, 
+                const IndexType halo, 
+                const GridIndexType* node_size = nullptr, 
+                const GridIndexType* grid_loc = nullptr);
         
         /*
         make hash maps. to accelerate index query.
@@ -52,11 +77,6 @@ namespace LATfield3{
             delete_vis2mem_index_table();
             delete_mem2vis_index_table();
         }
-        /*
-        helper function to transform Parallel2D grid_rank to grid_loc in this class.
-        */
-        int* transform_gridrank_to_gridloc(const int grid_rank[2], int grid_loc[2]) const;
-        
         /*
         coordinate and index transformations.
         / global_index: the global index of a site, range from 0 to visible_global_sites_ - 1.
@@ -123,6 +143,13 @@ namespace LATfield3{
             const IndexType* global_coord,
             IndexType* local_vis_coord) const;
 
+        /*
+        transform local_mem_coord to global_coord
+        */
+        IndexType* local_mem_coord_to_global_coord(
+            const IndexType* local_mem_coord,
+            IndexType* global_coord) const;
+
 		/*
 		transformation between three kinds of indices.
 		/ when transforming from global_index to local_vis_index,
@@ -140,9 +167,15 @@ namespace LATfield3{
 		IndexType local_vis_index_to_global_index(
 			const IndexType local_vis_index) const;
 
-
+        //check if the local_mem_index is a visible site.
+        bool is_local_visible(const IndexType local_mem_index) const;
+		bool is_local_visible(const IndexType* local_mem_coord) const;
+        //check the global site belongs to which node
+        GridIndexType* which_node(const IndexType global_index, GridIndexType* grid_node) const;
+        //check if the global_index is a local (visible) site.
+        bool is_local(const IndexType global_index) const;
         
-		/*
+        /*
 		The following functions returns tht local_mem_index of:
 		/ 1. the first local visible site
 		/ 2. the next local visible site
@@ -162,14 +195,21 @@ namespace LATfield3{
 		IndexType get_local_halo_next(const IndexType local_mem_index) const;
 		constexpr IndexType get_local_halo_next_to_last() const;
 
+        /*
+        relate the halo site coordinate with the local visible coordinate being mapped.
+        All the coordinates are local_mem_coord.
+        */
+        IndexType get_mapped_coord(
+           const IndexType halo_coord, const int direction) const;
+        IndexType* get_mapped_coord(
+            const IndexType* halo_coord, IndexType* mapped_coord) const;
+        GridIndexType* get_mapped_grid_loc(
+            const IndexType* halo_coord, GridIndexType grid_loc[2]) const;
+        GridIndexType* get_mapped_grid_loc(
+            const GridIndexType rel_grid_loc[2], GridIndexType grid_loc[2]) const;
+        GridIndexType* get_mapped_relative_grid_loc(
+            const IndexType* halo_coord, GridIndexType rel_grid_loc[2]) const;    
 
-        //check if the local_mem_index is a visible site.
-        bool is_local_visible(const IndexType local_mem_index) const;
-		bool is_local_visible(const IndexType* local_mem_coord) const;
-        //check the global site belongs to which node
-        int* which_node(const IndexType global_index, int* grid_node) const;
-        //check if the global_index is a local (visible) site.
-        bool is_local(const IndexType global_index) const;
 
         //miscellaneous
         constexpr int get_dim() const {return DIM;}
@@ -181,8 +221,9 @@ namespace LATfield3{
         constexpr IndexType get_visible_local_sites() const {return this->visible_local_sites_;}
         constexpr IndexType get_local_mem_sites() const {return this->local_mem_sites_;}
 
-        constexpr int get_total_nodes() const {return this->total_nodes_;}
-        const int* get_node_size() const {return this->node_size_;}
+        constexpr GridIndexType get_total_nodes() const {return this->total_nodes_;}
+        const GridIndexType* get_node_size() const {return this->node_size_;}
+        const GridIndexType* get_grid_loc() const {return this->grid_loc_;}
 
     private:
         //global lattice size (excluding halo layers).
@@ -216,11 +257,11 @@ namespace LATfield3{
 
         //MPI related variables
         //The total number of MPI processes used to distribute the lattice
-        int total_nodes_ = 1;
+        GridIndexType total_nodes_ = 1;
         //The shape of the 2D MPI grid.
         //e.g., for DIM=3, 
         //grid_size_[0] partitions the y dimension; grid_size_[1] partitions the z direction.
-        int node_size_[2] = {1, 1};
+        GridIndexType node_size_[2] = {1, 1};
         //the location of the local lattice in the global grid.
         /*
         grid_loc_[0] is the index in the grid_size_[0] direction.
@@ -229,9 +270,9 @@ namespace LATfield3{
         grid_loc_[0] = grid_rank_[1]
         grid_loc_[1] = grid_rank_[0]
         */
-        int grid_loc_[2] = {0, 0};  
-        int& loc_row_ = grid_loc_[0]; 
-        int& loc_col_ = grid_loc_[1];  
+        GridIndexType grid_loc_[2] = {0, 0};  
+        GridIndexType& loc_row_ = grid_loc_[0]; 
+        GridIndexType& loc_col_ = grid_loc_[1];  
 
         /*
         index containers, to accelerate query.
@@ -250,13 +291,30 @@ namespace LATfield3{
     };
 
     template<int DIM>
-    Lattice<DIM>::Lattice(const IndexType size[DIM], 
+    Lattice<DIM>::Lattice(const IndexType* size, 
                     const IndexType halo, 
-                    const int* node_size,
-                    const int* grid_loc)
-        :
-        halo_(halo)
+                    const GridIndexType* node_size,
+                    const GridIndexType* grid_loc)
     {
+        this->init(size, halo, node_size, grid_loc);
+    }
+
+    template<int DIM>
+    Lattice<DIM>::Lattice(const IndexType size, 
+                    const IndexType halo, 
+                    const GridIndexType* node_size,
+                    const GridIndexType* grid_loc){
+        IndexType arr_size[DIM];
+        std::fill_n(arr_size, DIM, size);
+        this->init(arr_size, halo, node_size, grid_loc);
+    }
+
+    template<int DIM>
+    void Lattice<DIM>::init(const IndexType* size, 
+                    const IndexType halo, 
+                    const GridIndexType* node_size,
+                    const GridIndexType* grid_loc) {
+        halo_ = halo;
         std::copy_n(size, DIM, global_size_);
         if((node_size != nullptr) && (grid_loc != nullptr)){
             node_size_[0] = node_size[0];
@@ -276,7 +334,7 @@ namespace LATfield3{
         //the halo layers should be smaller than the visible size
         assert(
             std::all_of(local_size_, local_size_ + DIM, 
-                    [this](IndexType x){ return this->halo_ <= x;})
+                    [this](IndexType x){ return this->halo_ <= x / 2;})
             );
         //compute local_mem_size_
         std::transform(local_size_, local_size_ + DIM, 
@@ -312,16 +370,7 @@ namespace LATfield3{
                         last,
                         [this](IndexType x){ return x - 1 - this->halo_; });
         local_visible_site_next_to_last_ = local_mem_coord2index(last) + 1;
-    }
-
-    template<int DIM>
-    Lattice<DIM>::Lattice(const IndexType size, 
-                    const IndexType halo, 
-                    const int* node_size,
-                    const int* grid_loc){
-        IndexType arr_size[DIM];
-        std::fill_n(arr_size, DIM, size);
-        Lattice(arr_size, halo, node_size, grid_loc);
+        return;
     }
 
     template<int DIM>
@@ -368,14 +417,7 @@ namespace LATfield3{
     template<int DIM>
     void Lattice<DIM>::delete_mem2vis_index_table(){
         activate_mem2vis_index_table_ = false;
-        mem2vis_index_table_ = std::unordered_map<IndexType, IndexType>();
-    }
-
-    template<int DIM>
-    int* Lattice<DIM>::transform_gridrank_to_gridloc(const int grid_rank[2], int grid_loc[2]) const {
-        grid_loc[0] = grid_rank[1];
-        grid_loc[1] = grid_rank[0];
-        return grid_loc;
+        mem2vis_index_table_ = std::vector<IndexType>();
     }
 
     template<int DIM>
@@ -492,7 +534,7 @@ namespace LATfield3{
 	}
 
     template<int DIM>
-    int* Lattice<DIM>::which_node(const IndexType global_index, int* grid_node) const{
+    GridIndexType* Lattice<DIM>::which_node(const IndexType global_index, GridIndexType* grid_node) const{
         IndexType global_coord[DIM];
         global_index2coord(global_index, global_coord);
         auto& g1_coord = global_coord[DIM - 2];
@@ -504,7 +546,7 @@ namespace LATfield3{
 
     template<int DIM>
     bool Lattice<DIM>::is_local(const IndexType global_index) const{
-        int grid_node[2];
+        GridIndexType grid_node[2];
         this->which_node(global_index, grid_node);
         if(grid_node[0] == this->grid_loc_[0] && grid_node[1] == this->grid_loc_[1])
             return true;
@@ -550,6 +592,30 @@ namespace LATfield3{
         local_vis_coord[DIM-1] = global_coord[DIM-1] % this->local_size_[DIM-1];
         std::copy_n(global_coord, DIM-2, local_vis_coord);
         return local_vis_coord;
+    }
+
+    template<int DIM>
+    IndexType* Lattice<DIM>::local_mem_coord_to_global_coord(
+        const IndexType* local_mem_coord,
+        IndexType* global_coord) const {
+        IndexType lm_first_vis[DIM];
+        local_mem_index2coord(this->local_visible_site_first_, lm_first_vis);
+        IndexType first_vis_coord[DIM], first_vis_glb_coord[DIM];
+        std::fill_n(first_vis_coord, DIM, 0);
+        this->local_vis_coord_to_global_coord(first_vis_coord, first_vis_glb_coord);
+        IndexType offset[DIM];
+        std::transform(local_mem_coord, local_mem_coord + DIM, 
+                        lm_first_vis, 
+                        offset, std::minus<IndexType>());
+        std::transform(first_vis_glb_coord, first_vis_glb_coord + DIM,
+                        offset, 
+                        global_coord, std::plus<IndexType>());
+        std::transform(global_coord, global_coord + DIM, 
+                        this->global_size_, 
+                        global_coord, 
+                        [](IndexType x, IndexType y)
+                        { return (x%y + y)%y; });
+        return global_coord;
     }
 
     template<int DIM>
@@ -608,9 +674,9 @@ namespace LATfield3{
     IndexType Lattice<DIM>::get_local_halo_next(const IndexType local_mem_index) const{
         IndexType local_mem_coord[DIM];
         local_mem_index2coord(local_mem_index + 1, local_mem_coord);
-		if (local_mem_coord[0] == this->halo_) {
-			local_mem_coord[0] = this->local_mem_size_[0] - this->halo_;
-		}
+        if(this->is_local_visible(local_mem_coord)){
+            local_mem_coord[0] = this->local_mem_size_[0] - this->halo_;
+        }
 		return local_mem_coord2index(local_mem_coord);
     }
 
@@ -618,6 +684,67 @@ namespace LATfield3{
     constexpr IndexType Lattice<DIM>::get_local_halo_next_to_last() const {
         return (this->halo_ <= 0) ? 0 : this->local_mem_sites_;
     }
+
+    template<int DIM>
+    IndexType Lattice<DIM>::get_mapped_coord(
+           const IndexType halo_coord, const int direction) const{
+        if(halo_coord < this->halo_) 
+            return this->local_mem_size_[direction] - 2*this->halo_ + halo_coord;
+        if(halo_coord >= this->local_mem_size_[direction] - this->halo_)
+            return 2*this->halo_ - this->local_mem_size_[direction] + halo_coord;
+        return halo_coord;
+    }
+
+    template<int DIM>
+    IndexType* Lattice<DIM>::get_mapped_coord(
+        const IndexType* halo_coord, IndexType* mapped_coord) const{
+        for(auto i = 0; i < DIM; ++i){
+            mapped_coord[i] = get_mapped_coord(halo_coord[i], i);
+        }
+        return mapped_coord;
+    }
+
+    template<int DIM>
+    GridIndexType* Lattice<DIM>::get_mapped_grid_loc(
+        const IndexType* halo_coord, GridIndexType grid_loc[2]) const{
+        GridIndexType rel_grid_loc[2];
+        this->get_mapped_relative_grid_loc(halo_coord, rel_grid_loc);
+        return get_mapped_grid_loc(rel_grid_loc, grid_loc);
+    }
+
+    template<int DIM>
+    GridIndexType* Lattice<DIM>::get_mapped_grid_loc(
+        const GridIndexType rel_grid_loc[2], GridIndexType grid_loc[2]) const{
+        grid_loc[0] = ( (this->grid_loc_[0] + rel_grid_loc[0]) % this->node_size_[0]
+                        + this->node_size_[0] ) % this->node_size_[0];
+        grid_loc[1] = ( (this->grid_loc_[1] + rel_grid_loc[1]) % this->node_size_[1]
+                        + this->node_size_[1] ) % this->node_size_[1];
+        return grid_loc;
+    }
+
+    template<int DIM>
+    GridIndexType* Lattice<DIM>::get_mapped_relative_grid_loc(
+        const IndexType* halo_coord, GridIndexType rel_grid_loc[2]) const{
+        if(halo_coord[DIM-2] < this->halo_ && this->node_size_[0] > 1){
+            rel_grid_loc[0] = -1;
+        } else if(halo_coord[DIM-2] >= this->local_mem_size_[DIM-2] - this->halo_ 
+                    && this->node_size_[0] > 1){
+            rel_grid_loc[0] = 1;
+        } else{
+            rel_grid_loc[0] = 0;
+        }
+
+        if(halo_coord[DIM-1] < this->halo_ && this->node_size_[1] > 1){
+            rel_grid_loc[1] = -1;
+        } else if(halo_coord[DIM-1] >= this->local_mem_size_[DIM-1] - this->halo_
+                    && this->node_size_[1] > 1){
+            rel_grid_loc[1] = 1;
+        } else{
+            rel_grid_loc[1] = 0;
+        }
+        return rel_grid_loc;
+    }
+
 }
 
 #endif

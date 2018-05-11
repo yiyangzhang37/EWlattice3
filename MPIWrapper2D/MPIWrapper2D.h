@@ -145,6 +145,10 @@ namespace MPI_Wrapper{
 		template<class Type> int Receive(Type& message, const int from) const;
 		template<class Type> int Receive(Type* array, const int len, const int from) const;
 		/*
+		receive an array from the process with grid_rank_ = from_gridrank
+		*/
+		template<class Type> int Receive(Type* array, const int len, const int* from_gridrank) const;
+		/*
 		receive a message/an array from the processes (sender) with grid_rank_[0] = from 
 		(in the same row).
 		*/
@@ -189,6 +193,19 @@ namespace MPI_Wrapper{
 												Type& buffer_recvup, const int len_up, 
 												const Type* buffer_senddown,
 												Type& buffer_recvdown, const int len_down ) const;
+
+		//TRANSFORMS ========================================
+		/*
+		transform between world rank and 2D grid rank.
+		*/
+		int* rank_world2grid(const int world_rank, int* grid_rank) const {
+			grid_rank[0] = world_rank % this->grid_size_[1];
+			grid_rank[1] = world_rank / this->grid_size_[1];
+			return grid_rank;
+		}
+		int rank_grid2world(const int* grid_rank) const {
+			return grid_rank[0] * this->stride_[1] + grid_rank[1] * this->stride_[0];
+		}
 		//MISCELLANEOUS =====================================
 		int get_world_size() const { return this->world_size_;}
 		int get_world_rank() const { return this->world_rank_;}
@@ -245,18 +262,7 @@ namespace MPI_Wrapper{
 		int _allreduce_(Type* array, const int len, const MPI_Op& op, const MPI_Comm& comm) const;
 		template<class Type, int LEN>
 		int _allreduce_(Type array[LEN], const MPI_Op& op, const MPI_Comm& comm) const;
-		/*
-		transform between world rank and 2D grid rank.
-		*/
-		int* rank_world2grid(const int world_rank, int* grid_rank) const {
-			grid_rank[0] = world_rank % this->grid_size_[1];
-			grid_rank[1] = world_rank / this->grid_size_[1];
-			return grid_rank;
-		}
-		int rank_grid2world(const int* grid_rank) const {
-			return grid_rank[0] * this->stride_[1] + grid_rank[1] * this->stride_[0];
-		}
-
+		
 		/*
 		row and columns advance in a 2D grid.
 		/steps: advance steps, can be negative. Assume the grid has torus topology.
@@ -492,6 +498,12 @@ namespace MPI_Wrapper{
 	}
 
 	template<class Type>
+	int Parallel2D::Receive(Type* array, const int len, const int* from_gridrank) const{
+		return MPI_Recv(array, len*sizeof(Type), MPI_BYTE, 
+						rank_grid2world(from_gridrank), 0, this->world_comm_, MPI_STATUS_IGNORE);
+	}
+
+	template<class Type>
 	int Parallel2D::Receive_row(Type& message, const int from) const {
 		return MPI_Recv(&message, sizeof(Type), MPI_BYTE, from, 0, this->row_comm_, MPI_STATUS_IGNORE);
 	}
@@ -517,12 +529,17 @@ namespace MPI_Wrapper{
 		auto send_dest_row_rank = (my_row_rank + 1) % this->grid_size_[1];
 		auto recv_from_row_rank = ( (my_row_rank - 1) % this->grid_size_[1] 
 								+ this->grid_size_[1] ) % this->grid_size_[1];
-		auto send_status = MPI_Send(send_buffer, len*sizeof(Type), MPI_BYTE, 
-									send_dest_row_rank, 0, this->row_comm_);
-		auto recv_status = MPI_Recv(recv_buffer, len*sizeof(Type), MPI_BYTE, 
-									recv_from_row_rank, 0, this->row_comm_, 
+		//auto send_status = MPI_Send(send_buffer, len*sizeof(Type), MPI_BYTE, 
+		//							send_dest_row_rank, 0, this->row_comm_);
+		//auto recv_status = MPI_Recv(recv_buffer, len*sizeof(Type), MPI_BYTE, 
+		//							recv_from_row_rank, 0, this->row_comm_, 
+		//							MPI_STATUS_IGNORE);
+		auto status = MPI_Sendrecv(send_buffer, len*sizeof(Type), 
+									MPI_BYTE, send_dest_row_rank, 0, 
+									recv_buffer, len*sizeof(Type), 
+									MPI_BYTE, recv_from_row_rank, 0, this->row_comm_, 
 									MPI_STATUS_IGNORE);
-		return send_status & recv_status;
+		return status;
 	}
 
 	template<class Type>
@@ -531,12 +548,17 @@ namespace MPI_Wrapper{
 		auto send_dest_col_rank = (my_col_rank + 1) % this->grid_size_[0];
 		auto recv_from_col_rank = ( (my_col_rank - 1) % this->grid_size_[0] + this->grid_size_[0] )
 		 						% this->grid_size_[0];
-		auto send_status = MPI_Send(send_buffer, len*sizeof(Type), MPI_BYTE, 
-									send_dest_col_rank, 0, this->col_comm_);
-		auto recv_status = MPI_Recv(recv_buffer, len*sizeof(Type), MPI_BYTE, 
-									recv_from_col_rank, 0, this->col_comm_,
+		//auto send_status = MPI_Send(send_buffer, len*sizeof(Type), MPI_BYTE, 
+		//							send_dest_col_rank, 0, this->col_comm_);
+		//auto recv_status = MPI_Recv(recv_buffer, len*sizeof(Type), MPI_BYTE, 
+		//							recv_from_col_rank, 0, this->col_comm_,
+		//							MPI_STATUS_IGNORE);
+		auto status = MPI_Sendrecv(send_buffer, len*sizeof(Type), 
+									MPI_BYTE, send_dest_col_rank, 0, 
+									recv_buffer, len*sizeof(Type), 
+									MPI_BYTE, recv_from_col_rank, 0, this->col_comm_, 
 									MPI_STATUS_IGNORE);
-		return send_status & recv_status;
+		return status;
 	}
 
 	template<class Type>
@@ -545,12 +567,17 @@ namespace MPI_Wrapper{
 		auto send_dest_row_rank = ( (my_row_rank - 1) % this->grid_size_[1] 
 								+ this->grid_size_[1] ) % this->grid_size_[1];
 		auto recv_from_row_rank = (my_row_rank + 1) % this->grid_size_[1];
-		auto send_status = MPI_Send(send_buffer, len*sizeof(Type), MPI_BYTE, 
-									send_dest_row_rank, 0, this->row_comm_);
-		auto recv_status = MPI_Recv(recv_buffer, len*sizeof(Type), MPI_BYTE, 
-									recv_from_row_rank, 0, this->row_comm_,
+		//auto send_status = MPI_Send(send_buffer, len*sizeof(Type), MPI_BYTE, 
+		//							send_dest_row_rank, 0, this->row_comm_);
+		//auto recv_status = MPI_Recv(recv_buffer, len*sizeof(Type), MPI_BYTE, 
+		//							recv_from_row_rank, 0, this->row_comm_,
+		//							MPI_STATUS_IGNORE);
+		auto status = MPI_Sendrecv(send_buffer, len*sizeof(Type), 
+									MPI_BYTE, send_dest_row_rank, 0, 
+									recv_buffer, len*sizeof(Type), 
+									MPI_BYTE, recv_from_row_rank, 0, this->row_comm_, 
 									MPI_STATUS_IGNORE);
-		return send_status & recv_status;
+		return status;
 	}
 
 	template<class Type>
@@ -559,12 +586,17 @@ namespace MPI_Wrapper{
 		auto send_dest_col_rank = ( (my_col_rank - 1) % this->grid_size_[0] + this->grid_size_[0] )
 		 						% this->grid_size_[0];
 		auto recv_from_col_rank = (my_col_rank + 1) % this->grid_size_[0];
-		auto send_status = MPI_Send(send_buffer, len*sizeof(Type), MPI_BYTE, 
-									send_dest_col_rank, 0, this->col_comm_);
-		auto recv_status = MPI_Recv(recv_buffer, len*sizeof(Type), MPI_BYTE, 
-									recv_from_col_rank, 0, this->col_comm_,
+		//auto send_status = MPI_Send(send_buffer, len*sizeof(Type), MPI_BYTE, 
+		//							send_dest_col_rank, 0, this->col_comm_);
+		//auto recv_status = MPI_Recv(recv_buffer, len*sizeof(Type), MPI_BYTE, 
+		//							recv_from_col_rank, 0, this->col_comm_,
+		//							MPI_STATUS_IGNORE);
+		auto status = MPI_Sendrecv(send_buffer, len*sizeof(Type), 
+									MPI_BYTE, send_dest_col_rank, 0, 
+									recv_buffer, len*sizeof(Type), 
+									MPI_BYTE, recv_from_col_rank, 0, this->col_comm_, 
 									MPI_STATUS_IGNORE);
-		return send_status & recv_status;
+		return status;
 	}
 }
 

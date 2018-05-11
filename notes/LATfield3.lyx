@@ -594,6 +594,669 @@ In terms of local memory index and local memory coordinate,
 .
 \end_layout
 
+\begin_layout Subsection
+Update halos
+\end_layout
+
+\begin_layout Standard
+The coordinates in this subsection are all local_mem_coord.
+\end_layout
+
+\begin_layout Standard
+I will use 3D lattice to do the computations.
+ Suppose the grid location is 
+\begin_inset Formula $\left(p_{y},p_{z}\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Row (
+\begin_inset Formula $DIM-2$
+\end_inset
+
+) Send-up
+\end_layout
+
+\begin_layout Standard
+For 
+\begin_inset Formula $h\le x<L_{x}-h$
+\end_inset
+
+, 
+\begin_inset Formula $y<h$
+\end_inset
+
+, 
+\begin_inset Formula $h\le z<L_{z}-h$
+\end_inset
+
+, it will receive from 
+\begin_inset Formula $x'=x$
+\end_inset
+
+, 
+\begin_inset Formula $y'=L_{y}-2h+y$
+\end_inset
+
+, 
+\begin_inset Formula $z'=z$
+\end_inset
+
+, in 
+\begin_inset Formula $\left(p_{y}-1,p_{z}\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Row (
+\begin_inset Formula $DIM-2$
+\end_inset
+
+) Send-down
+\end_layout
+
+\begin_layout Standard
+For 
+\begin_inset Formula $h\le x<L_{x}-h$
+\end_inset
+
+, 
+\begin_inset Formula $y\ge L_{y}-h$
+\end_inset
+
+, 
+\begin_inset Formula $h\le z<L_{z}-h$
+\end_inset
+
+, it will receive from 
+\begin_inset Formula $x'=x$
+\end_inset
+
+, 
+\begin_inset Formula $y'=2h-L_{y}+y$
+\end_inset
+
+, 
+\begin_inset Formula $z'=z$
+\end_inset
+
+, in 
+\begin_inset Formula $\left(p_{y}+1,p_{z}\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Column (
+\begin_inset Formula $DIM-1$
+\end_inset
+
+) Send-up
+\end_layout
+
+\begin_layout Standard
+For 
+\begin_inset Formula $h\le x<L_{x}-h$
+\end_inset
+
+, 
+\begin_inset Formula $h\le y<L_{y}-h$
+\end_inset
+
+, 
+\begin_inset Formula $z<h$
+\end_inset
+
+, it will receive from 
+\begin_inset Formula $x'=x,$
+\end_inset
+
+ 
+\begin_inset Formula $y'=y$
+\end_inset
+
+, 
+\begin_inset Formula $z'=L_{z}-2h+z$
+\end_inset
+
+, in 
+\begin_inset Formula $\left(p_{y},p_{z}-1\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Column (
+\begin_inset Formula $DIM-1$
+\end_inset
+
+) Send-down
+\end_layout
+
+\begin_layout Standard
+For 
+\begin_inset Formula $h\le x<L_{x}-h$
+\end_inset
+
+, 
+\begin_inset Formula $h\le y<L_{y}-h$
+\end_inset
+
+, 
+\begin_inset Formula $z\ge L_{z}-h$
+\end_inset
+
+, it will receive from 
+\begin_inset Formula $x'=x,$
+\end_inset
+
+ 
+\begin_inset Formula $y'=y$
+\end_inset
+
+, 
+\begin_inset Formula $z'=2h-L_{z}+z$
+\end_inset
+
+, in 
+\begin_inset Formula $\left(p_{y},p_{z}+1\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Other axes (
+\begin_inset Formula $<DIM-2$
+\end_inset
+
+) Send-up
+\end_layout
+
+\begin_layout Standard
+For 
+\begin_inset Formula $x\ge L_{x}-h$
+\end_inset
+
+, 
+\begin_inset Formula $h\le y,z<L_{i}-h$
+\end_inset
+
+, it will receive from 
+\begin_inset Formula $x'=2h-L_{x}+x$
+\end_inset
+
+, 
+\begin_inset Formula $y'=y$
+\end_inset
+
+, 
+\begin_inset Formula $z'=z$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Other axes (
+\begin_inset Formula $<DIM-2$
+\end_inset
+
+) Send-down
+\end_layout
+
+\begin_layout Standard
+For 
+\begin_inset Formula $x<h$
+\end_inset
+
+, 
+\begin_inset Formula $h\le y,z<L_{i}-h$
+\end_inset
+
+, it will receive from 
+\begin_inset Formula $x'=L_{x}-2h+x$
+\end_inset
+
+, 
+\begin_inset Formula $y'=y$
+\end_inset
+
+, 
+\begin_inset Formula $z'=z$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Edges
+\end_layout
+
+\begin_layout Standard
+For 
+\begin_inset Formula $h\le x<L_{x}-h$
+\end_inset
+
+, 
+\end_layout
+
+\begin_layout Standard
+(i) 
+\begin_inset Formula $y<h$
+\end_inset
+
+, 
+\begin_inset Formula $z<h$
+\end_inset
+
+: receive from 
+\begin_inset Formula $\left(x,L_{y}-2h+y,L_{z}-2h+z\right)$
+\end_inset
+
+, in 
+\begin_inset Formula $\left(p_{y}-1,p_{z}-1\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+(ii) 
+\begin_inset Formula $y<h$
+\end_inset
+
+, 
+\begin_inset Formula $z\ge L_{z}-h$
+\end_inset
+
+: receive from 
+\begin_inset Formula $\left(x,L_{y}-2h+y,2h-L_{z}+z\right)$
+\end_inset
+
+, in 
+\begin_inset Formula $\left(p_{y}-1,p_{z}+1\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+(iii) 
+\begin_inset Formula $y\ge L_{y}-h$
+\end_inset
+
+, 
+\begin_inset Formula $z<h$
+\end_inset
+
+: receive from ..., in 
+\begin_inset Formula $\left(p_{y}+1,p_{z}-1\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+(iv) 
+\begin_inset Formula $y\ge L_{y}-h$
+\end_inset
+
+, 
+\begin_inset Formula $z\ge L_{z}-h$
+\end_inset
+
+: receive from ..., in 
+\begin_inset Formula $\left(p_{y}+1,p_{z}+1\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+For 
+\begin_inset Formula $h\le y<L_{y}-h$
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Standard
+(i) 
+\begin_inset Formula $x<h$
+\end_inset
+
+, 
+\begin_inset Formula $z<h$
+\end_inset
+
+: receive from ..., in 
+\begin_inset Formula $\left(p_{y},p_{z}-1\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+(ii) 
+\begin_inset Formula $x<h$
+\end_inset
+
+, 
+\begin_inset Formula $z\ge L_{z}-h$
+\end_inset
+
+: receive from ..., in 
+\begin_inset Formula $\left(p_{y},p_{z}+1\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+(iii) 
+\begin_inset Formula $x\ge L_{x}-h$
+\end_inset
+
+, 
+\begin_inset Formula $z<h$
+\end_inset
+
+: receive from ..., in 
+\begin_inset Formula $\left(p_{y},p_{z}-1\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+(iv) 
+\begin_inset Formula $x\ge L_{x}-h$
+\end_inset
+
+, 
+\begin_inset Formula $z\ge L_{z}-h$
+\end_inset
+
+: receive from ..., in 
+\begin_inset Formula $\left(p_{y},p_{z}+1\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+For 
+\begin_inset Formula $h\le z<L_{z}-h$
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+(i) 
+\begin_inset Formula $x<h$
+\end_inset
+
+, 
+\begin_inset Formula $y<h$
+\end_inset
+
+: receive from ..., in 
+\begin_inset Formula $\left(p_{y}-1,p_{z}\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+(ii) 
+\begin_inset Formula $x<h$
+\end_inset
+
+, 
+\begin_inset Formula $y\ge L_{y}-h$
+\end_inset
+
+: receive from ..., in 
+\begin_inset Formula $\left(p_{y}+1,p_{z}\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+(iii) 
+\begin_inset Formula $x\ge L_{x}-h$
+\end_inset
+
+, 
+\begin_inset Formula $y<h$
+\end_inset
+
+: receive from ..., in 
+\begin_inset Formula $\left(p_{y}-1,p_{z}\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+(iv) 
+\begin_inset Formula $x\ge L_{x}-h$
+\end_inset
+
+, 
+\begin_inset Formula $y\ge L_{y}-h$
+\end_inset
+
+: receive from ..., in 
+\begin_inset Formula $\left(p_{y}+1,p_{z}\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Corners
+\end_layout
+
+\begin_layout Standard
+For 
+\begin_inset Formula $x<h$
+\end_inset
+
+, 
+\begin_inset Formula $y<h$
+\end_inset
+
+, 
+\begin_inset Formula $z<h$
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+For 
+\begin_inset Formula $x<h$
+\end_inset
+
+, 
+\begin_inset Formula $y<h$
+\end_inset
+
+, 
+\begin_inset Formula $z\ge L_{z}-h$
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+For 
+\begin_inset Formula $x<h$
+\end_inset
+
+, 
+\begin_inset Formula $y\ge L_{y}-h$
+\end_inset
+
+, 
+\begin_inset Formula $z<h$
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+For 
+\begin_inset Formula $x<h$
+\end_inset
+
+, 
+\begin_inset Formula $y\ge L_{y}-h$
+\end_inset
+
+, 
+\begin_inset Formula $z\ge L_{z}-h$
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+For 
+\begin_inset Formula $x\ge L_{x}-h$
+\end_inset
+
+, 
+\begin_inset Formula $y<h$
+\end_inset
+
+, 
+\begin_inset Formula $z<h$
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+For 
+\begin_inset Formula $x\ge L_{x}-h$
+\end_inset
+
+, 
+\begin_inset Formula $y<h$
+\end_inset
+
+, 
+\begin_inset Formula $z\ge L_{z}-h$
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+For 
+\begin_inset Formula $x\ge L_{x}-h$
+\end_inset
+
+, 
+\begin_inset Formula $y\ge L_{y}-h$
+\end_inset
+
+, 
+\begin_inset Formula $z<h$
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+For 
+\begin_inset Formula $x\ge L_{x}-h$
+\end_inset
+
+, 
+\begin_inset Formula $y\ge L_{y}-h$
+\end_inset
+
+, 
+\begin_inset Formula $z\ge L_{z}-h$
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Subsubsection
+Summerized formula
+\end_layout
+
+\begin_layout Standard
+For a halo point 
+\begin_inset Formula $\left(x,y,z\right)$
+\end_inset
+
+, in local memory coordinates, we can find its corresponding point (also
+ in local memory coordinates) 
+\begin_inset Formula $\left(x',y',z'\right)$
+\end_inset
+
+, as follows: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+r_{i}'=f\left(r_{i}\right)=\begin{cases}
+L_{i}-2h+r_{i} & r_{i}<h\\
+r_{i} & h\le r_{i}<L_{i}-h\\
+2h-L_{i}+r_{i} & r_{i}\ge L_{i}-h
+\end{cases}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The grid rank to receive information from is 
+\begin_inset Formula $\left(p_{y}',p_{z}'\right)$
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+p_{i}'=\begin{cases}
+p_{i}-1 & r_{i}<h\\
+p_{i}+1 & r_{i}\ge L_{i}-h
+\end{cases}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+for 
+\begin_inset Formula $i=y,z$
+\end_inset
+
+, assuming periodic boundary for the grid rank.
+\end_layout
+
 \begin_layout Section
 Benchmarks
 \end_layout

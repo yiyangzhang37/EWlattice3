@@ -2,13 +2,14 @@
 #define TEST_MPI_WRAPPER_2D
 
 #include "MPIWrapper2D.h"
-#include "LATfield3_Lattice.h"
+#include "ParaLattice.h"
 #include <iostream>
 #include <string>
 
 using namespace MPI_Wrapper;
-using namespace LATfield3;
+using namespace ParaLattice;
 
+//MPIWrapper2D class tests
 int Test_Build_Parallel2D(const int n_rows, const int n_cols);
 int Test_Build_2DGrid(const int n_rows, const int n_cols);
 int Test_Broadcast(const int n_rows, const int n_cols);
@@ -19,6 +20,7 @@ int Test_SendRecv(const int n_rows, const int n_cols);
 int Test_SendUp(const int n_rows, const int n_cols);
 int Test_SendDown(const int n_rows, const int n_cols);
 
+//Lattice class tests
 int Test_Build_Lattice3D(
 				const IndexType size[3], 
                 const int halo, 
@@ -29,9 +31,16 @@ int Test_Lattice3D_Global_Coordinate_Transformation();
 int Test_Local_Visible_Loop_Single_Process(
 	const int rounds = 1, 
 	const bool use_hash_table = false);
-
 int Test_Local_Visible_Loop_Pseudo_Multi_Processes();
-int Test_Local_Halo_Loop_Multi_Processes();
+
+//MPI-based tests: Site class
+int Test_Local_Visible_Loop(const int n_rows, const int n_cols);
+int Test_Halo_Loop(const int n_rows, const int n_cols);
+int Test_Site_Move(const int n_rows, const int n_cols);
+int Test_Set_Get_Coordinates(const int n_rows, const int n_cols);
+
+//MPI-based tests: Field class
+int Test_UpdateHalo(const int n_rows, const int n_cols);
 
 //helper functions -------------------
 /*
@@ -74,6 +83,18 @@ int compare_results(const Type* theo_val, const Type* exp_val, const int len, co
 		std::cout << "}" << std::endl;
 	}
 	return status;
+}
+
+template<class Type>
+void print_coordinate(const Type* c, const int len, 
+		const std::string& name, 
+		const bool end_line = true){
+	std::cout << name <<": (";
+	for(auto i = 0; i < len; ++i){
+		std::cout << c[i] << ",";
+	}
+	std::cout << ") ";
+	if(end_line) std::cout << std::endl;
 }
 
 #endif // !TEST_MPI_WRAPPER_2D

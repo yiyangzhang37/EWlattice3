@@ -42,7 +42,7 @@ run4:$(TARGET)
 	$(MPIRUN) -np 4 ./$(TARGET) -r 2 -c 2 > $(OUTPUT) &
 run8:$(TARGET)
 	$(MPIRUN) -np 8 ./$(TARGET) -r 2 -c 4 > $(OUTPUT) &
-run15:$(TARGET)
-	$(MPIRUN) -np 15 ./$(TARGET) -r 5 -c 3 > $(OUTPUT) &
+run24:$(TARGET)
+	$(MPIRUN) -np 24 ./$(TARGET) -r 4 -c 6 > $(OUTPUT) &
 clean:
 	$(RM) $(OBJS) $(TARGET)

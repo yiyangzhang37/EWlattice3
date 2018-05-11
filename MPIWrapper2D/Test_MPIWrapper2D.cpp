@@ -2,6 +2,10 @@
 #include <random>
 #include <functional>
 #include <cmath>
+#include <set>
+#include <array>
+#include <typeinfo>
+#include <cxxabi.h>
 
 int Test_Build_Parallel2D(const int n_rows, const int n_cols) {
 	Parallel2D parallel;
@@ -310,7 +314,7 @@ int Test_Build_Lattice3D(
 }
 
 int Test_Lattice3D_Global_Coordinate_Transformation(){
-	unsigned int size[] = {11,16,23};
+	IndexType size[] = {11,16,23};
 	int node_size[] = {1,1};
 	int loc[] = {0,0};
 	Lattice<3> lat(size, 1, node_size, loc);
@@ -359,7 +363,7 @@ int Test_Lattice3D_Global_Coordinate_Transformation(){
 int Test_Local_Visible_Loop_Single_Process(
 	const int rounds, 
 	const bool use_hash_table){
-	unsigned int size[] = {100,100,100};
+	IndexType size[] = {100,100,100};
 	int node_size[] = {1,1};
 	int loc[] = {0,0};
 	Lattice<3> lat(size, 1, node_size, loc);
@@ -386,7 +390,7 @@ int Test_Local_Visible_Loop_Single_Process(
 }
 
 int Test_Local_Visible_Loop_Pseudo_Multi_Processes(){
-	unsigned int size[] = {96,128,160};
+	IndexType size[] = {96,128,160};
 	int node_size[] = {4,8};
 	int loc[] = {3,5};
 	Lattice<3> lat(size, 1, node_size, loc);
@@ -407,3 +411,163 @@ int Test_Local_Visible_Loop_Pseudo_Multi_Processes(){
 				"Visible sites loop count") && status;
 	return status;
 }
+
+int Test_Local_Visible_Loop(const int n_rows, const int n_cols){
+	Parallel2D parallel;
+	parallel.InitializeGrid(n_rows, n_cols);
+	auto grid_rank = parallel.get_grid_rank();
+	int grid_loc[2];
+	int node_size[] = {n_rows, n_cols};
+	int status = 1;
+	IndexType lat_size[] = {64, 128, 96};
+	Lattice<3> lat(lat_size, 2, node_size,
+					 transform_gridrank_to_gridloc(grid_rank, grid_loc));
+	Site<3> x(lat);
+	int count = 0;
+	std::set<IndexType> lv_idx_set;
+	for(x.first(); x.test(); x.next()){
+		count++;
+		auto lv_idx = lat.local_mem_index_to_local_vis_index(x.get_index());
+		status = lat.is_local_visible(x.get_index()) && status;
+		lv_idx_set.emplace(lv_idx);
+	}
+	status = compare_results<IndexType>(lv_idx_set.size(), lat.get_visible_local_sites(),
+				"Different Local Visible Sites Count") && status;
+	status = compare_results<IndexType>(lat.get_visible_local_sites(), count, 
+				"Visible Loop Count") && status;
+	return status;
+}
+
+int Test_Halo_Loop(const int n_rows, const int n_cols) {
+	Parallel2D parallel;
+	parallel.InitializeGrid(n_rows, n_cols);
+	auto grid_rank = parallel.get_grid_rank();
+	int grid_loc[2];
+	int node_size[] = {n_rows, n_cols};
+	int status = 1;
+	IndexType lat_size[] = {64, 128, 96};
+	Lattice<3> lat(lat_size, 2, node_size,
+					 transform_gridrank_to_gridloc(grid_rank, grid_loc));
+	Site<3> x(lat);
+	int count = 0;
+	std::set<IndexType> halo_idx_set;
+	for(x.halo_first(); x.halo_test(); x.halo_next()){
+		count++;
+		halo_idx_set.emplace(x.get_index());
+	}
+	status = compare_results<IndexType>(lat.get_local_mem_sites() - lat.get_visible_local_sites(),
+					halo_idx_set.size(), "Different Local Halo Sites Count") && status;
+	status = compare_results<IndexType>(lat.get_local_mem_sites() - lat.get_visible_local_sites(),
+					count, "Halo Loop Count") && status;
+
+	//Test if the union of local visible sites and halo sites are
+	//the same as local memory sites.
+	std::set<IndexType> lv_idx_set;
+	for(x.first(); x.test(); x.next()){
+		lv_idx_set.emplace(x.get_index());
+	}
+	for(auto iter = halo_idx_set.begin(); iter != halo_idx_set.end(); ++iter){
+		lv_idx_set.emplace(*iter);
+	}
+	IndexType s = 0;
+	for(auto iter = lv_idx_set.begin(); iter != lv_idx_set.end(); ++iter){
+		status = (*iter == s) && status;
+		s++;
+	}
+	return status;
+}
+
+int Test_Site_Move(const int n_rows, const int n_cols){
+	Parallel2D parallel;
+	parallel.InitializeGrid(n_rows, n_cols);
+	auto grid_rank = parallel.get_grid_rank();
+	int grid_loc[2];
+	int node_size[] = {n_rows, n_cols};
+	int status = 1;
+	IndexType lat_size[] = {64, 128, 96};
+	Lattice<3> lat(lat_size, 2, node_size,
+					 transform_gridrank_to_gridloc(grid_rank, grid_loc));
+	Site<3> x(lat);
+
+	x.first();
+
+	IndexType mem_coord[3], vis_coord[3], glb_coord[3];
+	x.coord_local_mem(mem_coord);
+	print_coordinate(mem_coord, 3, "mem", false);
+	if(lat.is_local_visible(x.get_index())){
+		x.coord_local_vis(vis_coord);
+		x.coord(glb_coord);
+		print_coordinate(vis_coord, 3, "vis", false);
+		print_coordinate(glb_coord, 3, "glb", true);
+	}
+	else {
+		std::cout << std::endl;
+	}
+
+	for(auto _ = 0; _ < 10; ++_){
+		x.move(1, -2).move(2,1).move(0,3);
+		x.coord_local_mem(mem_coord);
+		print_coordinate(mem_coord, 3, "mem", false);
+		if(lat.is_local_visible(x.get_index())){
+			x.coord_local_vis(vis_coord);
+			x.coord(glb_coord);
+			print_coordinate(vis_coord, 3, "vis", false);
+			print_coordinate(glb_coord, 3, "glb", true);
+		}
+		else {
+			std::cout << std::endl;
+		}
+	}
+	return 1;
+}
+
+int Test_UpdateHalo(const int n_rows, const int n_cols){
+	Parallel2D parallel;
+	parallel.InitializeGrid(n_rows, n_cols);
+	auto grid_rank = parallel.get_grid_rank();
+	int grid_loc[2];
+	int node_size[] = {n_rows, n_cols};
+	int status = 1;
+	IndexType lat_size[] = {16, 32, 24};
+	Lattice<3> lat(lat_size, 2, node_size,
+					 transform_gridrank_to_gridloc(grid_rank, grid_loc));
+	Site<3> x(lat);
+	Field<IndexType,3> fc(lat,3);
+	fc.assign_parallel_object(parallel);
+	for(x.first(); x.test(); x.next()){
+		fc(x, 0) = x.coord(0);
+		fc(x, 1) = x.coord(1);
+		fc(x, 2) = x.coord(2);
+	}
+	for(x.halo_first(); x.halo_test(); x.halo_next()){
+		fc(x, 0) = 0;
+		fc(x, 1) = 0;
+		fc(x, 2) = 0;
+	}
+	auto tab = fc.get_update_halo_table();
+	fc.update_halo();
+	
+	for(IndexType i = 0; i < lat.get_local_mem_sites(); ++i){
+		x.set_index(i);
+		IndexType lm_coord[3], glb_coord[3];
+		x.coord_local_mem(lm_coord);
+		lat.local_mem_coord_to_global_coord(lm_coord, glb_coord);
+		if(fc(x, 0) == glb_coord[0]
+			&& fc(x, 1) == glb_coord[1]
+			&& fc(x, 2) == glb_coord[2]) {
+			IndexType fc_coord[3] = {fc(x,0), fc(x,1), fc(x, 2)};
+			print_coordinate<IndexType>(glb_coord, 3, "Global coordinate", false);
+			print_coordinate<IndexType>(fc_coord, 3, "fc coord");
+			continue;
+		}
+		else{
+			IndexType fc_coord[3] = {fc(x,0), fc(x,1), fc(x, 2)};
+			print_coordinate<IndexType>(glb_coord, 3, "Global coordinate", false);
+			print_coordinate<IndexType>(fc_coord, 3, "fc coord");
+			status = 0;
+		}
+	}
+	return status;
+}
+
+

@@ -1,9 +1,9 @@
-#ifndef LATFIELD3_SITE_H
-#define LATFIELD3_SITE_H
+#ifndef PARA_LATTICE_SITE_H
+#define PARA_LATTICE_SITE_H
 
-#include "LATfield3_Lattice.h"
+#include "ParaLattice_Lattice.h"
 
-namespace LATfield3{
+namespace ParaLattice{
     /*
     class Site:
     This class identifies where the current position is, w.r.t. the associated Lattice object.
@@ -93,10 +93,8 @@ namespace LATfield3{
 		IndexType* coord_local_mem(IndexType* local_mem_coord) const;
 		IndexType coord_local_mem(const int direction) const;
 
-        template<int DIM>
         const Lattice<DIM>& get_lattice() const {return *(this->lattice_);}
-        template<int DIM>
-        Lattice<DIM>& get_lattice() const {return const_cast<Lattice>(*(this->lattice_));}
+        //Lattice<DIM>& get_lattice() const {return const_cast<Lattice<DIM>>(*(this->lattice_));}
         constexpr IndexType get_index() const {return this->index_;}
 
     private:
@@ -111,7 +109,7 @@ namespace LATfield3{
 	template<int DIM>
 	Site<DIM>::Site(const Lattice<DIM>& lattice) 
 		:
-		lattice_(lattice),
+		lattice_(&lattice),
 		index_(0)
 	{
 		;
@@ -123,34 +121,34 @@ namespace LATfield3{
 	}
 
 	template<int DIM>
-	Site& Site<DIM>::move(const int direction, const int steps){
+	Site<DIM>& Site<DIM>::move(const int direction, const int steps){
 		this->index_ = this->lattice_->local_mem_move(this->index_, steps, direction);
 		return *this;
 	}
 
 	template<int DIM>
-	Site Site<DIM>::move(const int direction, const int steps) const {
+	Site<DIM> Site<DIM>::move(const int direction, const int steps) const {
 		this->index_ = this->lattice_->local_mem_move(this->index_, steps, direction);
 		return *this;
 	}
 
 	template<int DIM>
-	Site Site<DIM>::operator+(const int direction) const {
+	Site<DIM> Site<DIM>::operator+(const int direction) const {
 		return this->move(direction, 1);
 	}
 
 	template<int DIM>
-	Site& Site<DIM>::operator+(const int direction) {
+	Site<DIM>& Site<DIM>::operator+(const int direction) {
 		return this->move(direction, 1);
 	}
 
 	template<int DIM>
-	Site Site<DIM>::operator-(const int direction) const {
+	Site<DIM> Site<DIM>::operator-(const int direction) const {
 		return this->move(direction, -1);
 	}
 
 	template<int DIM>
-	Site& Site<DIM>::operator-(const int direction) {
+	Site<DIM>& Site<DIM>::operator-(const int direction) {
 		return this->move(direction, -1);
 	}
 
@@ -217,37 +215,37 @@ namespace LATfield3{
 
 
 	template<int DIM>
-	Site& Site<DIM>::first() {
-		this->index_ = this->lattice_.get_local_visible_first();
+	Site<DIM>& Site<DIM>::first() {
+		this->index_ = this->lattice_->get_local_visible_first();
 		return *this;
 	}
 
 	template<int DIM>
-	Site& Site<DIM>::next() {
-		this->index_ = this->lattice_.get_local_visible_next(this->index_);
+	Site<DIM>& Site<DIM>::next() {
+		this->index_ = this->lattice_->get_local_visible_next(this->index_);
 		return *this;
 	}
 
 	template<int DIM>
 	bool Site<DIM>::test() const {
-		return this->index_ < this->lattice_.get_local_visible_next_to_last();
+		return this->index_ < this->lattice_->get_local_visible_next_to_last();
 	}
 	
 	template<int DIM>
-	Site& Site<DIM>::halo_first() {
-		this->index_ = this->lattice_.get_local_halo_first();
+	Site<DIM>& Site<DIM>::halo_first() {
+		this->index_ = this->lattice_->get_local_halo_first();
 		return *this;
 	}
 
 	template<int DIM>
-	Site& Site<DIM>::halo_next() {
-		this->index_ = this->lattice_.get_local_halo_next(this->index_);
+	Site<DIM>& Site<DIM>::halo_next() {
+		this->index_ = this->lattice_->get_local_halo_next(this->index_);
 		return *this;
 	}
 
 	template<int DIM>
 	bool Site<DIM>::halo_test() const {
-		return this->index_ < this->lattice_.get_local_halo_next_to_last();
+		return this->index_ < this->lattice_->get_local_halo_next_to_last();
 	}
 }
 
