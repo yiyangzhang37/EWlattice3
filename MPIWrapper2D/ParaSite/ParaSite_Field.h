@@ -1,7 +1,7 @@
-#ifndef PARA_LATTICE_FIELD_H
-#define PARA_LATTICE_FIELD_H
+#ifndef PARASITE_FIELD_H
+#define PARASITE_FIELD_H
 
-#include "ParaLattice_Site.h"
+#include "ParaSite_Site.h"
 #include "MPIWrapper2D.h"
 #include <string>
 #include <fstream>
@@ -11,7 +11,7 @@
 #include <type_traits>
 
 
-namespace ParaLattice{
+namespace ParaSite{
 
     using ParallelObject = MPI_Wrapper::Parallel2D;
 

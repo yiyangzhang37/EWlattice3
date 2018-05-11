@@ -1,5 +1,5 @@
-#include "Test_MPIWrapper2D.h"
-#include "ParaLattice.h"
+#include "./tests/Test_MPIWrapper2D.h"
+#include "./ParaSite/ParaSite.h"
 #include <iostream>
 #include <thread>
 #include <chrono>

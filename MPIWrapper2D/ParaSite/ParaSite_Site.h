@@ -1,9 +1,9 @@
-#ifndef PARA_LATTICE_SITE_H
-#define PARA_LATTICE_SITE_H
+#ifndef PARASITE_SITE_H
+#define PARASITE_SITE_H
 
-#include "ParaLattice_Lattice.h"
+#include "ParaSite_Lattice.h"
 
-namespace ParaLattice{
+namespace ParaSite{
     /*
     class Site:
     This class identifies where the current position is, w.r.t. the associated Lattice object.

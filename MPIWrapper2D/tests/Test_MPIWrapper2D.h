@@ -1,13 +1,12 @@
 #ifndef TEST_MPI_WRAPPER_2D
 #define TEST_MPI_WRAPPER_2D
 
-#include "MPIWrapper2D.h"
-#include "ParaLattice.h"
+#include "../ParaSite/ParaSite.h"
 #include <iostream>
 #include <string>
 
 using namespace MPI_Wrapper;
-using namespace ParaLattice;
+using namespace ParaSite;
 
 //MPIWrapper2D class tests
 int Test_Build_Parallel2D(const int n_rows, const int n_cols);

@@ -6,11 +6,11 @@ CFLAGS = -std=c++11
 
 # define any directories containing header files other than /usr/include
 #
-INCLUDES = 
+INCLUDES = -I./ParaSite -I./tests
 
 # define the C source files
-MPI_SRCS = MPIWrapper2D.cpp
-TEST_SRCS = Test_MPIWrapper2D.cpp
+MPI_SRCS = ./ParaSite/MPIWrapper2D.cpp
+TEST_SRCS = ./tests/Test_MPIWrapper2D.cpp
 SRCS = main.cpp $(MPI_SRCS) $(TEST_SRCS)
 
 # define the C object files 

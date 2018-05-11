@@ -1,5 +1,5 @@
-#ifndef PARA_LATTICE_LATTICE_H
-#define PARA_LATTICE_LATTICE_H
+#ifndef PARASITE_LATTICE_H
+#define PARASITE_LATTICE_H
 
 #include <cassert>
 #include <iostream>
@@ -9,7 +9,7 @@
 #include <vector>
 #include <cstdint>
 
-namespace ParaLattice{
+namespace ParaSite{
 
     //IndexType and GridIndexType should be SIGNED integer types.
     //sizeof(GridIndexType) < sizeof(IndexType)
