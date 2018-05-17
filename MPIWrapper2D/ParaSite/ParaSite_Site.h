@@ -128,8 +128,9 @@ namespace ParaSite{
 
 	template<int DIM>
 	Site<DIM> Site<DIM>::move(const int direction, const int steps) const {
-		this->index_ = this->lattice_->local_mem_move(this->index_, steps, direction);
-		return *this;
+		Site<DIM> x = *this;
+		x.set_index(this->lattice_->local_mem_move(this->index_, steps, direction));
+		return x;
 	}
 
 	template<int DIM>

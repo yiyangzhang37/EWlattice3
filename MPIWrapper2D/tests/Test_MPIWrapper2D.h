@@ -19,6 +19,8 @@ int Test_SendRecv(const int n_rows, const int n_cols);
 int Test_SendUp(const int n_rows, const int n_cols);
 int Test_SendDown(const int n_rows, const int n_cols);
 
+int Test_SerialOperation();
+
 //Lattice class tests
 int Test_Build_Lattice3D(
 				const IndexType size[3], 
@@ -40,6 +42,9 @@ int Test_Set_Get_Coordinates(const int n_rows, const int n_cols);
 
 //MPI-based tests: Field class
 int Test_UpdateHalo(const int n_rows, const int n_cols);
+
+//HDF5 tests
+int Test_HDF5_WriteDataset();
 
 //helper functions -------------------
 /*

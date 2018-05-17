@@ -1,6 +1,8 @@
 #ifndef MPI_WRAPPER_2D
 #define MPI_WRAPPER_2D
 
+#define _SCL_SECURE_NO_WARNINGS
+
 #include "mpi.h"
 #include <algorithm>
 

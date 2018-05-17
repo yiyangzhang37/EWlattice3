@@ -3,6 +3,7 @@
 
 #include "ParaSite_Site.h"
 #include "MPIWrapper2D.h"
+#include "HDF5Wrapper.h"
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -14,25 +15,40 @@
 namespace ParaSite{
 
     using ParallelObject = MPI_Wrapper::Parallel2D;
+    using FileProcessor = HDF5_Wrapper::HDF5Wrapper;
 
     template<class FieldType, int DIM>
     class Field{
     private:
         //allocator
         void allocator();
+		void deallocator();
         
         //make update_halo_table_
+		//This is independent of mat_rows_ and mat_cols_.
         void make_update_halo_table();
+
+        //compute the configurations needed for HDF5 write and save.
+        //This function will take care of the convention transition between this 
+        //Field class and the HDF5 convention.
+        //All the arrrys in this function has length DIM+1.
+        void make_fileio_settings(
+            hsize_t* dataset_size,
+            hsize_t* file_offset,
+            hsize_t* file_block_size,
+            hsize_t* mem_size,
+            hsize_t* mem_offset,
+            hsize_t* mem_block_size) const;
     
         //std::unique_ptr<FieldType> data_ptr_ = nullptr;
-        FieldType* data_ptr_;
+        FieldType* data_ptr_ = nullptr;
 
-        const Lattice<DIM>* lattice_;
+        const Lattice<DIM>* lattice_ = nullptr;
         /*
         stores the shape of the matrix field.
         if it is a vector field, then the components will be stored in mat_rows_,
         while mat_cols will be set to 1.
-        / It will follow row-first convention.
+        /// It will follow row-first convention.
         */
         int components_;
         int mat_rows_;
@@ -61,9 +77,14 @@ namespace ParaSite{
         */
         Field(const Lattice<DIM>& lattice, const int mat_rows);
         Field(const Lattice<DIM>& lattice, const int mat_rows, const int mat_cols);
+		Field(const Lattice<DIM>& lattice, const int mat_rows, 
+			const ParallelObject& parallel_object);
+		Field(const Lattice<DIM>& lattice, const int mat_rows, const int mat_cols,
+			const ParallelObject& parallel_object);
         ~Field();
 
         void assign_parallel_object(const ParallelObject& parallel_object);
+		void reinit(const int mat_rows, const int mat_cols);
 
         //data retrieval and modification
         constexpr int get_component(const int i_row, const int j_col) const{
@@ -79,8 +100,10 @@ namespace ParaSite{
         FieldType& operator()(const IndexType index, const int i_row, const int j_col) const;
         
         //file operations
-        void read(const std::string& file_name) const;
-        void write(const std::string& file_name) const;
+        void read(const std::string& file_name, 
+                const std::string& dataset_name = "") const;
+        void write(const std::string& file_name,
+                const std::string& dataset_name = "") const;
 
         void update_halo() const;
         
@@ -121,22 +144,67 @@ namespace ParaSite{
         make_update_halo_table();
     }
 
+	template<class FieldType, int DIM>
+	Field<FieldType, DIM>::Field(
+		const Lattice<DIM>& lattice,
+		const int mat_rows,
+		const ParallelObject& parallel_object)
+		:
+		Field(lattice, mat_rows, 1, parallel_object)
+	{}
+
+
+	template<class FieldType, int DIM>
+	Field<FieldType, DIM>::Field(
+		const Lattice<DIM>& lattice,
+		const int mat_rows,
+		const int mat_cols,
+		const ParallelObject& parallel_object)
+		:
+		Field(lattice, mat_rows, mat_cols)
+	{
+		this->assign_parallel_object(parallel_object);
+	}
+
     template<class FieldType, int DIM>
     Field<FieldType, DIM>::~Field(){
-        delete[] this->data_ptr_;
+		this->deallocator();
     }
 
     template<class FieldType, int DIM>
     void Field<FieldType, DIM>::allocator(){
         //data_ptr_ = std::unique_ptr<FieldType>(
         //    new FieldType[this->lattice_->get_local_mem_sites() * components_] );
-        data_ptr_ = new FieldType[this->lattice_->get_local_mem_sites() * components_];
+        this->data_ptr_ = new FieldType[this->lattice_->get_local_mem_sites() * components_];
+		return;
     }
+
+	template<class FieldType, int DIM>
+	void Field<FieldType, DIM>::deallocator() {
+		if (this->data_ptr_ != nullptr) {
+			delete[] this->data_ptr_;
+		}
+		return;
+	}
 
     template<class FieldType, int DIM>
     void Field<FieldType, DIM>::assign_parallel_object(const ParallelObject& parallel_object){
         this->parallel_ptr = &parallel_object;
     }
+
+	template<class FieldType, int DIM>
+	void Field<FieldType, DIM>::reinit(const int mat_rows, const int mat_cols) {
+		this->deallocator();
+		assert(mat_rows > 0);
+		assert(mat_cols > 0);
+		this->mat_rows_ = mat_rows;
+		this->mat_cols_ = mat_cols;
+		components_ = this->mat_rows_ * this->mat_cols_;
+		stride_[0] = 1;
+		stride_[1] = this->mat_rows_;
+		allocator();
+		return;
+	}
 
     template<class FieldType, int DIM>
     FieldType& Field<FieldType, DIM>::operator()(const Site<DIM>& site) const {
@@ -168,7 +236,7 @@ namespace ParaSite{
         while(h < next_to_last_halo){
             this->lattice_->local_mem_index2coord(h, halo_coord);
             this->lattice_->get_mapped_coord(halo_coord, mapped_coord);
-            IndexType mapped_index = this->lattice_->local_mem_coord2index(mapped_coord);
+            mapped_index = this->lattice_->local_mem_coord2index(mapped_coord);
             this->lattice_->get_mapped_relative_grid_loc(halo_coord, mapped_rel_grid_loc);
             update_halo_table_[count] = 
                     std::make_tuple(h, mapped_index, mapped_rel_grid_loc[0], mapped_rel_grid_loc[1]);
@@ -215,6 +283,117 @@ namespace ParaSite{
         }
     }
 
+    template<class FieldType, int DIM>
+    void Field<FieldType, DIM>::make_fileio_settings(
+            hsize_t* dataset_size,
+            hsize_t* file_offset,
+            hsize_t* file_block_size,
+            hsize_t* mem_size,
+            hsize_t* mem_offset,
+            hsize_t* mem_block_size) const {
+        // dataset size
+        auto ptr_glb_size = this->lattice_->get_global_size();
+        std::vector<IndexType> lat_size(ptr_glb_size, ptr_glb_size + DIM);
+        // The save order is reversed: (z, y, x, components) 
+        std::reverse_copy(lat_size.begin(), lat_size.end(), dataset_size);
+        dataset_size[DIM] = this->components_;
+
+        // mem_size
+        auto ptr_mem_size = this->lattice_->get_local_mem_size();
+        std::vector<IndexType> vec_mem_size(ptr_mem_size, ptr_mem_size + DIM);
+        std::reverse_copy(vec_mem_size.begin(), vec_mem_size.end(), mem_size);
+        mem_size[DIM] = this->components_;
+
+        //file_offset
+        IndexType tmp_lc[DIM], tmp_gc[DIM];
+        std::fill_n(tmp_lc, DIM, 0);
+        this->lattice_->local_vis_coord_to_global_coord(tmp_lc, tmp_gc);
+        std::reverse_copy(tmp_gc, tmp_gc+DIM, file_offset);
+        file_offset[DIM] = 0;
+
+        //mem_offset
+        std::fill_n(mem_offset, DIM, this->lattice_->get_halo());
+        mem_offset[DIM] = 0;
+
+        //file_block_size (also mem_block_size)
+        auto ptr_vis_size = this->lattice_->get_local_size();
+        std::vector<IndexType> vis_size(ptr_vis_size, ptr_vis_size + DIM);
+        std::reverse_copy(vis_size.begin(), vis_size.end(), file_block_size);
+        file_block_size[DIM] = this->components_;
+
+        std::copy_n(file_block_size, DIM+1, mem_block_size);
+
+        return;
+    }
+
+    template<class FieldType, int DIM>
+    void Field<FieldType, DIM>::write(
+        const std::string& file_name,
+        const std::string& dataset_name) const{
+        FileProcessor fp;
+
+        std::string dst_name;
+        if(dataset_name == "") dst_name = file_name;
+        else dst_name = dataset_name;
+
+        hsize_t dataset_size[DIM+1];
+        hsize_t file_offset[DIM+1];
+        hsize_t file_block_size[DIM+1];
+        hsize_t mem_size[DIM+1];
+        hsize_t mem_offset[DIM+1];
+        hsize_t mem_block_size[DIM+1];
+
+        this->make_fileio_settings(
+            dataset_size,
+            file_offset,
+            file_block_size,
+            mem_size,
+            mem_offset,
+            mem_block_size);
+
+        int msg_send = 1;
+        int msg_recv = 0;
+        const auto& my_rank = this->parallel_ptr->get_world_rank();
+        const auto& world_size = this->parallel_ptr->get_world_size();
+        if(my_rank == 0){
+            fp.SaveSingleDatasetFile<FieldType, DIM+1>(
+                                file_name,
+                                dst_name,
+                                dataset_size,
+                                file_offset,
+                                file_block_size,
+                                mem_size,
+                                mem_offset,
+                                mem_block_size, 
+                                this->data_ptr_,
+                                true);
+            if(world_size > 1)
+                this->parallel_ptr->Send(msg_send, 1);
+        } else{
+            this->parallel_ptr->Receive(msg_recv, my_rank - 1);
+            fp.SaveSingleDatasetFile<FieldType, DIM+1>(
+                                file_name,
+                                dst_name,
+                                dataset_size,
+                                file_offset,
+                                file_block_size,
+                                mem_size,
+                                mem_offset,
+                                mem_block_size, 
+                                this->data_ptr_,
+                                false);
+            if(my_rank < world_size - 1)
+                this->parallel_ptr->Send(msg_send, my_rank + 1);
+        }
+        return;
+    }
+
+    template<class FieldType, int DIM>
+    void Field<FieldType, DIM>::read(
+        const std::string& file_name,
+        const std::string& dataset_name) const{
+        ;
+    }
 
 }
 

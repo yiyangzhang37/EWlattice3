@@ -2,16 +2,26 @@ MPICXX = mpic++
 MPIRUN = mpirun
 
 # define any compile-time flags
-CFLAGS = -std=c++11
+CFLAGS = -std=c++14
+
+# HDF5 
+HDF_INSTALL = /usr/local/Cellar/hdf5/1.10.1_1
+HDF_LIB = $(HDF_INSTALL)/lib
+EXTLIB = -L$(HDF_LIB)
+LIB = -lsz -lz -lm
 
 # define any directories containing header files other than /usr/include
 #
-INCLUDES = -I./ParaSite -I./tests
+INCLUDES = -I./ParaSite -I./tests \
+			-I$(HDF_INSTALL)/include
+
+LIBSHDF = $(EXTLIB) $(HDF_LIB)/libhdf5.a $(HDF_LIB)/libhdf5_hl.a
 
 # define the C source files
 MPI_SRCS = ./ParaSite/MPIWrapper2D.cpp
+HDF5_SRCS = ./ParaSite/HDF5Wrapper.cpp
 TEST_SRCS = ./tests/Test_MPIWrapper2D.cpp
-SRCS = main.cpp $(MPI_SRCS) $(TEST_SRCS)
+SRCS = main.cpp EW_helper.cpp $(MPI_SRCS) $(TEST_SRCS) $(HDF5_SRCS)
 
 # define the C object files 
 #
@@ -31,11 +41,13 @@ all:$(TARGET)
 	@echo Compile success.
 
 $(TARGET): $(OBJS)
-	$(MPICXX) $(CFLAGS) $(INCLUDES) -o $(TARGET) $(OBJS)
+	$(MPICXX) $(CFLAGS) $(INCLUDES) -o $(TARGET) $(OBJS) $(LIBSHDF) $(LIB)
 .cpp.o:
 	$(MPICXX) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+
 run:$(TARGET)
-	$(MPIRUN) -np 6 ./$(TARGET) -r 3 -c 2 > $(OUTPUT) &
+	$(MPIRUN) -np 1 ./$(TARGET)
 run1:$(TARGET)
 	$(MPIRUN) -np 1 ./$(TARGET) -r 1 -c 1 > $(OUTPUT) &
 run4:$(TARGET)

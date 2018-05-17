@@ -4,6 +4,10 @@
 # other files
 *.o
 MPIWrapper2D/*.txt
+eigen/
+
+# HDF5 data files
+*.h5
 
 # User-specific files
 *.suo

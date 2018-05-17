@@ -5,7 +5,7 @@
 #include <set>
 #include <array>
 #include <typeinfo>
-#include <cxxabi.h>
+//#include <cxxabi.h>
 
 int Test_Build_Parallel2D(const int n_rows, const int n_cols) {
 	Parallel2D parallel;
@@ -570,4 +570,49 @@ int Test_UpdateHalo(const int n_rows, const int n_cols){
 	return status;
 }
 
+int Test_HDF5_WriteDataset() {
+	HDF5_Wrapper::HDF5Wrapper h5("test1.h5");
+	int data[100];
+	std::generate_n(data, 100, [n = 0]() mutable {return static_cast<int>(n++);});
+	hsize_t size[2] = {6,6};
+	hsize_t mem_size[2] = {10,10};
+	for(auto b = 0; b < 3; ++b){
+		hsize_t file_offset[2] = {static_cast<hsize_t>(2*b),0};
+		hsize_t mem_offset[2] = {static_cast<hsize_t>(2*b+1),3};
+		hsize_t block_size[2] = {2,6};
+		h5.SaveSingleDatasetFile<int,2>(
+			"test.h5", 
+			"int_data", 
+			size, 
+			file_offset, 
+			block_size,
+			mem_size,
+			mem_offset,
+			block_size, 
+			data, b == 0);
+	}
+	return 1;
+}
 
+int Test_SerialOperation(){
+	Parallel2D parallel(MPI_COMM_WORLD);
+	auto my_rank = parallel.get_world_rank();
+	auto world_size = parallel.get_world_size();
+	int msg_send = 1;
+	int msg_recv = 0;
+	if(my_rank == 0){
+		std::cout << "Job finished. " << my_rank << std::endl;
+		if(world_size > 1)
+			parallel.Send(msg_send, 1);
+	}
+	else{
+		parallel.Receive(msg_recv, my_rank - 1);
+		std::cout << "Job finished. " << my_rank << std::endl;
+
+		if(my_rank < world_size -1){
+			parallel.Send(msg_send, my_rank + 1);
+		}
+
+	}
+	return 1;
+}

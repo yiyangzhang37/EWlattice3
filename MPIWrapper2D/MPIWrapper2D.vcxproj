@@ -18,6 +18,30 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="EW_helper.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="ParaSite\MPIWrapper2D.cpp" />
+    <ClCompile Include="tests\Test_MPIWrapper2D.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="EW_BubbleNucl.h" />
+    <ClInclude Include="EW_functions.h" />
+    <ClInclude Include="EW_helper.h" />
+    <ClInclude Include="EW_Model.h" />
+    <ClInclude Include="EW_Observation.h" />
+    <ClInclude Include="EW_parameter.h" />
+    <ClInclude Include="obs_temp.h" />
+    <ClInclude Include="ParaSite\MPIWrapper2D.h" />
+    <ClInclude Include="ParaSite\ParaSite.h" />
+    <ClInclude Include="ParaSite\ParaSite_Field.h" />
+    <ClInclude Include="ParaSite\ParaSite_Lattice.h" />
+    <ClInclude Include="ParaSite\ParaSite_Site.h" />
+    <ClInclude Include="tests\Test_MPIWrapper2D.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="eigen\Eigen\Eigen" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{4C502B63-6B5C-4457-8D9F-DC09115AB455}</ProjectGuid>
@@ -121,18 +145,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="LATfield3_Field.h" />
-    <ClInclude Include="LATfield3_Lattice.h" />
-    <ClInclude Include="LATfield3_Site.h" />
-    <ClInclude Include="MPIWrapper2D.h" />
-    <ClInclude Include="Test_MPIWrapper2D.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="MPIWrapper2D.cpp" />
-    <ClCompile Include="Test_MPIWrapper2D.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

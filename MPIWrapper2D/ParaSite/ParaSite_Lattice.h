@@ -1,6 +1,8 @@
 #ifndef PARASITE_LATTICE_H
 #define PARASITE_LATTICE_H
 
+#define _SCL_SECURE_NO_WARNINGS
+
 #include <cassert>
 #include <iostream>
 #include <numeric>
@@ -8,6 +10,7 @@
 #include <functional>
 #include <vector>
 #include <cstdint>
+#include "./MPIWrapper2D.h"
 
 namespace ParaSite{
 
@@ -36,7 +39,7 @@ namespace ParaSite{
     /*
     class Lattice:
     stores the necessary information of a DIM-dimensional Cartesian lattice.
-    The indexing convention is [x,y,z,...], with x changes first.
+    The indexing convention is [x,y,z,...], with x changes first. (row-first convention)
     A parallalization is assumed in the last 2 dimensions.
     e.g., for 3D lattice, the y and z dimensions are scattered to a number of MPI processes.
     y will be identified with the MPI row, z will be identified with the MPI column.
@@ -53,6 +56,9 @@ namespace ParaSite{
                 const IndexType halo, 
                 const GridIndexType* node_size = nullptr,
                 const GridIndexType* grid_loc = nullptr); // need test
+		//Lattice(const IndexType* size,
+		//	const IndexType halo,
+		//	const Parallel2D& parallel);
         ~Lattice();
         void init(const IndexType* size, 
                 const IndexType halo, 
