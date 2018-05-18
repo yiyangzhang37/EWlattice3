@@ -2,7 +2,7 @@ MPICXX = mpic++
 MPIRUN = mpirun
 
 # define any compile-time flags
-CFLAGS = -std=c++14
+CFLAGS = -std=c++14 -O2
 
 # HDF5 
 HDF_INSTALL = /usr/local/Cellar/hdf5/1.10.1_1
@@ -12,7 +12,8 @@ LIB = -lsz -lz -lm
 
 # define any directories containing header files other than /usr/include
 #
-INCLUDES = -I./ParaSite -I./tests \
+INCLUDES = -I./ParaSite \
+			-I./tests \
 			-I$(HDF_INSTALL)/include
 
 LIBSHDF = $(EXTLIB) $(HDF_LIB)/libhdf5.a $(HDF_LIB)/libhdf5_hl.a
@@ -20,7 +21,7 @@ LIBSHDF = $(EXTLIB) $(HDF_LIB)/libhdf5.a $(HDF_LIB)/libhdf5_hl.a
 # define the C source files
 MPI_SRCS = ./ParaSite/MPIWrapper2D.cpp
 HDF5_SRCS = ./ParaSite/HDF5Wrapper.cpp
-TEST_SRCS = ./tests/Test_MPIWrapper2D.cpp
+TEST_SRCS = ./tests/tests.cpp
 SRCS = main.cpp EW_helper.cpp $(MPI_SRCS) $(TEST_SRCS) $(HDF5_SRCS)
 
 # define the C object files 

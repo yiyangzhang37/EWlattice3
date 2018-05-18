@@ -1,6 +1,18 @@
-#include "./HDF5Wrapper.h"
+#include "HDF5Wrapper.h"
 
 namespace HDF5_Wrapper{
+
+    //template specification raise a problem when optimization goes to O2.
+
+    template<>
+    hid_t get_H5_datatype<short>(){
+        return H5T_NATIVE_SHORT;
+    }
+
+    template<>
+    hid_t get_H5_datatype<unsigned short>(){
+        return H5T_NATIVE_USHORT;
+    }
 
     template<>
     hid_t get_H5_datatype<int>(){
@@ -10,6 +22,16 @@ namespace HDF5_Wrapper{
     template<>
     hid_t get_H5_datatype<unsigned int>(){
         return H5T_NATIVE_UINT;
+    }
+
+    template<>
+    hid_t get_H5_datatype<long>(){
+        return H5T_NATIVE_LONG;
+    }
+
+    template<>
+    hid_t get_H5_datatype<long long>(){
+        return H5T_NATIVE_LLONG;
     }
 
     template<>
@@ -25,6 +47,11 @@ namespace HDF5_Wrapper{
     template<>
     hid_t get_H5_datatype<char*>(){
         return H5T_C_S1;
+    }
+
+    template<>
+    hid_t get_H5_datatype<char>(){
+        return H5T_NATIVE_CHAR;
     }
 
     HDF5Wrapper::HDF5Wrapper(const std::string& file_name){

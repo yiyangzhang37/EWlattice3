@@ -350,7 +350,7 @@ namespace ParaSite{
             mem_size,
             mem_offset,
             mem_block_size);
-
+        
         int msg_send = 1;
         int msg_recv = 0;
         const auto& my_rank = this->parallel_ptr->get_world_rank();
@@ -392,7 +392,63 @@ namespace ParaSite{
     void Field<FieldType, DIM>::read(
         const std::string& file_name,
         const std::string& dataset_name) const{
-        ;
+        FileProcessor fp;
+
+        std::string dst_name;
+        if(dataset_name == "") dst_name = file_name;
+        else dst_name = dataset_name;
+
+        hsize_t dataset_size[DIM+1];
+        hsize_t file_offset[DIM+1];
+        hsize_t file_block_size[DIM+1];
+        hsize_t mem_size[DIM+1];
+        hsize_t mem_offset[DIM+1];
+        hsize_t mem_block_size[DIM+1];
+
+        this->make_fileio_settings(
+            dataset_size,
+            file_offset,
+            file_block_size,
+            mem_size,
+            mem_offset,
+            mem_block_size);
+
+        int msg_send = 1;
+        int msg_recv = 0;
+        const auto& my_rank = this->parallel_ptr->get_world_rank();
+        const auto& world_size = this->parallel_ptr->get_world_size();
+        if(my_rank == 0){
+            fp.ReadSingleDatasetFile<FieldType, DIM+1>(
+                                file_name,
+                                dst_name,
+                                dataset_size,
+                                file_offset,
+                                file_block_size,
+                                mem_size,
+                                mem_offset,
+                                mem_block_size, 
+                                this->data_ptr_,
+                                true);
+            if(world_size > 1)
+                this->parallel_ptr->Send(msg_send, 1);
+        } else{
+            this->parallel_ptr->Receive(msg_recv, my_rank - 1);
+            fp.ReadSingleDatasetFile<FieldType, DIM+1>(
+                                file_name,
+                                dst_name,
+                                dataset_size,
+                                file_offset,
+                                file_block_size,
+                                mem_size,
+                                mem_offset,
+                                mem_block_size, 
+                                this->data_ptr_,
+                                false);
+            if(my_rank < world_size - 1)
+                this->parallel_ptr->Send(msg_send, my_rank + 1);
+        }
+        this->update_halo();
+        return;
     }
 
 }

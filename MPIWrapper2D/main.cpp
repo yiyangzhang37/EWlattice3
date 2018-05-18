@@ -2,14 +2,16 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include <array>
 #include "EW_parameter.h"
 #include "EW_helper.h"
 
 #include <hdf5_hl.h>
 
+#include "./ParaSite/ParaSite.h"
+
 #include "EW_Model.h"
 #include "EW_Observation.h"
-#include "./ParaSite/HDF5Wrapper.h"
 //#include "EW_BubbleNucl.h"
 
 using namespace MPI_Wrapper;
@@ -33,23 +35,16 @@ int main(int argc, char** argv) {
 				break;
 			}
 		}
-		
-		Parallel2D parallel(MPI_COMM_WORLD);
+		/*
+		Parallel2D parallel(n_rows, n_cols, MPI_COMM_WORLD);
 		GridIndexType node_size[] = { n_rows, n_cols };
 		GridIndexType grid_rank[] = { parallel.get_grid_rank()[0], parallel.get_grid_rank()[1] };
+
 		GridIndexType grid_loc[2];
 		transform_gridrank_to_gridloc(grid_rank, grid_loc);
-		IndexType lat_size[3] = {24,24,24};
+		IndexType lat_size[3] = {12,24,36};
 		Lattice<3> lat(lat_size, 2, node_size, grid_loc);
-		Site<3> x(lat);
-		Field<int, 3> f(lat, 3, parallel);
-		for(x.first(); x.test(); x.next()){
-			f(x, 0) = x.coord_local_vis(0);
-			f(x, 1) = x.coord_local_vis(1);
-			f(x, 2) = x.coord_local_vis(2);
-		}
-		f.update_halo();
-		f.write("f.h5");
+		*/
 		/*
 		ElectroweakEvolution<DIM> bubble(lat, parallel, "test");
 		bubble.RecordParameters();
@@ -63,6 +58,29 @@ int main(int argc, char** argv) {
 		}
 		obs.SaveDataTable("test_datatable.txt");*/
 		
+		//Parallel2D parallel(MPI_COMM_WORLD);
+		//parallel.InitializeGrid(n_rows, n_cols);
+		/*
+		Parallel2D parallel(n_rows, n_cols, MPI_COMM_WORLD);
+		GridIndexType node_size[] = { n_rows, n_cols };
+		GridIndexType grid_rank[] = { parallel.get_grid_rank()[0], parallel.get_grid_rank()[1] };
+
+		GridIndexType grid_loc[2];
+		transform_gridrank_to_gridloc(grid_rank, grid_loc);
+		IndexType lat_size[3] = {12,24,36};
+		Lattice<3> lat(lat_size, 2, node_size, grid_loc);
+		Site<3> x(lat);
+		Field<int, 3> f(lat, 1, parallel);
+		for(x.first(); x.test(); x.next()){
+			f(x, 0) = x.get_index();
+		}
+		f.update_halo();
+		f.write("f.h5");*/
+		SU2vector a;
+		std::cout<<sizeof(a)<<std::endl;
+
+		
+
 		/*
 		HDF5Wrapper h5("test1.h5");
 		int data[100];

@@ -5,15 +5,48 @@
 #include <hdf5_hl.h>
 #include <iostream>
 #include <algorithm>
+#include <typeinfo>
 
 namespace HDF5_Wrapper{
 
     typedef MPI_Wrapper::Parallel2D ParallelObject;
 
+
+    /*
+    Get the correponding HDF5 DataType.
+    */
     template<class Type>
     hid_t get_H5_datatype(){
         return -1;
     }
+    /*
+    Template specification.
+    These declarations are necessary. Otherwise when using O2 optimization,
+    The above template will be automatically inlined,
+    and the specifications will be ignored.
+    */
+    template<>
+    hid_t get_H5_datatype<short>();
+    template<>
+    hid_t get_H5_datatype<unsigned short>();
+    template<>
+    hid_t get_H5_datatype<int>();
+    template<>
+    hid_t get_H5_datatype<unsigned int>();
+    template<>
+    hid_t get_H5_datatype<long>();
+    template<>
+    hid_t get_H5_datatype<long long>();
+    template<>
+    hid_t get_H5_datatype<float>();
+    template<>
+    hid_t get_H5_datatype<double>();
+    template<>
+    hid_t get_H5_datatype<char*>();
+    template<>
+    hid_t get_H5_datatype<char>();
+
+    
 
     class HDF5Wrapper{
     private:
@@ -458,6 +491,7 @@ namespace HDF5_Wrapper{
         if(is_first){
             this->create_file(file_name, H5F_ACC_TRUNC);
             this->create_dataset<Type,DIM>(dataset_name, dataset_size);
+            
         } else{
             this->open_file(file_name, H5F_ACC_RDWR);
             this->open_dataset(dataset_name);

@@ -60,6 +60,9 @@ namespace Electroweak{
     const Real v = 6.0;
     const Real v2 = v*v;
 
+    //Higgs mass
+    const Real mH = 2*std::sqrt(lambda)*v;
+
     //---auxilliary constants---
     const Real UNITY_E = 2.0 / (gp*DX*DT);
     const Real UNITY_F = 1.0 / (g*DX*DT);

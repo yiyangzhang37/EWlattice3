@@ -45,6 +45,7 @@ int Test_UpdateHalo(const int n_rows, const int n_cols);
 
 //HDF5 tests
 int Test_HDF5_WriteDataset();
+int Test_ParaSiteFieldWrite(const int n_rows, const int n_cols);
 
 //helper functions -------------------
 /*

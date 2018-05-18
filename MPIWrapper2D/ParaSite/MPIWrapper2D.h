@@ -5,6 +5,7 @@
 
 #include "mpi.h"
 #include <algorithm>
+#include <iostream>
 
 namespace MPI_Wrapper{
 
@@ -13,6 +14,37 @@ namespace MPI_Wrapper{
 
 	// MPI Finalize wrapper
 	int Parallel_Finalize();
+
+	/*
+	get the corresponding MPI_DataType.
+	*/
+	template<class Type>
+	MPI_Datatype get_MPI_Datatype(){
+		std::cerr << "get_MPI_Datatype: no specilization is used." << std::endl;
+		return MPI_BYTE;
+	}
+
+	/*
+	Declarations of template specification.
+	*/
+	template<>
+	MPI_Datatype get_MPI_Datatype<short>();
+	template<>
+	MPI_Datatype get_MPI_Datatype<unsigned short>();
+	template<>
+	MPI_Datatype get_MPI_Datatype<int>();
+	template<>
+	MPI_Datatype get_MPI_Datatype<unsigned int>();
+	template<>
+	MPI_Datatype get_MPI_Datatype<long>();
+	template<>
+	MPI_Datatype get_MPI_Datatype<long long>();
+	template<>
+	MPI_Datatype get_MPI_Datatype<float>();
+	template<>
+	MPI_Datatype get_MPI_Datatype<double>();
+	template<>
+	MPI_Datatype get_MPI_Datatype<char>();
 
 	/*
 	class Parallel2D:
@@ -27,6 +59,9 @@ namespace MPI_Wrapper{
 		The constructor will take care of all the initialization that is not related to 2D grid structure.
 		*/
 		Parallel2D(MPI_Comm world_comm = MPI_COMM_WORLD);
+		Parallel2D(const int n_rows,
+					const int n_cols,
+					MPI_Comm world_comm = MPI_COMM_WORLD);
 		~Parallel2D();
 
 		//INITIALIZATION ====================================
@@ -72,6 +107,24 @@ namespace MPI_Wrapper{
 		*/
 		template<class Type> int Broadcast_col(Type& message, const int from) const;
 		template<class Type> int Broadcast_col(Type* array, const int len, const int from) const;
+
+		//GATHER ============================================
+		/*
+		Gather data to world_rank == gather_to.
+		len: the size of array for each sender.
+		*/
+		template<class Type> 
+		int Gather(const Type* send_array, const int len,
+					Type* recv_array, const int gather_to) const;
+
+		//SCATTER ===========================================
+		/*
+		Scatter data from world_rank == scatter_from.
+		len: the size of array for each receiver.
+		*/
+		template<class Type>
+		int Scatter(const Type* send_array, const int len,
+					Type* recv_array, const int scatter_from) const;
 		
 		//REDUCE ============================================
 		/*
@@ -308,13 +361,32 @@ namespace MPI_Wrapper{
 	}
 
 	template<class Type>
+	int Parallel2D::Gather(const Type* send_array, const int len,
+					Type* recv_array, const int gather_to) const {
+		return MPI_Gather(send_array, len, 
+						get_MPI_Datatype<Type>(), 
+						recv_array, len,
+						get_MPI_Datatype<Type>(), gather_to, this->world_comm_);
+	}
+
+	template<class Type>
+	int Parallel2D::Scatter(const Type* send_array, const int len,
+					Type* recv_array, const int scatter_from) const {
+		return MPI_Scatter(send_array, len, 
+						get_MPI_Datatype<Type>(),
+						recv_array, len, 
+						get_MPI_Datatype<Type>(), 
+						scatter_from, this->world_comm_);
+	}
+
+	template<class Type>
 	int Parallel2D::_allreduce_(Type* array, 
 								const int len, 
 								const MPI_Op& op, 
 								const MPI_Comm& comm) const {
 		auto* rec_buffer = new Type[len];
 		auto status = MPI_Allreduce(array, rec_buffer, 
-			len, MPI_DATATYPE_NULL, op, comm); 
+			len, get_MPI_Datatype<Type>(), op, comm); 
 		auto rec_end = rec_buffer + len;
 		std::copy(rec_buffer, rec_end, array);
 		delete[] rec_buffer;
@@ -327,7 +399,7 @@ namespace MPI_Wrapper{
 								const MPI_Comm& comm) const {
 		Type rec_buffer[LEN];
 		auto status = MPI_Allreduce(array, rec_buffer, LEN, 
-			MPI_DATATYPE_NULL, op, comm);
+			get_MPI_Datatype<Type>(), op, comm);
 		auto rec_end = rec_buffer + LEN;
 		std::copy(rec_buffer, rec_end, array);
 		return status;

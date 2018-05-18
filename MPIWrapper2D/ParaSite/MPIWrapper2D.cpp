@@ -13,6 +13,43 @@ namespace MPI_Wrapper{
         return MPI_Finalize();
     }
 
+	template<>
+	MPI_Datatype get_MPI_Datatype<short>(){
+		return MPI_SHORT;
+	}
+	template<>
+	MPI_Datatype get_MPI_Datatype<unsigned short>(){
+		return MPI_UNSIGNED_SHORT;
+	}
+	template<>
+	MPI_Datatype get_MPI_Datatype<int>(){
+		return MPI_INT;
+	}
+	template<>
+	MPI_Datatype get_MPI_Datatype<unsigned int>(){
+		return MPI_UNSIGNED;
+	}
+	template<>
+	MPI_Datatype get_MPI_Datatype<long>(){
+		return MPI_LONG;
+	}
+	template<>
+	MPI_Datatype get_MPI_Datatype<long long>(){
+		return MPI_LONG_LONG;
+	}
+	template<>
+	MPI_Datatype get_MPI_Datatype<float>(){
+		return MPI_FLOAT;
+	}
+	template<>
+	MPI_Datatype get_MPI_Datatype<double>(){
+		return MPI_DOUBLE;
+	}
+	template<>
+	MPI_Datatype get_MPI_Datatype<char>(){
+		return MPI_CHAR;
+	}
+
 
     Parallel2D::Parallel2D(MPI_Comm world_comm)
                             :
@@ -33,6 +70,15 @@ namespace MPI_Wrapper{
         if( this->world_rank_ == this->root_ ) this->is_root_ = true;
         else this->is_root_ = false; 
     }
+
+	Parallel2D::Parallel2D(const int n_rows,
+							const int n_cols,
+							MPI_Comm world_comm)
+		:
+		Parallel2D(world_comm){
+		this->InitializeGrid(n_rows, n_cols);
+	}
+
 
     Parallel2D::~Parallel2D(){
         MPI_Group_free(&(this->world_group_));
@@ -96,6 +142,8 @@ namespace MPI_Wrapper{
 		return rank_grid2world(advanced_rank);
 	}
 
+//No longer needed once we defined get_MPI_datatype().
+/*
     // _allreduce_ specializations
     template<>
 	int Parallel2D::_allreduce_<unsigned int>(unsigned int* array, 
@@ -152,4 +200,5 @@ namespace MPI_Wrapper{
 		delete[] rec_buffer;
 		return status;
 	}
+*/
 }

@@ -1,4 +1,4 @@
-#include "Test_MPIWrapper2D.h"
+#include "tests.h"
 #include <random>
 #include <functional>
 #include <cmath>
@@ -614,5 +614,27 @@ int Test_SerialOperation(){
 		}
 
 	}
+	return 1;
+}
+
+int Test_ParaSiteFieldWrite(const int n_rows, const int n_cols){
+	Parallel2D parallel(MPI_COMM_WORLD);
+	parallel.InitializeGrid(n_rows, n_cols);
+	GridIndexType node_size[] = { n_rows, n_cols };
+	GridIndexType grid_rank[] = { parallel.get_grid_rank()[0], parallel.get_grid_rank()[1] };
+
+	GridIndexType grid_loc[2];
+	transform_gridrank_to_gridloc(grid_rank, grid_loc);
+	IndexType lat_size[3] = {12,24,36};
+	Lattice<3> lat(lat_size, 2, node_size, grid_loc);
+	Site<3> x(lat);
+	Field<int, 3> f(lat, 3, parallel);
+	for(x.first(); x.test(); x.next()){
+		f(x, 0) = x.coord(0);
+		f(x, 1) = x.coord(1);
+		f(x, 2) = x.coord(2);
+	}
+	f.update_halo();
+	f.write("f.h5");
 	return 1;
 }

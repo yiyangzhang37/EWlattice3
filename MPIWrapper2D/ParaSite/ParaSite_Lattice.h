@@ -18,6 +18,7 @@ namespace ParaSite{
     //sizeof(GridIndexType) < sizeof(IndexType)
     typedef int64_t IndexType;
     typedef int32_t GridIndexType;
+    typedef double DistanceType;
 
     /*
     helper function to transform Parallel2D grid_rank to grid_loc in this class.
@@ -202,7 +203,7 @@ namespace ParaSite{
 		constexpr IndexType get_local_halo_next_to_last() const;
 
         /*
-        relate the halo site coordinate with the local visible coordinate being mapped.
+        relate the halo site coordinate with the local visible coordinate being mapped (mapped_coord).
         All the coordinates are local_mem_coord.
         */
         IndexType get_mapped_coord(
@@ -216,6 +217,14 @@ namespace ParaSite{
         GridIndexType* get_mapped_relative_grid_loc(
             const IndexType* halo_coord, GridIndexType rel_grid_loc[2]) const;    
 
+
+        /*
+        compute the lattice global distance between two global coordinates.
+        assuming global periodic boundary.
+        */
+        DistanceType global_lat_distance(const IndexType* gc1, const IndexType* gc2) const;
+        DistanceType global_lat_distance(const IndexType gidx1, const IndexType gidx2) const;
+        
 
         //miscellaneous
         constexpr int get_dim() const {return DIM;}
@@ -749,6 +758,33 @@ namespace ParaSite{
             rel_grid_loc[1] = 0;
         }
         return rel_grid_loc;
+    }
+
+    template<int DIM>
+    DistanceType Lattice<DIM>::global_lat_distance(
+        const IndexType* gc1, const IndexType* gc2) const {
+        IndexType np_dspl[DIM]; //non-periodic displacement
+        IndexType bd_dspl[DIM]; //displacement crossing border
+        IndexType dspl[DIM];
+        std::transform(gc1, gc1 + DIM, gc2, 
+                    np_dspl,
+                    [](auto x1, auto x2) {return std::abs(x2-x1); });
+        std::transform(np_dspl, np_dspl + DIM, this->global_size_, 
+                    bd_dspl,
+                    [](auto x1, auto x2) {return std::abs(x2-x1); });
+        std::transform(np_dspl, np_dspl + DIM, bd_dspl, 
+                    dspl, 
+                    [](auto x1, auto x2) {return x1 < x2 ? x1 : x2; });
+        return sqrt( std::inner_product(dspl, dspl + DIM, dspl, 0) );
+    }
+
+    template<int DIM>
+    DistanceType Lattice<DIM>::global_lat_distance(
+        const IndexType gidx1, const IndexType gidx2) const {
+        IndexType gc1[DIM], gc2[DIM];
+        this->global_index2coord(gidx1, gc1);
+        this->global_index2coord(gidx2, gc2);
+        return global_lat_distance(gc1, gc2);
     }
 
 }
