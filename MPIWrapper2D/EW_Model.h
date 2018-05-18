@@ -1,6 +1,10 @@
 #ifndef EWMODEL_H
 #define EWMODEL_H
 
+#include <chrono>
+#include <ctime>
+#include <sstream>
+
 #include "./ParaSite/ParaSite.h"
 
 #include "EW_parameter.h"
@@ -114,7 +118,11 @@ namespace Electroweak{
 
 	template<int DIM>
 	void ElectroweakEvolution<DIM>::RecordParameters() {
+		auto time = std::time(nullptr);
+		std::stringstream ss;
+    	ss << std::put_time(std::localtime(&time), "%Y-%m-%d %X");
 		param_.add("ID", this->id_);
+		param_.add("Time", ss.str());
 		param_.add("Dimension", DIM);
 		param_.add("HaloLayer", halo);
 		param_.add("LatticeSize(X)", nSize[0]);
@@ -338,16 +346,22 @@ namespace Electroweak{
 		Site<DIM> x(this->lat_);
 		for (auto t = 0; t < CYCLE; ++t) {
 			for (x.first(); x.test(); x.next()) {
-				phi_(x, t) = phi_(x, t) = SU2vector(0, 0);
-				pi_(x, t) = pi_(x, t) = SU2vector(0, 0);
+				phi_(x, t) = SU2vector(0, 0);
+				pi_(x, t) = SU2vector(0, 0);
 				for (auto i = 0; i < DIM; ++i) {
-					U_(x, i, t) = U_(x, i, t) = Ident;
-					F_(x, i, t) = F_(x, i, t) = UNITY_F * Ident;
-					V_(x, i, t) = V_(x, i, t) = Cmplx(1, 0);
-					E_(x, i, t) = E_(x, i, t) = UNITY_E * Cmplx(1, 0);
+					U_(x, i, t) = Ident;
+					F_(x, i, t) = UNITY_F * Ident;
+					V_(x, i, t) = Cmplx(1, 0);
+					E_(x, i, t) = UNITY_E * Cmplx(1, 0);
 				}
 			}
 		}
+		this->phi_.update_halo();
+		this->pi_.update_halo();
+		this->U_.update_halo();
+		this->F_.update_halo();
+		this->V_.update_halo();
+		this->E_.update_halo();
 		return;
 	}
 

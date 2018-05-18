@@ -9,7 +9,7 @@ namespace Electroweak{
 
     using namespace ParaSite;
 
-	enum ObserverFlags {
+	enum ObserverFlags : int {
 		OBS_TotalEnergy = 1 << 0,
 		OBS_CSNumber = 1 << 1,
 		OBS_MagneticEnergy = 1 << 2,
@@ -23,7 +23,9 @@ namespace Electroweak{
 		OBS_EnergyGradient = 1 << 10,
 		OBS_EnergyPotential = 1 << 11,
 		OBS_EnergyU1 = 1 << 12,
-		OBS_EnergySU2 = 1 << 13
+		OBS_EnergySU2 = 1 << 13,
+		OBS_EnergyAllParts = OBS_TotalEnergy | OBS_EnergyKinetic | OBS_EnergyGradient
+						| OBS_EnergyPotential | OBS_EnergyU1 | OBS_EnergySU2
 	};
 	
 	template<int DIM>
@@ -37,9 +39,9 @@ namespace Electroweak{
 		density_data_flags should be a subset of data_table_flags.
 		*/
 		void SetObservables(
-			const ObserverFlags data_table_flags,
-			const ObserverFlags density_data_flags);
-		void SetDensityDataSaveFrequency(const int freq, const int starting_time_step);
+			const int data_table_flags,
+			const int density_data_flags);
+		void SetDensityDataSaveFrequency(const int freq, const int starting_time_step); //TODO
 
 		void Measure();
 
@@ -64,6 +66,10 @@ namespace Electroweak{
 			this->data_table_.save_table(file_name);
 		}
 
+		void SaveDensityData(const std::string& file_name, 
+							const int freq = 1, 
+							const int starting_time_step = 0) const;
+
     protected:
 		const ElectroweakEvolution<DIM>& evo_;
 		const Field< SU2vector, DIM >& phi_;
@@ -74,8 +80,8 @@ namespace Electroweak{
 		const Field< U1matrix, DIM>& E_;
 		const Parallel2D& parallel_;
 
-		ObserverFlags data_table_flags_;
-		ObserverFlags density_data_flags_;
+		int data_table_flags_;
+		int density_data_flags_;
 
 		/*total quantities*/
 		std::vector<std::string> data_table_names_;
@@ -88,7 +94,7 @@ namespace Electroweak{
 		void init_data_table();
 		void init_density_data();
 		void init_name_vector(
-			const ObserverFlags flags,
+			const int flags,
 			std::vector<std::string>& names) const;
 		int find_index(const std::vector<std::string>& names, const std::string& key) const;
 
@@ -126,8 +132,8 @@ namespace Electroweak{
 
 	template<int DIM>
 	void ElectroweakObserver<DIM>::SetObservables(
-		const ObserverFlags data_table_flags,
-		const ObserverFlags density_data_flags) {
+		const int data_table_flags,
+		const int density_data_flags) {
 		this->data_table_flags_ = data_table_flags;
 		this->density_data_flags_ = density_data_flags;
 		init_data_table();
@@ -154,7 +160,7 @@ namespace Electroweak{
 
 	template<int DIM>
 	void ElectroweakObserver<DIM>::init_name_vector(
-		const ObserverFlags flags,
+		const int flags,
 		std::vector<std::string>& names) const {
 		names.clear();
 		if (flags & OBS_TotalEnergy) {
@@ -224,8 +230,8 @@ namespace Electroweak{
 		auto dt_idx_kinetic = find_index(this->data_table_names_, "E_Kinetic");
 		auto dt_idx_grad = find_index(this->data_table_names_, "E_Grad");
 		auto dt_idx_pot = find_index(this->data_table_names_, "E_Pot");
-		auto dt_idx_u1 = find_index(this->data_table_names_, "E_Pot");
-		auto dt_idx_su2 = find_index(this->data_table_names_, "E_Pot");
+		auto dt_idx_u1 = find_index(this->data_table_names_, "E_U1");
+		auto dt_idx_su2 = find_index(this->data_table_names_, "E_SU2");
 		auto den_idx_total_energy = find_index(this->density_names_, "TotalEnergy");
 		
 		auto total_energy = 0.0;
@@ -234,16 +240,19 @@ namespace Electroweak{
 		auto total_e_pot = 0.0;
 		auto total_e_u1 = 0.0;
 		auto total_e_su2 = 0.0;
+
 		for (x.first(); x.test(); x.next()) {
-			// ###NOT including sites on boundaries###
 			if (this->evo_.is_boundary(x)) {
-				if (den_idx_total_energy != -1) this->density_data_(x, den_idx_total_energy) = 0.0;
+				if (den_idx_total_energy != -1) {
+					this->density_data_(x, den_idx_total_energy) = 0.0;
+				}
 			}
 			else {
 				Real eKinetic = 0, eGrad = 0, ePotential = 0, eU1 = 0;
 				Cmplx eSU2(0, 0);
 				eKinetic = (0.5*(pi_(x, nowTime) + pi_(x, nextTime))).squaredNorm();
 				ePotential = Vphi(x, phi_, nowTime);
+				
 				for (int i = 0; i<DIM; ++i) {
 					eGrad += 1.0 / DX2*(U_(x, i, nowTime)*V_(x, i, nowTime)*phi_(x + i, nowTime) - phi_(x, nowTime)).squaredNorm();
 					eU1 += 4.0 / (pow(DT*DX*gp, 2)) * (1.0 - 1.0 / UNITY_E * 0.5*(E_(x, i, nowTime) + E_(x, i, nextTime)).real());
@@ -253,8 +262,10 @@ namespace Electroweak{
 						eSU2 += 1.0 / (DX4*pow(g, 2)) * (2.0 - Plaquette(x, U_, i, j, nowTime).trace());
 					}
 				}
-				if (den_idx_total_energy != -1) 
-					this->density_data_(x, den_idx_total_energy) = static_cast<RealSave> (DX3 * (eKinetic + eGrad + ePotential + eU1 + eSU2.real()));
+				if (den_idx_total_energy != -1) {
+					this->density_data_(x, den_idx_total_energy) = 
+						static_cast<RealSave> ((eKinetic + eGrad + ePotential + eU1 + eSU2.real()));
+				}
 				total_energy += (eKinetic + ePotential + eGrad + eU1 + eSU2.real())*DX3;
 				total_e_kinetic += eKinetic * DX3;
 				total_e_grad += eGrad * DX3;
@@ -291,6 +302,7 @@ namespace Electroweak{
 
 		const auto pre_factor = FermiFamily / (32.0*PI*PI) * DX3;
 		const auto g3 = 2.0*g*g*g / 3.0;
+
 		for (x.first(); x.test(); x.next()) {
 			Real tempSave = 0.0;
 			if (this->evo_.is_boundary(x)) {
@@ -588,6 +600,17 @@ namespace Electroweak{
 			//somehow there needs to be a minus sign.
 			return hw.real();
 		}
+	}
+
+	template<int DIM>
+	void ElectroweakObserver<DIM>::SaveDensityData(const std::string& file_name, 
+							const int freq, 
+							const int starting_time_step) const {
+		auto t = this->evo_.get_time_step();
+		if( ((t - starting_time_step) >= 0) && ((t - starting_time_step)%freq ==0) ){
+			this->density_data_.write(file_name);
+		}
+		return;
 	}
 
 

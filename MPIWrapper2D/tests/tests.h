@@ -1,5 +1,5 @@
-#ifndef TEST_MPI_WRAPPER_2D
-#define TEST_MPI_WRAPPER_2D
+#ifndef TEST_PARASITE_H
+#define TEST_PARASITE_H
 
 #include "../ParaSite/ParaSite.h"
 #include <iostream>

@@ -38,7 +38,7 @@ namespace Electroweak{
     constexpr int DIM = 3;
     constexpr int SU2DIM = 3;
     constexpr int CYCLE = 2;
-    constexpr int halo = 0;
+    constexpr int halo = 2;
 
     const ParaSite::IndexType N = std::stoi(ReadConfigIni("EWLAT_CUBE_NSIZE"));
     const ParaSite::IndexType nSize[DIM] = { N,N,N }; //evolution only works for Nx=Ny=Nz yet.

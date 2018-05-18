@@ -194,9 +194,9 @@ namespace ParaSite{
 
 	template<class FieldType, int DIM>
 	void Field<FieldType, DIM>::reinit(const int mat_rows, const int mat_cols) {
-		this->deallocator();
 		assert(mat_rows > 0);
 		assert(mat_cols > 0);
+        this->deallocator();
 		this->mat_rows_ = mat_rows;
 		this->mat_cols_ = mat_cols;
 		components_ = this->mat_rows_ * this->mat_cols_;

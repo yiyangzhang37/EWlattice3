@@ -6,7 +6,7 @@
 #include "EW_parameter.h"
 #include "EW_functions.h"
 
-#include "EM_Model.h"
+#include "EW_Model.h"
 #include "EW_Observation.h"
 
 #endif

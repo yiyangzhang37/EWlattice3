@@ -58,12 +58,22 @@ namespace ParaSite{
 		Since the Site::index_ is not defined beyond the local_mem_region.
 		Note: it is allowed to move to the halo layers.
 		*/
-        Site& move(const int direction, const int steps);
+		/*
+		especially in for(x.first(); x.test(); x.next()) loops,
+		the const methods should be called.
+		*/
 		Site move(const int direction, const int steps) const;
         Site operator+(const int direction) const;
         Site operator-(const int direction) const;
-        Site& operator+(const int direction);
-        Site& operator-(const int direction);
+
+		/*
+		emplace move operations.
+		operator> corresponds to operator+.
+		operator< corresponds to operator-.
+		*/
+		Site& emplace_move(const int direction, const int steps);
+        Site& operator>(const int direction);
+        Site& operator<(const int direction);
 
 		void set_index(const IndexType new_index) {
 			this->index_ = new_index;
@@ -121,7 +131,7 @@ namespace ParaSite{
 	}
 
 	template<int DIM>
-	Site<DIM>& Site<DIM>::move(const int direction, const int steps){
+	Site<DIM>& Site<DIM>::emplace_move(const int direction, const int steps){
 		this->index_ = this->lattice_->local_mem_move(this->index_, steps, direction);
 		return *this;
 	}
@@ -139,8 +149,8 @@ namespace ParaSite{
 	}
 
 	template<int DIM>
-	Site<DIM>& Site<DIM>::operator+(const int direction) {
-		return this->move(direction, 1);
+	Site<DIM>& Site<DIM>::operator>(const int direction) {
+		return this->emplace_move(direction, 1);
 	}
 
 	template<int DIM>
@@ -149,8 +159,8 @@ namespace ParaSite{
 	}
 
 	template<int DIM>
-	Site<DIM>& Site<DIM>::operator-(const int direction) {
-		return this->move(direction, -1);
+	Site<DIM>& Site<DIM>::operator<(const int direction) {
+		return this->emplace_move(direction, -1);
 	}
 
 	template<int DIM>
