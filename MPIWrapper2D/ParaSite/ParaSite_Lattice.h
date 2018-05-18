@@ -16,7 +16,7 @@ namespace ParaSite{
 
     //IndexType and GridIndexType should be SIGNED integer types.
     //sizeof(GridIndexType) < sizeof(IndexType)
-    typedef int64_t IndexType;
+    typedef int32_t IndexType;
     typedef int32_t GridIndexType;
     typedef double DistanceType;
 
@@ -210,9 +210,9 @@ namespace ParaSite{
            const IndexType halo_coord, const int direction) const;
         IndexType* get_mapped_coord(
             const IndexType* halo_coord, IndexType* mapped_coord) const;
-        GridIndexType* get_mapped_grid_loc(
+        GridIndexType* get_mapped_grid_loc_from_halo_coord(
             const IndexType* halo_coord, GridIndexType grid_loc[2]) const;
-        GridIndexType* get_mapped_grid_loc(
+        GridIndexType* get_mapped_grid_loc_from_rel_grid_loc(
             const GridIndexType rel_grid_loc[2], GridIndexType grid_loc[2]) const;
         GridIndexType* get_mapped_relative_grid_loc(
             const IndexType* halo_coord, GridIndexType rel_grid_loc[2]) const;    
@@ -720,15 +720,15 @@ namespace ParaSite{
     }
 
     template<int DIM>
-    GridIndexType* Lattice<DIM>::get_mapped_grid_loc(
+    GridIndexType* Lattice<DIM>::get_mapped_grid_loc_from_halo_coord(
         const IndexType* halo_coord, GridIndexType grid_loc[2]) const{
         GridIndexType rel_grid_loc[2];
         this->get_mapped_relative_grid_loc(halo_coord, rel_grid_loc);
-        return get_mapped_grid_loc(rel_grid_loc, grid_loc);
+        return get_mapped_grid_loc_from_rel_grid_loc(rel_grid_loc, grid_loc);
     }
 
     template<int DIM>
-    GridIndexType* Lattice<DIM>::get_mapped_grid_loc(
+    GridIndexType* Lattice<DIM>::get_mapped_grid_loc_from_rel_grid_loc(
         const GridIndexType rel_grid_loc[2], GridIndexType grid_loc[2]) const{
         grid_loc[0] = ( (this->grid_loc_[0] + rel_grid_loc[0]) % this->node_size_[0]
                         + this->node_size_[0] ) % this->node_size_[0];
@@ -785,6 +785,21 @@ namespace ParaSite{
         this->global_index2coord(gidx1, gc1);
         this->global_index2coord(gidx2, gc2);
         return global_lat_distance(gc1, gc2);
+    }
+
+
+
+    // Non-member functions
+    template<int DIM>
+    IndexType* local_vis_coord_to_global_coord(
+            const IndexType* local_vis_coord, 
+            IndexType* global_coord,
+            const GridIndexType* grid_loc,
+            const IndexType* local_size) {
+        global_coord[DIM - 2] = local_vis_coord[DIM - 2] + grid_loc[0] * local_size[DIM - 2];
+        global_coord[DIM - 1] = local_vis_coord[DIM - 1] + grid_loc[1] * local_size[DIM - 1];
+        std::copy_n(local_vis_coord, DIM - 2, global_coord);
+        return global_coord;
     }
 
 }

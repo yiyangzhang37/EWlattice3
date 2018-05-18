@@ -273,8 +273,8 @@ namespace ParaSite{
                 GridIndexType send_to_grid_loc[2], send_to_grid_rank[2];
                 GridIndexType rel_grid_loc[] = {std::get<2>(t), std::get<3>(t)};
                 GridIndexType rel_opp_grid_loc[] = {-std::get<2>(t), -std::get<3>(t)};
-                this->lattice_->get_mapped_grid_loc(rel_grid_loc, recv_from_grid_loc);
-                this->lattice_->get_mapped_grid_loc(rel_opp_grid_loc, send_to_grid_loc);
+                this->lattice_->get_mapped_grid_loc_from_rel_grid_loc(rel_grid_loc, recv_from_grid_loc);
+                this->lattice_->get_mapped_grid_loc_from_rel_grid_loc(rel_opp_grid_loc, send_to_grid_loc);
                 transform_gridloc_to_gridrank(recv_from_grid_loc, recv_from_grid_rank);
                 transform_gridloc_to_gridrank(send_to_grid_loc, send_to_grid_rank);
                 this->parallel_ptr->Send(send_start, components_, send_to_grid_rank);

@@ -49,7 +49,8 @@ namespace MPI_Wrapper{
 	/*
 	class Parallel2D:
 	a class wrapper of MPI, arrange the processes in a 2D grid.
-	The indexing convention is [x,y], with y changes first.
+	The indexing convention is [x (row_num),y (col_num)], with y changes first.
+	But, grid_rank[0] is y (col_num); grid_rank[1] is x (row_num).
 	*/
 	class Parallel2D {
 	public:
@@ -254,12 +255,22 @@ namespace MPI_Wrapper{
 		transform between world rank and 2D grid rank.
 		*/
 		int* rank_world2grid(const int world_rank, int* grid_rank) const {
-			grid_rank[0] = world_rank % this->grid_size_[1];
-			grid_rank[1] = world_rank / this->grid_size_[1];
+			grid_rank[0] = world_rank % this->stride_[0];
+			grid_rank[1] = world_rank / this->stride_[0];
 			return grid_rank;
 		}
 		int rank_grid2world(const int* grid_rank) const {
 			return grid_rank[0] * this->stride_[1] + grid_rank[1] * this->stride_[0];
+		}
+
+		int* world_rank_to_rowcol(const int world_rank, int* row_col) const {
+			row_col[0] = world_rank / this->stride_[0];
+			row_col[1] = world_rank % this->stride_[0];
+			return row_col;
+		}
+
+		int rowcol_to_world_rank(const int* rowcol) const {
+			return rowcol[0] * this->stride_[0] + rowcol[1] * this->stride_[1];
 		}
 		//MISCELLANEOUS =====================================
 		int get_world_size() const { return this->world_size_;}

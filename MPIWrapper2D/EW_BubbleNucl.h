@@ -40,6 +40,7 @@ namespace BubbleNucleation{
 		/*nulceation*/
 		/*
 		The overall control of random bubble nucleation.
+		The update_halo() will be called at the end of this function for phi_ field.
 		Return: new bubble count.
 		*/
         int RandomBubbleNucleation() const;
@@ -63,9 +64,9 @@ namespace BubbleNucleation{
 		Whether it's in the symmetric region, or some of them are overlapped.
 		*/
 		void VerifyPickedPositions(
-			const std::vector<char>& higgs_phase_info,
-			const std::vector<Real>& preselected_positions,
-			std::vector<Real>& picked_positions) const;
+			const std::vector<char>& sorted_higgs_phase_info,
+			const std::vector<IndexType>& preselected_positions,
+			std::vector<IndexType>& picked_positions) const;
 		
 		/*
 		Nucleate one bubble with the bubble center specified with global_coord,
@@ -73,6 +74,14 @@ namespace BubbleNucleation{
 		*/
 		void NucleateOneBubble_Exp(const IndexType global_index, const SU2vector& phi_hat) const;
 		
+		/*
+		Wrapper
+		*/
+		void NucleateOneBubble(const IndexType* global_coord, const SU2vector& phi_hat) const{
+			this->NucleateOneBubble_Exp(
+					this->lat_.global_coord2index(global_coord, phi_hat));
+		}
+
 		/*
 		Given a global index, get the info about that site:
 		a list of all the sites (global index) within the bubble.
@@ -254,25 +263,67 @@ namespace BubbleNucleation{
 	template<int DIM>
 	void BubbleNucleation<DIM>::ReorderHiggsPhaseInfo(
 		std::vector<char>& higgs_phase_info) const {
-		;//todo
+		auto local_sites_per_process = this->lat_.get_visible_local_sites();
+		auto local_size = this->lat_.get_local_size();
+		auto total_size = higgs_phase_info.size();
+		std::vector<IndexType> gidx_list(total_size);
+		for(auto i = 0; i < total_size; ++i){
+			//get grid_loc
+			GridIndexType grid_loc[2];
+			auto world_rank = i / local_sites_per_process;
+			this->parallel_.world_rank_to_rowcol(world_rank, rowcol);
+			
+			//get global index
+			auto local_vis_idx = i % local_sites_per_process;
+			IndexType lv_coord[DIM], g_coord[DIM];
+			this->lat_.local_vis_index2coord(local_vis_idx, lv_coord);
+			local_vis_coord_to_global_coord(lv_coord, g_coord, grid_loc, local_size);
+			auto global_idx = this->global_coord2index(g_coord);
+
+			gidx_list[i] = global_idx;
+		}
+		//sort higgs_phase_info by gidx_list
+		std::vector<char> sorted_higgs_info(total_size);
+		for(auto i : gidx_list){
+			sorted_higgs_info[gidx_list[i]] = higgs_phase_info[i];
+		}
+		higgs_phase_info = sorted_higgs_info;
+		return;
 	}
 
 	template<int DIM>
-	void VerifyPickedPositions(
-			const std::vector<char>& higgs_phase_info,
-			const std::vector<Real>& preselected_positions,
-			std::vector<Real>& picked_positions) const {
-		//
-
+	void BubbleNucleation<DIM>::VerifyPickedPositions(
+			const std::vector<char>& sorted_higgs_phase_info,
+			const std::vector<IndexType>& preselected_positions,
+			std::vector<IndexType>& picked_positions) const {
+		picked_positions.clear();
+		std::vector<IndexType> region_list;
+		//The modification of higgs_info will be done on a copy.
+		auto cp_sorted_info = sorted_higgs_phase_info;
+		for(auto gidx : preselected_positions){
+			this->GetBubbleRegion(gidx, NUCLEATION_RADIUS_SITE, region_list);
+			bool can_nucleate = true;
+			for(auto s : region_list){
+				if(cp_sorted_info[s] == 1){
+					can_nucleate = false;
+					break;
+				}
+			}
+			if(can_nuclate){
+				picked_positions.push_back(gidx);
+				for(auto s : region_list){
+					cp_sorted_info[s] = 1;
+				}
+			}
+		}
+		return;
 	}
 
 	template<int DIM>
-	void NucleateOneBubble_Exp(
+	void BubbleNucleation<DIM>::NucleateOneBubble_Exp(
 		const int nowTime,
 		const IndexType global_index, 
 		const SU2vector& phi_hat) const {
-		IndexType center_coord[DIM];
-		this->lat_.global_index2coord(global_index, center_coord);
 
 		std::vector<IndexType> region_list;
 		this->GetBubbleRegion(global_index, NUCLEATION_RADIUS_SITE, region_list);
@@ -295,7 +346,7 @@ namespace BubbleNucleation{
 	}
 
 	template<int DIM>
-	void GetBubbleRegion(
+	void BubbleNucleation<DIM>::GetBubbleRegion(
 		const IndexType global_index, 
 		const int bubble_lat_radius,
 		std::vector< IndexType >& region_list) const {
@@ -356,10 +407,13 @@ namespace BubbleNucleation{
 
 	template<int DIM>
 	void BubbleNucleation<DIM>::OneBubbleTest() {
-		if (_time_step == 0) {
-			int c[DIM] = { nSize[0] / 2 , nSize[1] / 2 , nSize[1] / 2 };
-			x.setCoord(c);
-			NucleateRegion_Exp(x, NUCLEATION_RADIUS_SITE, 1);
+		if (this->time_step_ == 0) {
+			auto T = (this->time_step_) % CYCLE;
+			SU2vector phi_hat;
+			this->GenerateRandomHiggsDirection(phi_hat);
+			IndexType global_coord[] = {nSize[0] / 2, nSize[1] / 2, nSize[2] / 2};
+			this->NucleateOneBubble(global_coord, phi_hat);
+			this->phi_.update_halo();
 		}
 		return;
 	}
