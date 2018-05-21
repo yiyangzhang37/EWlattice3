@@ -5,7 +5,6 @@
 *.o
 *.out
 ./*.txt
-eigen/
 compare_data/
 
 # HDF5 data files
