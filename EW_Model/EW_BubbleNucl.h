@@ -7,7 +7,7 @@
 namespace Electroweak{
 	//extend the ObserverFlags
 	namespace ObserverFlags {
-		FlagType OBS_NewBubbleCount = 1 << 21; //"NewBubbleCount"
+		const FlagType OBS_NewBubbleCount = 1 << 21; //"NewBubbleCount"
 	}
 }
 
@@ -222,7 +222,7 @@ namespace EW_BubbleNucleation{
 			}
 		}
 		this->parallel_.Barrier();
-		this->parallel_.Broadcast(all_broken_phase, this->parallel_.root());
+		this->parallel_.Broadcast(all_broken_phase, this->parallel_.get_root());
 		if(all_broken_phase) return 0; //All sites in broken phase, return 0.
 
 		this->ReorderHiggsPhaseInfo(higgs_phase_info);
@@ -256,7 +256,7 @@ namespace EW_BubbleNucleation{
 				picked_positions);	
 		}
 		int picked_size = picked_positions.size();
-		this->parallel_.Broadcast(picked_size, this->parallel_.root());
+		this->parallel_.Broadcast(picked_size, this->parallel_.get_root());
 		if(picked_size == 0) return 0; //No new bubbles: return 0.
 		this->parallel_.Barrier();
 
@@ -273,7 +273,8 @@ namespace EW_BubbleNucleation{
 		std::vector<SU2vector> phi_hat(picked_size);
 		if(this->parallel_.is_root()){
 			for(auto i = 0; i < picked_size; ++i){
-				this->GenerateRandomHiggsComponents(phi_hat.data() + i);
+				auto ptr = phi_hat.data() + i;
+				this->GenerateRandomHiggsComponents(*ptr);
 			}
 		}
 		this->parallel_.Broadcast(phi_hat.data(), 
@@ -283,7 +284,7 @@ namespace EW_BubbleNucleation{
 		// each process do nucleation, by information from
 		// ha and picked_positions.
 		for(auto i = 0; i < picked_size; ++i){
-			this->NucleateOneBubble_Exp(picked_positions[i], phi_hat[i]);
+			this->NucleateOneBubble_Exp(T, picked_positions[i], phi_hat[i]);
 		}
 		this->phi_.update_halo();
 		this->new_bubbles_count_ = picked_size;
@@ -309,7 +310,7 @@ namespace EW_BubbleNucleation{
 			i++;
 		}
 		this->parallel_.Gather(higgs_phase_local.data(), local_sites,
-								higgs_phase_info.data(), this->parallel_.root());
+								higgs_phase_info.data(), this->parallel_.get_root());
 		return;
 	}
 	
@@ -330,8 +331,8 @@ namespace EW_BubbleNucleation{
 			auto local_vis_idx = i % local_sites_per_process;
 			IndexType lv_coord[DIM], g_coord[DIM];
 			this->lat_.local_vis_index2coord(local_vis_idx, lv_coord);
-			local_vis_coord_to_global_coord(lv_coord, g_coord, grid_loc, local_size);
-			auto global_idx = this->global_coord2index(g_coord);
+			local_vis_coord_to_global_coord<DIM>(lv_coord, g_coord, grid_loc, local_size);
+			auto global_idx = this->lat_.global_coord2index(g_coord);
 
 			gidx_list[i] = global_idx;
 		}
@@ -481,6 +482,7 @@ namespace EW_BubbleNucleation{
 			this->GenerateRandomHiggsComponents(phi_hat);
 			IndexType c1[DIM] = { nSize[0] / 2 - half_sep , nSize[1] / 2 , nSize[2] / 2 };
 			this->NucleateOneBubble(T, c1, phi_hat);
+
 			this->GenerateRandomHiggsComponents(phi_hat);
 			IndexType c2[DIM] = { nSize[0] / 2 + half_sep , nSize[1] / 2 , nSize[2] / 2 };
 			this->NucleateOneBubble(T, c2, phi_hat);

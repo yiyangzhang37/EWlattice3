@@ -13,23 +13,23 @@ namespace Electroweak{
 
 	namespace ObserverFlags {
 
-		FlagType OBS_TotalEnergy = 1 << 0;      	// TotalEnergy
-		FlagType OBS_CSNumber = 1 << 1;         	// CSNumber
-		FlagType OBS_MagneticEnergy = 1 << 2;   	// MagneticEnergy
-		FlagType OBS_MagneticHelicity = 1 << 3;     // MagneticHelicity
-		FlagType OBS_ElectricEnergy = 1 << 4;       // ElectricEnergy
-		FlagType OBS_GaussConstraint = 1 << 5;      // GaussConstraint
-		FlagType OBS_HiggsMagnitude2 = 1 << 6;      // HiggsMagnitude2
-		FlagType OBS_MinHiggsMagnitude2 = 1 << 7;   // MinHiggsMagnitude2
-		FlagType OBS_HiggsWinding = 1 << 8;         // HiggsWinding
-		FlagType OBS_EnergyKinetic = 1 << 9;
-		FlagType OBS_EnergyGradient = 1 << 10;
-		FlagType OBS_EnergyPotential = 1 << 11;
-		FlagType OBS_EnergyU1 = 1 << 12;
-		FlagType OBS_EnergySU2 = 1 << 13;
+		const FlagType OBS_TotalEnergy = 1 << 0;      	// TotalEnergy
+		const FlagType OBS_CSNumber = 1 << 1;         	// CSNumber
+		const FlagType OBS_MagneticEnergy = 1 << 2;   	// MagneticEnergy
+		const FlagType OBS_MagneticHelicity = 1 << 3;     // MagneticHelicity
+		const FlagType OBS_ElectricEnergy = 1 << 4;       // ElectricEnergy
+		const FlagType OBS_GaussConstraint = 1 << 5;      // GaussConstraint
+		const FlagType OBS_HiggsMagnitude2 = 1 << 6;      // HiggsMagnitude2
+		const FlagType OBS_MinHiggsMagnitude2 = 1 << 7;   // MinHiggsMagnitude2
+		const FlagType OBS_HiggsWinding = 1 << 8;         // HiggsWinding
+		const FlagType OBS_EnergyKinetic = 1 << 9;
+		const FlagType OBS_EnergyGradient = 1 << 10;
+		const FlagType OBS_EnergyPotential = 1 << 11;
+		const FlagType OBS_EnergyU1 = 1 << 12;
+		const FlagType OBS_EnergySU2 = 1 << 13;
 
 		//Combined observations
-		FlagType OBS_EnergyAllParts = OBS_TotalEnergy | OBS_EnergyKinetic | OBS_EnergyGradient
+		const FlagType OBS_EnergyAllParts = OBS_TotalEnergy | OBS_EnergyKinetic | OBS_EnergyGradient
 						| OBS_EnergyPotential | OBS_EnergyU1 | OBS_EnergySU2;
 		
 		//The flags can be extended.

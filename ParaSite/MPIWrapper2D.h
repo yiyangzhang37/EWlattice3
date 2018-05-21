@@ -78,7 +78,7 @@ namespace MPI_Wrapper{
 		//void AbortRequest();
 
 		//BARRIER ===========================================
-		int Barrier();
+		int Barrier() const;
 
 		//GLOBAL AND DIRECTIONAL PROCESSES COMMUNICATIONS ===
 

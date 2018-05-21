@@ -3,9 +3,9 @@
 
 # other files
 *.o
-MPIWrapper2D/*.txt
-eigen/
 *.out
+./*.txt
+eigen/
 compare_data/
 
 # HDF5 data files

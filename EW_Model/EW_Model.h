@@ -301,9 +301,9 @@ namespace Electroweak{
 				+ U_(x - i, i, futureTime).adjoint() * conj(V_(x - i, i, futureTime)) * phi_(x - i, futureTime);
 		}
 		gradientPart /= DX2;
-		pi(x, futureTime) = pi(x, nowTime) + DT * (gradientPart - DVDphi(x, phi_, futureTime));
-		auto phi_norm_now = phi(x, nowTime).norm();
-		auto phi_norm_future = phi(x, futureTime).norm();
+		pi_(x, futureTime) = pi_(x, nowTime) + DT * (gradientPart - DVDphi(x, phi_, futureTime));
+		auto phi_norm_now = phi_(x, nowTime).norm();
+		auto phi_norm_future = phi_(x, futureTime).norm();
 		//const auto phi_norm_now = sqrt(std::norm(phi(x, nowTime)(0)) + std::norm(phi(x, nowTime)(1)));
 		//const auto phi_norm_future = sqrt(std::norm(phi(x, futureTime)(0)) + std::norm(phi(x, futureTime)(1)));
 		if (phi_norm_future > 1e-6 && phi_norm_now > 1e-6) {

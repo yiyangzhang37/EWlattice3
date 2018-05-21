@@ -35,7 +35,8 @@ MPI_SRCS = $(PARASITE_PATH)/MPIWrapper2D.cpp
 HDF5_SRCS = $(PARASITE_PATH)/HDF5Wrapper.cpp
 TEST_SRCS = $(TEST_PATH)/tests.cpp
 
-SRCS = main.cpp $(EWMODEL_PATH)/EW_helper.cpp $(MPI_SRCS) $(HDF5_SRCS)
+SRCS = main.cpp $(EWMODEL_PATH)/EW_helper.cpp $(EWMODEL_PATH)/EW_examples.cpp \
+		 $(MPI_SRCS) $(HDF5_SRCS)
 
 # define the C object files 
 #
@@ -76,3 +77,5 @@ run24:$(TARGET)
 	$(MPIRUN) -np 24 ./$(TARGET) -r 4 -c 6 > $(OUTPUT) &
 clean:
 	$(RM) $(OBJS) $(TARGET)
+cleandata:
+	$(RM) *.h5 result.txt

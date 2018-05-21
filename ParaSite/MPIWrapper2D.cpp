@@ -113,7 +113,7 @@ namespace MPI_Wrapper{
         return MPI_Abort(this->world_comm_, EXIT_FAILURE);
     }
 
-    int Parallel2D::Barrier(){
+    int Parallel2D::Barrier() const {
         return MPI_Barrier(this->world_comm_);
     }
 

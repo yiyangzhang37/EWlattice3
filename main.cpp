@@ -9,7 +9,6 @@
 #include "./ParaSite/ParaSite.h"
 
 #include "./EW_Model/EW_Model.h"
-//#include "EW_BubbleNucl.h"
 
 #include "./EW_Model/EW_examples.h"
 
@@ -35,7 +34,7 @@ int main(int argc, char** argv) {
 			}
 		}
 
-		EW_Nucl_TwoBubbles(n_rows, n_cols);
+		EW_Random_Nucl(n_rows, n_cols);
 
 	}
 	Parallel_Finalize();
