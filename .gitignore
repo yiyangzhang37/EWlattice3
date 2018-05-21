@@ -5,9 +5,14 @@
 *.o
 MPIWrapper2D/*.txt
 eigen/
+*.out
+compare_data/
 
 # HDF5 data files
 *.h5
+
+# notebook history
+.ipynb_checkpoints/
 
 # User-specific files
 *.suo

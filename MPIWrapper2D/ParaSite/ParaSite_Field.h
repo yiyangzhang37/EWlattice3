@@ -103,6 +103,7 @@ namespace ParaSite{
         void read(const std::string& file_name, 
                 const std::string& dataset_name = "") const;
         void write(const std::string& file_name,
+                const std::vector<std::string>* col_names = nullptr,
                 const std::string& dataset_name = "") const;
 
         void update_halo() const;
@@ -329,12 +330,18 @@ namespace ParaSite{
     template<class FieldType, int DIM>
     void Field<FieldType, DIM>::write(
         const std::string& file_name,
+        const std::vector<std::string>* col_names, 
         const std::string& dataset_name) const{
         FileProcessor fp;
 
         std::string dst_name;
         if(dataset_name == "") dst_name = file_name;
         else dst_name = dataset_name;
+
+        if(col_names != nullptr){
+            if( (*col_names).size() != this->components_ ) 
+                std::cerr << "Column names does not match Field components." << std::endl;
+        }
 
         hsize_t dataset_size[DIM+1];
         hsize_t file_offset[DIM+1];
@@ -366,7 +373,18 @@ namespace ParaSite{
                                 mem_offset,
                                 mem_block_size, 
                                 this->data_ptr_,
-                                true);
+                                true);                
+            if(col_names != nullptr){
+                fp.open_file(file_name);
+                fp.open_dataset(dst_name);
+                int count = 0;
+                for( auto& item : *col_names){
+                    fp.attach_attribute_to_dataset<std::string>("col_name_" + std::to_string(count), item);
+                    count++;
+                } 
+                fp.close_dataset();
+                fp.close_file();   
+            } 
             if(world_size > 1)
                 this->parallel_ptr->Send(msg_send, 1);
         } else{

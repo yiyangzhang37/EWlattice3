@@ -23,7 +23,7 @@ namespace Electroweak{
     template<int DIM>
     class ElectroweakEvolution{
 
-	private:
+	protected:
 		/*member variables*/
 		const Lattice<DIM>& lat_;
 
@@ -41,6 +41,8 @@ namespace Electroweak{
 		Parameters param_;
 
 		std::string id_ = "";
+		time_t start_time_;
+		time_t finish_time_;
 
 		constexpr int test_periodic_boundary(const Site<DIM>& x) const {
 			return 0;
@@ -61,6 +63,12 @@ namespace Electroweak{
 		void RecordParameters();
         virtual void RecordCustomParameters() {;}
 		void SaveParameters(const std::string& name, const bool is_root_save_only = true) const;
+		
+		/*
+		Measure the finish time and compute the time cost.
+		Save all the parameters again, including the total time cost.
+		*/
+		void ConcludeEvolution(const std::string& name, const bool is_root_save_only = true);
 
         /* evolution functions */
 		void TimeAdvance() { this->time_step_++; }
@@ -112,17 +120,21 @@ namespace Electroweak{
 		U_(lat, DIM, CYCLE, parallel),
 		F_(lat, DIM, CYCLE, parallel),
 		V_(lat, DIM, CYCLE, parallel),
-		E_(lat, DIM, CYCLE, parallel)
+		E_(lat, DIM, CYCLE, parallel),
+		start_time_(std::time(nullptr)),
+		finish_time_(std::time(nullptr))
     {       
     }
 
 	template<int DIM>
 	void ElectroweakEvolution<DIM>::RecordParameters() {
-		auto time = std::time(nullptr);
-		std::stringstream ss;
-    	ss << std::put_time(std::localtime(&time), "%Y-%m-%d %X");
+		std::stringstream ss1, ss2;
+    	ss1 << std::put_time(std::localtime(&start_time_), "%Y-%m-%d %X");
+		//ss2 << std::put_time(std::localtime(&finish_time_), "%Y-%m-%d %X");
 		param_.add("ID", this->id_);
-		param_.add("Time", ss.str());
+		param_.add("Start Time", ss1.str());
+		//param_.add("Finish Time", ss2.str());
+		//param_.add("Time Cost(s)", std::difftime(finish_time_, start_time_));
 		param_.add("Dimension", DIM);
 		param_.add("HaloLayer", halo);
 		param_.add("LatticeSize(X)", nSize[0]);
@@ -154,6 +166,20 @@ namespace Electroweak{
 		}
 		return;
 	}
+
+	template<int DIM>
+	void ElectroweakEvolution<DIM>::ConcludeEvolution(
+		const std::string& name, 
+		const bool is_root_save_only) {
+		this->finish_time_ = std::time(nullptr);
+		std::stringstream ss2;
+		ss2 << std::put_time(std::localtime(&finish_time_), "%Y-%m-%d %X");
+		param_.add("Finish Time", ss2.str());
+		param_.add("Time Cost(s)", std::difftime(finish_time_, start_time_));
+		this->SaveParameters(name, is_root_save_only);
+		return;
+	}
+
 
 	template<int DIM>
 	void ElectroweakEvolution<DIM>::UpdateFields() const {

@@ -9,24 +9,32 @@ namespace Electroweak{
 
     using namespace ParaSite;
 
-	enum ObserverFlags : int {
-		OBS_TotalEnergy = 1 << 0,
-		OBS_CSNumber = 1 << 1,
-		OBS_MagneticEnergy = 1 << 2,
-		OBS_MagneticHelicity = 1 << 3,
-		OBS_ElectricEnergy = 1 << 4,//new
-		OBS_GaussConstraint = 1 << 5,
-		OBS_HiggsMagnitude2 = 1 << 6,
-		OBS_MinHiggsMagnitude2 = 1 << 7,
-		OBS_HiggsWinding = 1 << 8,
-		OBS_EnergyKinetic = 1 << 9,
-		OBS_EnergyGradient = 1 << 10,
-		OBS_EnergyPotential = 1 << 11,
-		OBS_EnergyU1 = 1 << 12,
-		OBS_EnergySU2 = 1 << 13,
-		OBS_EnergyAllParts = OBS_TotalEnergy | OBS_EnergyKinetic | OBS_EnergyGradient
-						| OBS_EnergyPotential | OBS_EnergyU1 | OBS_EnergySU2
-	};
+	typedef unsigned int FlagType;
+
+	namespace ObserverFlags {
+
+		FlagType OBS_TotalEnergy = 1 << 0;      	// TotalEnergy
+		FlagType OBS_CSNumber = 1 << 1;         	// CSNumber
+		FlagType OBS_MagneticEnergy = 1 << 2;   	// MagneticEnergy
+		FlagType OBS_MagneticHelicity = 1 << 3;     // MagneticHelicity
+		FlagType OBS_ElectricEnergy = 1 << 4;       // ElectricEnergy
+		FlagType OBS_GaussConstraint = 1 << 5;      // GaussConstraint
+		FlagType OBS_HiggsMagnitude2 = 1 << 6;      // HiggsMagnitude2
+		FlagType OBS_MinHiggsMagnitude2 = 1 << 7;   // MinHiggsMagnitude2
+		FlagType OBS_HiggsWinding = 1 << 8;         // HiggsWinding
+		FlagType OBS_EnergyKinetic = 1 << 9;
+		FlagType OBS_EnergyGradient = 1 << 10;
+		FlagType OBS_EnergyPotential = 1 << 11;
+		FlagType OBS_EnergyU1 = 1 << 12;
+		FlagType OBS_EnergySU2 = 1 << 13;
+
+		//Combined observations
+		FlagType OBS_EnergyAllParts = OBS_TotalEnergy | OBS_EnergyKinetic | OBS_EnergyGradient
+						| OBS_EnergyPotential | OBS_EnergyU1 | OBS_EnergySU2;
+		
+		//The flags can be extended.
+		//Custom flags should be start at 1 << 21.
+	}
 	
 	template<int DIM>
     class ElectroweakObserver{
@@ -37,13 +45,30 @@ namespace Electroweak{
 		/*
 		set flags for data_table observations and density_data observations.
 		density_data_flags should be a subset of data_table_flags.
+		This function is declared as virtual and it should be re-implemented in derived class.
 		*/
-		void SetObservables(
-			const int data_table_flags,
-			const int density_data_flags);
-		void SetDensityDataSaveFrequency(const int freq, const int starting_time_step); //TODO
-
+		virtual void SetObservables(
+			const FlagType data_table_flags,
+			const FlagType density_data_flags);
+		/*
+		measure all the quantities determined by the flags.
+		*/
 		void Measure();
+		/*
+		Measure more quantities, including those defined in the derived class.
+		This function should be re-implemented in the derived class.
+		The form should be:
+		void ExtendMeasure(){
+			this->Measure();
+			auto time_step = this->evo_.get_time_step();
+			if (this->data_table_flags_ & OBS_YourCustomFlag) {
+				this->CalcCustomQuantity(time_step);
+			}
+			...
+			return;
+		}
+		*/
+		virtual void ExtendMeasure() {;} 
 
 		void CalcEnergy(const int time_step);
 		void CalcCSNumber(const int time_step);
@@ -62,10 +87,25 @@ namespace Electroweak{
 			const std::string& density_key,
 			const std::function<Real(const Site<DIM>&, const int)> sc_quantity);
 
-		void SaveDataTable(const std::string& file_name) const {
-			this->data_table_.save_table(file_name);
+		/*
+		Save the data table.
+		save operation will be performed on the root process.
+		*/
+		void SaveDataTable(const std::string& file_name, 
+						const int freq = 1,
+						const int starting_time_step = 0) const {
+			if(this->evo_.get_parallel_object().is_root()){
+				auto t = this->evo_.get_time_step();
+				if( ((t - starting_time_step) >= 0) && ((t - starting_time_step)%freq ==0) ){
+					this->data_table_.save_table(file_name);
+				}
+			}
 		}
 
+		/*
+		save the density data for a specific time step.
+		Parallel save procedure has been taken care of in the Field class.
+		*/
 		void SaveDensityData(const std::string& file_name, 
 							const int freq = 1, 
 							const int starting_time_step = 0) const;
@@ -80,8 +120,8 @@ namespace Electroweak{
 		const Field< U1matrix, DIM>& E_;
 		const Parallel2D& parallel_;
 
-		int data_table_flags_;
-		int density_data_flags_;
+		FlagType data_table_flags_;
+		FlagType density_data_flags_;
 
 		/*total quantities*/
 		std::vector<std::string> data_table_names_;
@@ -91,11 +131,33 @@ namespace Electroweak{
 		std::vector<std::string> density_names_;
         Field< RealSave, DIM > density_data_;
 
-		void init_data_table();
-		void init_density_data();
+		/*
+		The following two functions are declared as virtual,
+		and should be re-implemented in derived class,
+		with init_name_vector() replaced by init_extend_name_vector().
+		*/
+		virtual void init_data_table();
+		virtual void init_density_data();
+
 		void init_name_vector(
-			const int flags,
+			const FlagType flags,
 			std::vector<std::string>& names) const;
+		/*
+		This function should be re-implemented in derived class to take the position of init_name_vector.
+		The function should take the form:
+		init_extend_name_vector(...){
+			this->init_name_vector(...);
+			if (flags & ObserverFlags::YourCustomFlag) {
+				names.push_back("YourCustomId");
+			}
+			...
+			return;
+		}
+		*/
+		virtual void init_extend_name_vector(
+					const FlagType flags,
+					std::vector<std::string>& names) const {;}
+
 		int find_index(const std::vector<std::string>& names, const std::string& key) const;
 
 		/*single cell quantities*/
@@ -132,8 +194,8 @@ namespace Electroweak{
 
 	template<int DIM>
 	void ElectroweakObserver<DIM>::SetObservables(
-		const int data_table_flags,
-		const int density_data_flags) {
+		const FlagType data_table_flags,
+		const FlagType density_data_flags) {
 		this->data_table_flags_ = data_table_flags;
 		this->density_data_flags_ = density_data_flags;
 		init_data_table();
@@ -160,49 +222,49 @@ namespace Electroweak{
 
 	template<int DIM>
 	void ElectroweakObserver<DIM>::init_name_vector(
-		const int flags,
+		const FlagType flags,
 		std::vector<std::string>& names) const {
 		names.clear();
-		if (flags & OBS_TotalEnergy) {
+		if (flags & ObserverFlags::OBS_TotalEnergy) {
 			names.push_back("TotalEnergy");
 		}
-		if (flags & OBS_CSNumber) {
+		if (flags & ObserverFlags::OBS_CSNumber) {
 			names.push_back("CSNumber");
 		}
-		if (flags & OBS_MagneticEnergy) {
+		if (flags & ObserverFlags::OBS_MagneticEnergy) {
 			names.push_back("MagneticEnergy");
 		}
-		if (flags & OBS_MagneticHelicity) {
+		if (flags & ObserverFlags::OBS_MagneticHelicity) {
 			names.push_back("MagneticHelicity");
 		}
-		if (flags & OBS_ElectricEnergy) {
+		if (flags & ObserverFlags::OBS_ElectricEnergy) {
 			names.push_back("ElectricEnergy");
 		}
-		if (flags & OBS_GaussConstraint) {
+		if (flags & ObserverFlags::OBS_GaussConstraint) {
 			names.push_back("GaussConstraint");
 		}
-		if (flags & OBS_HiggsMagnitude2) {
+		if (flags & ObserverFlags::OBS_HiggsMagnitude2) {
 			names.push_back("HiggsMagnitude2");
 		}
-		if (flags & OBS_MinHiggsMagnitude2){
+		if (flags & ObserverFlags::OBS_MinHiggsMagnitude2){
 			names.push_back("MinHiggsMagnitude2");
 		}
-		if (flags & OBS_HiggsWinding) {
+		if (flags & ObserverFlags::OBS_HiggsWinding) {
 			names.push_back("HiggsWinding");
 		}
-		if (flags & OBS_EnergyKinetic) {
+		if (flags & ObserverFlags::OBS_EnergyKinetic) {
 			names.push_back("E_Kinetic");
 		}
-		if (flags & OBS_EnergyGradient) {
+		if (flags & ObserverFlags::OBS_EnergyGradient) {
 			names.push_back("E_Grad");
 		}
-		if (flags & OBS_EnergyPotential) {
+		if (flags & ObserverFlags::OBS_EnergyPotential) {
 			names.push_back("E_Pot");
 		}
-		if (flags & OBS_EnergyU1) {
+		if (flags & ObserverFlags::OBS_EnergyU1) {
 			names.push_back("E_U1");
 		}
-		if (flags & OBS_EnergySU2) {
+		if (flags & ObserverFlags::OBS_EnergySU2) {
 			names.push_back("E_SU2");
 		}
 		return;
@@ -356,7 +418,7 @@ namespace Electroweak{
 	void ElectroweakObserver<DIM>::CalcMagneticEnergy(const int time_step){
 		this->CalcSimple(time_step, "MagneticEnergy", "MagneticEnergy",
 					[this](const Site<DIM>& x, const int time_step)
-					{this->sc_MagneticEnergy(x, time_step);} );
+					{return this->sc_MagneticEnergy(x, time_step);} );
 	}
 
 	template<int DIM>
@@ -494,39 +556,39 @@ namespace Electroweak{
 			}
 		}
 		this->parallel_.Sum(total);
-		if(den_idx != -1)
-			this->data_table_.append_value(den_idx, total);
+		if(dt_idx != -1)
+			this->data_table_.append_value(dt_idx, total);
 		return;
 	}
 
 	template<int DIM>
 	void ElectroweakObserver<DIM>::Measure() {
 		auto time_step = this->evo_.get_time_step();
-		if (this->data_table_flags_ & OBS_TotalEnergy) {
+		if (this->data_table_flags_ & ObserverFlags::OBS_TotalEnergy) {
 			this->CalcEnergy(time_step);
 		}
-		if (this->data_table_flags_ & OBS_CSNumber) {
+		if (this->data_table_flags_ & ObserverFlags::OBS_CSNumber) {
 			this->CalcCSNumber(time_step);
 		}
-		if (this->data_table_flags_ & OBS_MagneticEnergy) {
+		if (this->data_table_flags_ & ObserverFlags::OBS_MagneticHelicity) {
 			this->CalcMagneticHelicity(time_step);
 		}
-		if (this->data_table_flags_ & OBS_MagneticHelicity) {
-			this->CalcMagneticHelicity(time_step);
+		if (this->data_table_flags_ & ObserverFlags::OBS_MagneticEnergy) {
+			this->CalcMagneticEnergy(time_step);
 		}
-		if (this->data_table_flags_ & OBS_ElectricEnergy) {
+		if (this->data_table_flags_ & ObserverFlags::OBS_ElectricEnergy) {
 			this->CalcElectricEnergy(time_step);
 		}
-		if (this->data_table_flags_ & OBS_GaussConstraint) {
+		if (this->data_table_flags_ & ObserverFlags::OBS_GaussConstraint) {
 			this->CalcGaussConstraint(time_step);
 		}
-		if (this->data_table_flags_ & OBS_HiggsMagnitude2) {
+		if (this->data_table_flags_ & ObserverFlags::OBS_HiggsMagnitude2) {
 			this->CalcHiggsMagnitude2(time_step);
 		}
-		if (this->data_table_flags_ & OBS_MinHiggsMagnitude2) {
+		if (this->data_table_flags_ & ObserverFlags::OBS_MinHiggsMagnitude2) {
 			this->CalcMinHiggsMagnitude2(time_step);
 		}
-		if (this->data_table_flags_ & OBS_HiggsWinding) {
+		if (this->data_table_flags_ & ObserverFlags::OBS_HiggsWinding) {
 			this->CalcHiggsWinding(time_step);
 		}
 		return;
@@ -607,8 +669,8 @@ namespace Electroweak{
 							const int freq, 
 							const int starting_time_step) const {
 		auto t = this->evo_.get_time_step();
-		if( ((t - starting_time_step) >= 0) && ((t - starting_time_step)%freq ==0) ){
-			this->density_data_.write(file_name);
+		if( ((t - starting_time_step) >= 0) && ((t - starting_time_step)%freq == 0) ){
+			this->density_data_.write(file_name, &(this->density_names_));
 		}
 		return;
 	}

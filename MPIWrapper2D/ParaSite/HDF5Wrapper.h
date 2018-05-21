@@ -441,6 +441,12 @@ namespace HDF5_Wrapper{
         return H5Aclose(attr_id);
     }
 
+    template<>
+    herr_t HDF5Wrapper::add_attribute<std::string> (
+            const hid_t loc_id,
+            const std::string& name,
+            const std::string val) const;
+
     template<class Type>
     herr_t HDF5Wrapper::attach_attribute_to_dataset(
         const std::string& name,

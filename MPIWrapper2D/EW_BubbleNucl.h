@@ -2,8 +2,17 @@
 #define EW_BUBBLE_NUCL_H
 
 #include "EW_Base.h"
+#include <random>
 
-namespace BubbleNucleation{
+namespace Electroweak{
+	//extend the ObserverFlags
+	namespace ObserverFlags {
+		FlagType OBS_NewBubbleCount = 1 << 21; //"NewBubbleCount"
+	}
+}
+
+namespace EW_BubbleNucleation{
+
     using namespace Electroweak;
 
     /*The probability that one site can nucleate*/
@@ -30,12 +39,11 @@ namespace BubbleNucleation{
 			const Parallel2D& parallel, 
 			const std::string& id);
 		BubbleNucleation() = default;
-        void run();
-		void RecordCustomParameters() override;
 
-    private:
-        /*Initial condition*/
-        void InitializeSymmetricPhase() const;
+		void RecordCustomParameters() override;
+		
+		/*Initial condition*/
+		void InitializeSymmetricPhase() const;
 
 		/*nulceation*/
 		/*
@@ -43,8 +51,15 @@ namespace BubbleNucleation{
 		The update_halo() will be called at the end of this function for phi_ field.
 		Return: new bubble count.
 		*/
-        int RandomBubbleNucleation() const;
+        int RandomBubbleNucleation();
 
+		void OneBubbleTest();
+        void TwoBubblesTest(const int sep);
+        void NonRandomTest(const int half_sep, unsigned int& new_bubble_count);
+
+		int GetNewBubbleCount() const {return this->new_bubbles_count_;}
+
+    private:
 		/*
 		check whether each site is in symmtric phase (0) or not (1), for the time slice nowTime.
 		The threshold is set by phi2_limit.
@@ -72,14 +87,21 @@ namespace BubbleNucleation{
 		Nucleate one bubble with the bubble center specified with global_coord,
 		and the randomized Higgs angluar components specified by ha[4].
 		*/
-		void NucleateOneBubble_Exp(const IndexType global_index, const SU2vector& phi_hat) const;
+		void NucleateOneBubble_Exp(
+			const int nowTime,
+			const IndexType global_index, 
+			const SU2vector& phi_hat) const;
 		
 		/*
 		Wrapper
 		*/
-		void NucleateOneBubble(const IndexType* global_coord, const SU2vector& phi_hat) const{
-			this->NucleateOneBubble_Exp(
-					this->lat_.global_coord2index(global_coord, phi_hat));
+		void NucleateOneBubble(
+			const int nowTime,
+			const IndexType* global_coord, 
+			const SU2vector& phi_hat) const{
+			this->NucleateOneBubble_Exp(nowTime, 
+					this->lat_.global_coord2index(global_coord), 
+					phi_hat);
 		}
 
 		/*
@@ -96,19 +118,41 @@ namespace BubbleNucleation{
 		Generate a random Higgs direction for the NucleateOneBubble_Exp(...) function to use.
 		This function should only take place on the root process.
 		*/
-		void GenerateRandomHiggsDirection(SU2Vector& phi_hat) const;
+		void GenerateRandomHiggsComponents(SU2vector& phi_hat) const;
 
-        void OneBubbleTest();
-        void TwoBubbleTest(const int sep);
-        void NonRandomTest();
-
-        int total_bubbles_count_ = 0;
+		/*
+		stores the number of new bubbles generated at each time step.
+		This number is already the sum over all the processes.
+		*/
+        int new_bubbles_count_ = 0;
 	};
 
+
 	template<int DIM>
-	class BubbleObserver : public ElectroweakObserver<DIM>{
-	private:
+	class NucleationObserver : public ElectroweakObserver<DIM> {
 	public:
+		NucleationObserver(const BubbleNucleation<DIM>& bubble);
+		~NucleationObserver() = default;
+		
+		void SetObservables(
+			const FlagType data_table_flags,
+			const FlagType density_data_flags) override;
+		
+		void ExtendMeasure() override;
+
+		void CalcNewBubbleCount(const int time_step);
+	
+	protected:
+
+		const BubbleNucleation<DIM>& nucl_;
+
+		void init_data_table() override;
+		void init_density_data() override;
+
+		void init_extend_name_vector(
+			const FlagType flags,
+			std::vector<std::string>& names) const override;
+
 	};
 
 	template<int DIM>
@@ -117,13 +161,15 @@ namespace BubbleNucleation{
 		const Parallel2D& parallel,
 		const std::string& id)
 		:
-		ElectroweakEvolution(lat, parallel, id) {}
+		ElectroweakEvolution<DIM>(lat, parallel, id) {
+
+	}
 
 	template<int DIM>
 	void BubbleNucleation<DIM>::RecordCustomParameters() {
 		this->param_.add("NucleationProbability", NUCLEATION_PROB);
 		this->param_.add("NucleationLimit", NUCLEATION_LIMIT);
-		this->param_.add("BubbleRadius(*DX)", NUCLEATION_RADIUS_SITE);
+		this->param_.add("BubbleRadius(in units of DX)", NUCLEATION_RADIUS_SITE);
 		this->param_.add("BubbleRadius", NUCLEATION_RADIUS_LEN);
 		this->param_.add("BubbleFixedHalfSeparation(ifFixed)", TWO_BUBBLES_HALF_SEP);
 		return;
@@ -131,19 +177,25 @@ namespace BubbleNucleation{
 
 	template<int DIM>
 	void BubbleNucleation<DIM>::InitializeSymmetricPhase() const {
-		auto& x = this->x_;
-		const auto nowTime = this->time_step_ % CYCLE;
-		const auto nextTime = (this->time_step_ + 1) % CYCLE;
-		for (x.first(); x.test(); x.next()) {
-			this->phi_(x, nextTime) = this->phi_(x, nowTime) = SU2vector(0, 0);
-			this->pi_(x, nextTime) = this->pi_(x, nowTime) = SU2vector(0, 0);
-			for (unsigned int i = 0; i < DIM; ++i) {
-				this->U_(x, i, nextTime) = this->U_(x, i, nowTime) = Ident;
-				this->F_(x, i, nextTime) = this->F_(x, i, nowTime) = UNITY_F * Ident;
-				this->V_(x, i, nextTime) = this->V_(x, i, nowTime) = Cmplx(1, 0);
-				this->E_(x, i, nextTime) = this->E_(x, i, nowTime) = UNITY_E * Cmplx(1, 0);
+		Site<DIM> x(this->lat_);
+		for (auto t = 0; t < CYCLE; ++t) {
+			for (x.first(); x.test(); x.next()) {
+				this->phi_(x, t) = SU2vector(0, 0);
+				this->pi_(x, t) = SU2vector(0, 0);
+				for (auto i = 0; i < DIM; ++i) {
+					this->U_(x, i, t) = Ident;
+					this->F_(x, i, t) = UNITY_F * Ident;
+					this->V_(x, i, t) = Cmplx(1, 0);
+					this->E_(x, i, t) = UNITY_E * Cmplx(1, 0);
+				}
 			}
 		}
+		this->phi_.update_halo();
+		this->pi_.update_halo();
+		this->U_.update_halo();
+		this->F_.update_halo();
+		this->V_.update_halo();
+		this->E_.update_halo();
 		return;
 	}
 
@@ -181,8 +233,9 @@ namespace BubbleNucleation{
 		if(this->parallel_.is_root()){
 			// initialize an ordered site index vector.
 			std::vector<IndexType> all_sites(global_size);
+			IndexType n = 0;
 			std::generate(all_sites.begin(), all_sites.end(), 
-							[IndexType n = 0]() mutable { return n++; });
+							[&n]() { return n++; });
 			//random shuffle
 			std::random_shuffle(all_sites.begin(), all_sites.end());
 
@@ -191,7 +244,7 @@ namespace BubbleNucleation{
 			std::default_random_engine generator(seed);
 			std::uniform_real_distribution<Real> distrib(0.0, 1.0);
 			preselect_positions.reserve(static_cast<int>(NUCLEATION_PROB*global_size*1.2));
-			for (auto item : all_sizes) {
+			for (auto item : all_sites) {
 				auto site_nucl_p = distrib(generator);
 				if (site_nucl_p <= NUCLEATION_PROB) 
 					preselect_positions.push_back(item);
@@ -199,7 +252,7 @@ namespace BubbleNucleation{
 			//verify these locations with higgs_phase_info.
 			this->VerifyPickedPositions(
 				higgs_phase_info,
-				preslect_positions,
+				preselect_positions,
 				picked_positions);	
 		}
 		int picked_size = picked_positions.size();
@@ -217,15 +270,14 @@ namespace BubbleNucleation{
 								this->parallel_.get_root());
 
 		//generate Higgs angular components and send to each process.
-		//The size will be 4*picked_position_size
-		std::vector<SU2vector> phi_hat(picked_position_size);
+		std::vector<SU2vector> phi_hat(picked_size);
 		if(this->parallel_.is_root()){
-			for(auto i = 0; i < picked_position_size; ++i){
+			for(auto i = 0; i < picked_size; ++i){
 				this->GenerateRandomHiggsComponents(phi_hat.data() + i);
 			}
 		}
 		this->parallel_.Broadcast(phi_hat.data(), 
-								picked_position_size, 
+								picked_size, 
 								this->parallel_.get_root()); //transfer as MPI_BYTE
 		
 		// each process do nucleation, by information from
@@ -234,7 +286,8 @@ namespace BubbleNucleation{
 			this->NucleateOneBubble_Exp(picked_positions[i], phi_hat[i]);
 		}
 		this->phi_.update_halo();
-		return;
+		this->new_bubbles_count_ = picked_size;
+		return picked_size;
 	}
 
 	template<int DIM>
@@ -271,7 +324,7 @@ namespace BubbleNucleation{
 			//get grid_loc
 			GridIndexType grid_loc[2];
 			auto world_rank = i / local_sites_per_process;
-			this->parallel_.world_rank_to_rowcol(world_rank, rowcol);
+			this->parallel_.world_rank_to_rowcol(world_rank, grid_loc);
 			
 			//get global index
 			auto local_vis_idx = i % local_sites_per_process;
@@ -309,7 +362,7 @@ namespace BubbleNucleation{
 					break;
 				}
 			}
-			if(can_nuclate){
+			if(can_nucleate){
 				picked_positions.push_back(gidx);
 				for(auto s : region_list){
 					cp_sorted_info[s] = 1;
@@ -333,7 +386,7 @@ namespace BubbleNucleation{
 			//check if gidx is a local visible site
 			if(this->lat_.is_local(gidx)){
 				//radial part
-				auto r = this->lat_.global_lat_distance(global_index, gidx); //distance to bubble center
+				auto r = this->lat_.global_lat_distance(global_index, gidx) * DX; //distance to bubble center
 				auto mag = (1.0 + pow(sqrt(2.0) - 1.0, 2)) * exp(-mH * r / sqrt(2.0));
 				mag /= 1 + pow(sqrt(2.0) - 1, 2)*exp(-sqrt(2.0)*mH*r);
 				auto vis_idx = this->lat_.global_index_to_local_vis_index(gidx);
@@ -381,8 +434,10 @@ namespace BubbleNucleation{
 	}
 
 	template<int DIM>
-	void BubbleNucleation<DIM>::GenerateRandomHiggsComponents(SU2Vector& phi_hat) const{
+	void BubbleNucleation<DIM>::GenerateRandomHiggsComponents(SU2vector& phi_hat) const{
 		auto seed = std::chrono::system_clock::now().time_since_epoch().count();
+		this->parallel_.Broadcast(seed, this->parallel_.get_root());
+		
 		std::default_random_engine generator(seed);
 		std::uniform_real_distribution<Real> distrib1(-1.0, 1.0);
 		Real v1, v2, v3, v4;
@@ -403,16 +458,15 @@ namespace BubbleNucleation{
 		return;
 	}
 
-
-
 	template<int DIM>
 	void BubbleNucleation<DIM>::OneBubbleTest() {
+		Site<DIM> x(this->lat_);
 		if (this->time_step_ == 0) {
-			auto T = (this->time_step_) % CYCLE;
+			auto T = (this->time_step_ + 1) % CYCLE;
 			SU2vector phi_hat;
-			this->GenerateRandomHiggsDirection(phi_hat);
+			this->GenerateRandomHiggsComponents(phi_hat);
 			IndexType global_coord[] = {nSize[0] / 2, nSize[1] / 2, nSize[2] / 2};
-			this->NucleateOneBubble(global_coord, phi_hat);
+			this->NucleateOneBubble(T, global_coord, phi_hat);
 			this->phi_.update_halo();
 		}
 		return;
@@ -420,19 +474,24 @@ namespace BubbleNucleation{
 
 	template<int DIM>
 	void BubbleNucleation<DIM>::TwoBubblesTest(const int half_sep) {
-		if (_time_step == 0) {
-			int c[DIM] = { nSize[0] / 2 - half_sep , nSize[1] / 2 , nSize[2] / 2 };
-			x.setCoord(c);
-			NucleateRegion_Exp(x, NUCLEATION_RADIUS_SITE, 1);
-			int c2[DIM] = { nSize[0] / 2 + half_sep , nSize[1] / 2 , nSize[2] / 2 };
-			x.setCoord(c2);
-			NucleateRegion_Exp(x, NUCLEATION_RADIUS_SITE, 1);
+		Site<DIM> x(this->lat_);
+		if (this->time_step_ == 0) {
+			auto T = (this->time_step_ + 1) % CYCLE;
+			SU2vector phi_hat;
+			this->GenerateRandomHiggsComponents(phi_hat);
+			IndexType c1[DIM] = { nSize[0] / 2 - half_sep , nSize[1] / 2 , nSize[2] / 2 };
+			this->NucleateOneBubble(T, c1, phi_hat);
+			this->GenerateRandomHiggsComponents(phi_hat);
+			IndexType c2[DIM] = { nSize[0] / 2 + half_sep , nSize[1] / 2 , nSize[2] / 2 };
+			this->NucleateOneBubble(T, c2, phi_hat);
+			this->phi_.update_halo();
 		}
 		return;
 	}
 
 	template<int DIM>
 	void BubbleNucleation<DIM>::NonRandomTest(const int half_sep, unsigned int& new_bubble_count) {
+		/*
 		if (_time_step == 0) {
 			const auto num_in_line = nSize[0] / (2 * half_sep);
 			vector<int> core_pos(num_in_line);
@@ -451,10 +510,79 @@ namespace BubbleNucleation{
 					}
 				}
 			}
+		}*/
+		return;
+	}
+
+	
+
+	template<int DIM>
+	NucleationObserver<DIM>::NucleationObserver(const BubbleNucleation<DIM>& bubble)
+		:
+		nucl_(bubble),
+		ElectroweakObserver<DIM>(bubble){
+
+	}
+
+	template<int DIM>
+	void NucleationObserver<DIM>::SetObservables(
+			const FlagType data_table_flags,
+			const FlagType density_data_flags) {
+		this->data_table_flags_ = data_table_flags;
+		this->density_data_flags_ = density_data_flags;
+		init_data_table();
+		init_density_data();
+	}
+
+	template<int DIM>
+	void NucleationObserver<DIM>::ExtendMeasure() {
+		this->Measure();
+		auto time_step = this->evo_.get_time_step();
+		if (this->data_table_flags_ & ObserverFlags::OBS_NewBubbleCount) {
+			this->CalcNewBubbleCount(time_step);
 		}
 		return;
 	}
 
+	template<int DIM>
+	void NucleationObserver<DIM>::init_data_table(){
+		std::vector<std::string> data_table_names;
+		this->init_extend_name_vector(this->data_table_flags_, data_table_names);
+		this->data_table_.initialize(data_table_names);
+		this->data_table_names_ = data_table_names;
+	}
+
+	template<int DIM>
+	void NucleationObserver<DIM>::init_density_data() {
+		std::vector<std::string> density_data_names;
+		this->init_extend_name_vector(this->density_data_flags_, density_data_names);
+		this->density_names_ = density_data_names;
+		this->density_data_.reinit(this->density_names_.size(), 1);
+		return;
+	}
+
+	template<int DIM>
+	void NucleationObserver<DIM>::init_extend_name_vector(
+			const FlagType flags,
+			std::vector<std::string>& names) const {
+		this->init_name_vector(flags, names);
+		if (flags & ObserverFlags::OBS_NewBubbleCount) {
+				names.push_back("NewBubbleCount");
+		}
+		return;
+	}
+
+	template<int DIM>
+	void NucleationObserver<DIM>::CalcNewBubbleCount(const int time_step){
+		auto dt_idx = this->find_index(this->data_table_names_, "NewBubbleCount");
+		auto den_idx = this->find_index(this->density_names_, "NewBubbleCount");
+		if(den_idx != -1){
+			std::cerr << "NewBubbleCount does not have density info." << std::endl;
+		}
+		if(dt_idx != -1)
+			this->data_table_.append_value(dt_idx, this->nucl_.GetNewBubbleCount());
+		return;
+	}
 
 }
 

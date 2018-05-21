@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
 			}
 		}
 
-		EW_BaseModel_SymmetricInit(n_rows, n_cols);
+		EW_Nucl_TwoBubbles(n_rows, n_cols);
 
 	}
 	Parallel_Finalize();

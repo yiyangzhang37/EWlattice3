@@ -10,10 +10,16 @@ HDF_LIB = $(HDF_INSTALL)/lib
 EXTLIB = -L$(HDF_LIB)
 LIB = -lsz -lz -lm
 
+# ParaSite path
+PARASITE_PATH = ./ParaSite
+
+# Test path
+TEST_PATH = ./tests
+
 # define any directories containing header files other than /usr/include
 #
-INCLUDES = -I./ParaSite \
-			-I./tests \
+INCLUDES = -I.$(PARASITE_PATH) \
+			-I.$(TEST_PATH) \
 			-I$(HDF_INSTALL)/include
 
 LIBSHDF = $(EXTLIB) $(HDF_LIB)/libhdf5.a $(HDF_LIB)/libhdf5_hl.a
@@ -35,8 +41,8 @@ SRCS = main.cpp EW_helper.cpp $(MPI_SRCS) $(TEST_SRCS) $(HDF5_SRCS)
 OBJS = $(SRCS:.cpp=.o)
 
 # define the executable file 
-TARGET = lat_test
-OUTPUT = lat_test.txt
+TARGET = emlat.out
+OUTPUT = result.txt
 
 all:$(TARGET)
 	@echo Compile success.
@@ -46,6 +52,10 @@ $(TARGET): $(OBJS)
 .cpp.o:
 	$(MPICXX) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
+#$(PARASITE_PATH)/HDF5Wrapper.o: $(PARASITE_PATH)/HDF5Wrapper.cpp $(PARASITE_PATH)/HDF5Wrapper.h
+#	$(MPICXX) $(CFLAGS) $(INCLUDES) -c $(PARASITE_PATH)/HDF5Wrapper.cpp
+
+#$(PARASITE_PATH)/
 
 run:$(TARGET)
 	$(MPIRUN) -np 1 ./$(TARGET)
