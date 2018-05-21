@@ -10,7 +10,9 @@
 #include <functional>
 #include <vector>
 #include <cstdint>
-#include "./MPIWrapper2D.h"
+#include <cmath>
+
+#include "MPIWrapper2D.h"
 
 namespace ParaSite{
 
@@ -775,7 +777,7 @@ namespace ParaSite{
         std::transform(np_dspl, np_dspl + DIM, bd_dspl, 
                     dspl, 
                     [](auto x1, auto x2) {return x1 < x2 ? x1 : x2; });
-        return sqrt( std::inner_product(dspl, dspl + DIM, dspl, 0) );
+        return sqrt( std::inner_product(dspl, dspl + DIM, dspl, 0.0) );
     }
 
     template<int DIM>

@@ -5,7 +5,7 @@
 #include <ctime>
 #include <sstream>
 
-#include "./ParaSite/ParaSite.h"
+#include "../ParaSite/ParaSite.h"
 
 #include "EW_parameter.h"
 #include "EW_functions.h"

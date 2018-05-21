@@ -3,18 +3,15 @@
 #include <thread>
 #include <chrono>
 #include <array>
-#include "EW_parameter.h"
-#include "EW_helper.h"
 
 #include <hdf5_hl.h>
 
 #include "./ParaSite/ParaSite.h"
 
-#include "EW_Model.h"
-#include "EW_Observation.h"
+#include "./EW_Model/EW_Model.h"
 //#include "EW_BubbleNucl.h"
 
-#include "EW_examples.h"
+#include "./EW_Model/EW_examples.h"
 
 using namespace MPI_Wrapper;
 using namespace ParaSite;

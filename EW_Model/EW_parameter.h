@@ -1,8 +1,8 @@
 #ifndef EW_PARAMETER_H
 #define EW_PARAMETER_H
 
-#include "eigen/Eigen/Eigen"
-#include "./ParaSite/ParaSite.h"
+#include "../eigen/Eigen/Eigen"
+#include "../ParaSite/ParaSite.h"
 #include "EW_helper.h"
 
 namespace Electroweak{

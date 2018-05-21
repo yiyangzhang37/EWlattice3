@@ -23,7 +23,7 @@ namespace EW_BubbleNucleation{
 	const unsigned int NUCLEATION_RADIUS_SITE = std::stoi(ReadConfigIni("BUBBLE_LAT_RADIUS"));
 	const Real NUCLEATION_RADIUS_LEN = NUCLEATION_RADIUS_SITE*DX;
 	
-	const int TWO_BUBBLES_HALF_SEP = std::stoi(ReadConfigIni("BUBBLE_HALF_SEPARATION"));
+	const int BUBBLES_HALF_SEP = std::stoi(ReadConfigIni("BUBBLE_HALF_SEPARATION"));
 	// time offset due to the starting point of bubble collision at different time 
 	const int RECORD_TIME_OFFSET = std::stoi(ReadConfigIni("RECORD_TIME_OFFSET"));
 
@@ -171,7 +171,7 @@ namespace EW_BubbleNucleation{
 		this->param_.add("NucleationLimit", NUCLEATION_LIMIT);
 		this->param_.add("BubbleRadius(in units of DX)", NUCLEATION_RADIUS_SITE);
 		this->param_.add("BubbleRadius", NUCLEATION_RADIUS_LEN);
-		this->param_.add("BubbleFixedHalfSeparation(ifFixed)", TWO_BUBBLES_HALF_SEP);
+		this->param_.add("BubbleFixedHalfSeparation(ifFixed)", BUBBLES_HALF_SEP);
 		return;
 	}
 

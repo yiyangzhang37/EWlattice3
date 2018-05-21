@@ -1,0 +1,6 @@
+1 process, base model, symmetric init, observer, passed.
+4 processes, passed.
+8 processes, passed.
+
+1 process, one bubble test, passed: total energy matched old code.
+4processes/8 processes, one bubble test, passed: matches 1 process result and old code result.

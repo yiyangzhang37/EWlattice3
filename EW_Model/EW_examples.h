@@ -6,7 +6,7 @@
 
 using namespace Electroweak;
 
-template<int n_rows, int n_cols>
+
 void EW_BaseModel_SymmetricInit(const int n_rows, const int n_cols){
 
     Parallel2D parallel(n_rows, n_cols, MPI_COMM_WORLD);
@@ -43,7 +43,7 @@ void EW_BaseModel_SymmetricInit(const int n_rows, const int n_cols){
     return;
 }
 
-template<int n_rows, int n_cols>
+
 void EW_Nucl_OneBubble(const int n_rows, const int n_cols){
     using namespace EW_BubbleNucleation;
     Parallel2D parallel(n_rows, n_cols, MPI_COMM_WORLD);
@@ -90,7 +90,7 @@ void EW_Nucl_OneBubble(const int n_rows, const int n_cols){
     return;
 }
 
-template<int n_rows, int n_cols>
+
 void EW_Nucl_TwoBubbles(const int n_rows, const int n_cols){
     using namespace EW_BubbleNucleation;
     Parallel2D parallel(n_rows, n_cols, MPI_COMM_WORLD);
@@ -101,7 +101,7 @@ void EW_Nucl_TwoBubbles(const int n_rows, const int n_cols){
 	transform_gridrank_to_gridloc(grid_rank, grid_loc);
 
     Lattice<DIM> lat(nSize, halo, node_size, grid_loc);
-    std::string id = "two_bubbles"
+    std::string id = "two_bubbles";
     BubbleNucleation<DIM> bubble(lat, parallel, id);
     bubble.RecordParameters();
     bubble.RecordCustomParameters();
@@ -126,7 +126,7 @@ void EW_Nucl_TwoBubbles(const int n_rows, const int n_cols){
         bubble.UpdateFields();
 
         /*nucleation is inserted here*/
-        bubble.TwoBubblesTest();
+        bubble.TwoBubblesTest(BUBBLES_HALF_SEP);
 
         bubble.EvolveInterior_KS();
         obs.SaveDensityData(id+"_den_" + std::to_string(i) + ".h5", DensityDataSaveFreq);

@@ -16,6 +16,12 @@ PARASITE_PATH = ./ParaSite
 # Test path
 TEST_PATH = ./tests
 
+# Eigen path
+EIGEN_PATH = ./eigen
+
+# EW_Model path
+EWMODEL_PATH = ./EW_Model
+
 # define any directories containing header files other than /usr/include
 #
 INCLUDES = -I.$(PARASITE_PATH) \
@@ -25,10 +31,11 @@ INCLUDES = -I.$(PARASITE_PATH) \
 LIBSHDF = $(EXTLIB) $(HDF_LIB)/libhdf5.a $(HDF_LIB)/libhdf5_hl.a
 
 # define the C source files
-MPI_SRCS = ./ParaSite/MPIWrapper2D.cpp
-HDF5_SRCS = ./ParaSite/HDF5Wrapper.cpp
-TEST_SRCS = ./tests/tests.cpp
-SRCS = main.cpp EW_helper.cpp $(MPI_SRCS) $(TEST_SRCS) $(HDF5_SRCS)
+MPI_SRCS = $(PARASITE_PATH)/MPIWrapper2D.cpp
+HDF5_SRCS = $(PARASITE_PATH)/HDF5Wrapper.cpp
+TEST_SRCS = $(TEST_PATH)/tests.cpp
+
+SRCS = main.cpp $(EWMODEL_PATH)/EW_helper.cpp $(MPI_SRCS) $(HDF5_SRCS)
 
 # define the C object files 
 #
