@@ -344,6 +344,7 @@ namespace MPI_Wrapper{
 	template<class Type>
 	int Parallel2D::Broadcast(Type& message, const int from) const {
 		return MPI_Bcast(&message, sizeof(Type), MPI_BYTE, from, this->world_comm_);
+		//return MPI_Bcast(&message, sizeof(Type), MPI_BYTE, from, MPI_COMM_WORLD);
 	}
 
 	template<class Type>

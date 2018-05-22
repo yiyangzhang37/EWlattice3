@@ -3,6 +3,7 @@
 
 #include "EW_Base.h"
 #include <random>
+#include <type_traits>
 
 namespace Electroweak{
 	//extend the ObserverFlags
@@ -116,7 +117,8 @@ namespace EW_BubbleNucleation{
 		
 		/*
 		Generate a random Higgs direction for the NucleateOneBubble_Exp(...) function to use.
-		This function should only take place on the root process.
+		This function takes place at each process.
+		The random seed is broadcasted to every process.
 		*/
 		void GenerateRandomHiggsComponents(SU2vector& phi_hat) const;
 
@@ -209,6 +211,7 @@ namespace EW_BubbleNucleation{
 		//get Higgs field phase info from all the processes.
 		auto global_size = this->lat_.get_visible_global_sites();
 		std::vector<char> higgs_phase_info(global_size);
+		
 		GatherHiggsPhaseInfo(T, NUCLEATION_LIMIT, higgs_phase_info);
 		
 		// check if all the sites are in broken phase.
@@ -221,11 +224,14 @@ namespace EW_BubbleNucleation{
 				}
 			}
 		}
+		//this->parallel_.Barrier();
+		this->parallel_.Broadcast(all_broken_phase, this->parallel_.get_root()); 
 		this->parallel_.Barrier();
-		this->parallel_.Broadcast(all_broken_phase, this->parallel_.get_root());
 		if(all_broken_phase) return 0; //All sites in broken phase, return 0.
-
-		this->ReorderHiggsPhaseInfo(higgs_phase_info);
+		
+		if(this->parallel_.is_root())
+			this->ReorderHiggsPhaseInfo(higgs_phase_info);
+		this->parallel_.Barrier();
 
 		//select some number of sites by p_B.
 		std::vector<IndexType> preselect_positions;
@@ -256,12 +262,14 @@ namespace EW_BubbleNucleation{
 				picked_positions);	
 		}
 		int picked_size = picked_positions.size();
+
+		//this->parallel_.Barrier();
 		this->parallel_.Broadcast(picked_size, this->parallel_.get_root());
-		if(picked_size == 0) return 0; //No new bubbles: return 0.
+		std::cout<<"Rank = "<<this->parallel_.get_world_rank() << ":::e "<< picked_size <<std::endl;
+		//if(picked_size == 0) return 0; //No new bubbles: return 0.
 		this->parallel_.Barrier();
 
 		//send the picked_positions to all the processes.
-		this->parallel_.Broadcast(picked_size, this->parallel_.get_root());
 		if(! this->parallel_.is_root() ){
 			picked_positions.resize(picked_size);
 		}
@@ -269,20 +277,16 @@ namespace EW_BubbleNucleation{
 								picked_size, 
 								this->parallel_.get_root());
 
-		//generate Higgs angular components and send to each process.
+		//generate Higgs angular components on each process with the same seed.
+		//The seed is broadcasted from the root process.
 		std::vector<SU2vector> phi_hat(picked_size);
-		if(this->parallel_.is_root()){
-			for(auto i = 0; i < picked_size; ++i){
-				auto ptr = phi_hat.data() + i;
-				this->GenerateRandomHiggsComponents(*ptr);
-			}
+		for(auto i = 0; i < picked_size; ++i){
+			auto ptr = phi_hat.data() + i;
+			this->GenerateRandomHiggsComponents(*ptr);
 		}
-		this->parallel_.Broadcast(phi_hat.data(), 
-								picked_size, 
-								this->parallel_.get_root()); //transfer as MPI_BYTE
-		
+
 		// each process do nucleation, by information from
-		// ha and picked_positions.
+		// phi_hat and picked_positions.
 		for(auto i = 0; i < picked_size; ++i){
 			this->NucleateOneBubble_Exp(T, picked_positions[i], phi_hat[i]);
 		}
@@ -338,7 +342,7 @@ namespace EW_BubbleNucleation{
 		}
 		//sort higgs_phase_info by gidx_list
 		std::vector<char> sorted_higgs_info(total_size);
-		for(auto i : gidx_list){
+		for(auto i = 0; i < total_size; ++i){
 			sorted_higgs_info[gidx_list[i]] = higgs_phase_info[i];
 		}
 		higgs_phase_info = sorted_higgs_info;

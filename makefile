@@ -10,6 +10,10 @@ HDF_LIB = $(HDF_INSTALL)/lib
 EXTLIB = -L$(HDF_LIB)
 LIB = -lsz -lz -lm
 
+# OPEN-MPI
+MPI_INSTALL = /usr/local/Cellar/open-mpi/3.1.0
+MPI_LIB = $(MPI_INSTALL)/lib
+
 # ParaSite path
 PARASITE_PATH = ./ParaSite
 
@@ -26,7 +30,8 @@ EWMODEL_PATH = ./EW_Model
 #
 INCLUDES = -I.$(PARASITE_PATH) \
 			-I.$(TEST_PATH) \
-			-I$(HDF_INSTALL)/include
+			-I$(HDF_INSTALL)/include \
+			-I$(MPI_INSTALL)/include
 
 LIBSHDF = $(EXTLIB) $(HDF_LIB)/libhdf5.a $(HDF_LIB)/libhdf5_hl.a
 
@@ -68,13 +73,15 @@ $(TARGET): $(OBJS)
 run:$(TARGET)
 	$(MPIRUN) -np 1 ./$(TARGET)
 run1:$(TARGET)
-	$(MPIRUN) -np 1 ./$(TARGET) -r 1 -c 1 > $(OUTPUT) &
+	$(MPIRUN) -np 1 ./$(TARGET) -r 1 -c 1 &> $(OUTPUT) &
+run2:$(TARGET)
+	$(MPIRUN) -np 2 ./$(TARGET) -r 1 -c 2
 run4:$(TARGET)
-	$(MPIRUN) -np 4 ./$(TARGET) -r 2 -c 2 > $(OUTPUT) &
+	$(MPIRUN) -np 4 ./$(TARGET) -r 2 -c 2 &> $(OUTPUT) &
 run8:$(TARGET)
-	$(MPIRUN) -np 8 ./$(TARGET) -r 2 -c 4 > $(OUTPUT) &
+	$(MPIRUN) -np 8 ./$(TARGET) -r 2 -c 4 &> $(OUTPUT) &
 run24:$(TARGET)
-	$(MPIRUN) -np 24 ./$(TARGET) -r 4 -c 6 > $(OUTPUT) &
+	$(MPIRUN) -np 24 ./$(TARGET) -r 4 -c 6 &> $(OUTPUT) &
 clean:
 	$(RM) $(OBJS) $(TARGET)
 cleandata:

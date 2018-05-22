@@ -168,7 +168,7 @@ void EW_Random_Nucl(const int n_rows, const int n_cols){
 
         /*nucleation is inserted here*/
         bubble.RandomBubbleNucleation();
-
+        std::cout<<"Rank = "<<bubble.get_parallel_object().get_world_rank() << ":::after nucl"<<std::endl;
         bubble.EvolveInterior_RadialDamping();
         obs.SaveDensityData(id+"_den_" + std::to_string(i) + ".h5", DensityDataSaveFreq);
 
