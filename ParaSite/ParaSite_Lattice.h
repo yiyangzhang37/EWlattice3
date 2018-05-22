@@ -770,13 +770,13 @@ namespace ParaSite{
         IndexType dspl[DIM];
         std::transform(gc1, gc1 + DIM, gc2, 
                     np_dspl,
-                    [](auto x1, auto x2) {return std::abs(x2-x1); });
+                    [](IndexType x1, IndexType x2) {return std::abs(x2-x1); });
         std::transform(np_dspl, np_dspl + DIM, this->global_size_, 
                     bd_dspl,
-                    [](auto x1, auto x2) {return std::abs(x2-x1); });
+                    [](IndexType x1, IndexType x2) {return std::abs(x2-x1); });
         std::transform(np_dspl, np_dspl + DIM, bd_dspl, 
                     dspl, 
-                    [](auto x1, auto x2) {return x1 < x2 ? x1 : x2; });
+                    [](IndexType x1, IndexType x2) {return x1 < x2 ? x1 : x2; });
         return sqrt( std::inner_product(dspl, dspl + DIM, dspl, 0.0) );
     }
 

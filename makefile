@@ -1,5 +1,5 @@
 # detect OS
-ifeq($(OS), Windows_NT)
+ifeq ($(OS), Windows_NT)
 	detected_OS := Windows
 else
 	detected_OS := $(shell uname -s)
@@ -14,15 +14,27 @@ CFLAGS = -std=c++11 -O2
 # Red-Hat 
 REDHAT_INCLUDE = /usr/include
 REDHAT_LIB = /usr/lib64
+
 EXT_REDHAT_LIB = -L$(REDHAT_LIB)
 
 # HDF5
 ifeq ($(detected_OS), Darwin) 
 	HDF_INSTALL = /usr/local/Cellar/hdf5/1.10.1_1
-ifeq($(detected_OS), Linux)
+endif
+ifeq ($(detected_OS), Linux)
 	HDF_INSTALL = /data/yiyang.zhang/lib/hdf5-1.10.2/hdf5
+endif
+
 HDF_LIB = $(HDF_INSTALL)/lib
 EXTLIB = -L$(HDF_LIB)
+
+ifeq ($(detected_OS), Darwin) 
+HDF_LIB_FILES = $(HDF_LIB)/libhdf5.a $(HDF_LIB)/libhdf5_hl.a
+endif
+ifeq ($(detected_OS), Linux)
+HDF_LIB_FILES = $(HDF_LIB)/libhdf5.o $(HDF_LIB)/libhdf5_hl.o
+endif
+
 LIB = -lsz -lz -lm
 
 # OPEN-MPI
@@ -51,8 +63,7 @@ INCLUDES = -I.$(PARASITE_PATH) \
 
 LIBSHDF = $(EXTLIB) \
 		$(EXT_REDHAT_LIB) \
-		$(HDF_LIB)/libhdf5.a $(HDF_LIB)/libhdf5_hl.a \
-		$(HDF_LIB)/libhdf5.o $(HDF_LIB)/libhdf5_hl.o
+		$(HDF_LIB_FILES)
 		
 
 # define the C source files
