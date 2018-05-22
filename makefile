@@ -1,11 +1,26 @@
+# detect OS
+ifeq($(OS), Windows_NT)
+	detected_OS := Windows
+else
+	detected_OS := $(shell uname -s)
+endif
+
 MPICXX = mpic++
 MPIRUN = mpirun
 
 # define any compile-time flags
-CFLAGS = -std=c++14 -O2
+CFLAGS = -std=c++11 -O2
 
-# HDF5 
-HDF_INSTALL = /usr/local/Cellar/hdf5/1.10.1_1
+# Red-Hat 
+REDHAT_INCLUDE = /usr/include
+REDHAT_LIB = /usr/lib64
+EXT_REDHAT_LIB = -L$(REDHAT_LIB)
+
+# HDF5
+ifeq ($(detected_OS), Darwin) 
+	HDF_INSTALL = /usr/local/Cellar/hdf5/1.10.1_1
+ifeq($(detected_OS), Linux)
+	HDF_INSTALL = /data/yiyang.zhang/lib/hdf5-1.10.2/hdf5
 HDF_LIB = $(HDF_INSTALL)/lib
 EXTLIB = -L$(HDF_LIB)
 LIB = -lsz -lz -lm
@@ -31,9 +46,14 @@ EWMODEL_PATH = ./EW_Model
 INCLUDES = -I.$(PARASITE_PATH) \
 			-I.$(TEST_PATH) \
 			-I$(HDF_INSTALL)/include \
-			-I$(MPI_INSTALL)/include
+			-I$(MPI_INSTALL)/include \
+			-I$(REDHAT_INCLUDE)
 
-LIBSHDF = $(EXTLIB) $(HDF_LIB)/libhdf5.a $(HDF_LIB)/libhdf5_hl.a
+LIBSHDF = $(EXTLIB) \
+		$(EXT_REDHAT_LIB) \
+		$(HDF_LIB)/libhdf5.a $(HDF_LIB)/libhdf5_hl.a \
+		$(HDF_LIB)/libhdf5.o $(HDF_LIB)/libhdf5_hl.o
+		
 
 # define the C source files
 MPI_SRCS = $(PARASITE_PATH)/MPIWrapper2D.cpp
