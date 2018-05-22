@@ -130,7 +130,7 @@ namespace Electroweak{
 	template<int DIM>
 	void ElectroweakEvolution<DIM>::RecordParameters() {
 		std::stringstream ss1, ss2;
-    	ss1 << std::put_time(std::localtime(&start_time_), "%Y-%m-%d %X");
+    	ss1 << std::ctime(&start_time_);
 		//ss2 << std::put_time(std::localtime(&finish_time_), "%Y-%m-%d %X");
 		param_.add("ID", this->id_);
 		param_.add("Start Time", ss1.str());
@@ -174,7 +174,7 @@ namespace Electroweak{
 		const bool is_root_save_only) {
 		this->finish_time_ = std::time(nullptr);
 		std::stringstream ss2;
-		ss2 << std::put_time(std::localtime(&finish_time_), "%Y-%m-%d %X");
+		ss2 << std::ctime(&finish_time_);
 		param_.add("Finish Time", ss2.str());
 		param_.add("Time Cost(s)", std::difftime(finish_time_, start_time_));
 		this->SaveParameters(name, is_root_save_only);
