@@ -109,4 +109,4 @@ run32:$(TARGET)
 clean:
 	$(RM) $(OBJS) $(TARGET)
 cleandata:
-	$(RM) *.h5 result.txt
+	$(RM) *.h5 result.txt *_dtable.txt *_param.txt

@@ -158,7 +158,10 @@ void EW_Random_Nucl(const int n_rows, const int n_cols){
                         ObserverFlags::OBS_TotalEnergy | 
                         ObserverFlags::OBS_MagneticEnergy |
                         ObserverFlags::OBS_HiggsMagnitude2);
-
+ 
+    NucleationObserver<DIM> bfield(bubble);
+    bfield.SetObservables(ObserverFlags::OBS_MagneticField, 
+                            ObserverFlags::OBS_MagneticField);
 
     bubble.InitializeSymmetricPhase();
 
@@ -173,10 +176,8 @@ void EW_Random_Nucl(const int n_rows, const int n_cols){
         obs.SaveDensityData(id + "_den_" + std::to_string(i) + ".h5", DensityDataSaveFreq);
 	    obs.SaveDataTable(id+"_dtable.txt", 50);
 
+        /*early stop*/
         if( bubble.CheckEarlyStop(obs) ) {
-            NucleationObserver<DIM> bfield(bubble);
-            bfield.SetObservables(ObserverFlags::OBS_MagneticField, 
-                                    ObserverFlags::OBS_MagneticField);
             bfield.Measure();
             bfield.SaveDensityData(id + "bfield.h5");
             break;
