@@ -250,7 +250,10 @@ namespace EW_BubbleNucleation{
 		//this->parallel_.Barrier();
 		this->parallel_.Broadcast(all_broken_phase, this->parallel_.get_root()); 
 		this->parallel_.Barrier();
-		if(all_broken_phase) return 0; //All sites in broken phase, return 0.
+		if(all_broken_phase) {
+			this->new_bubbles_count_ = 0;
+			return 0; //All sites in broken phase, return 0.
+		}
 		
 		if(this->parallel_.is_root())
 			this->ReorderHiggsPhaseInfo(higgs_phase_info);
@@ -288,7 +291,10 @@ namespace EW_BubbleNucleation{
 
 		//this->parallel_.Barrier();
 		this->parallel_.Broadcast(picked_size, this->parallel_.get_root());
-		if(picked_size == 0) return 0; //No new bubbles: return 0.
+		if(picked_size == 0) {
+			this->new_bubbles_count_ = 0;
+			return 0; //No new bubbles: return 0.
+		}
 		this->parallel_.Barrier();
 
 		//send the picked_positions to all the processes.
