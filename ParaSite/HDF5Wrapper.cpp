@@ -1,4 +1,5 @@
 #include "HDF5Wrapper.h"
+#include <cstring>
 
 namespace HDF5_Wrapper{
 

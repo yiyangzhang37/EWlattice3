@@ -27,15 +27,8 @@ endif
 
 HDF_LIB = $(HDF_INSTALL)/lib
 EXTLIB = -L$(HDF_LIB)
-
-ifeq ($(detected_OS), Darwin) 
 HDF_LIB_FILES = $(HDF_LIB)/libhdf5.a $(HDF_LIB)/libhdf5_hl.a
-endif
-ifeq ($(detected_OS), Linux)
-HDF_LIB_FILES = $(HDF_LIB)/libhdf5.o $(HDF_LIB)/libhdf5_hl.o
-endif
-
-LIB = -lsz -lz -lm
+LIB = -lsz -lz -lm -ldl
 
 # OPEN-MPI
 MPI_INSTALL = /usr/local/Cellar/open-mpi/3.1.0
