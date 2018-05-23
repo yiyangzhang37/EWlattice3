@@ -265,8 +265,7 @@ namespace EW_BubbleNucleation{
 
 		//this->parallel_.Barrier();
 		this->parallel_.Broadcast(picked_size, this->parallel_.get_root());
-		std::cout<<"Rank = "<<this->parallel_.get_world_rank() << ":::e "<< picked_size <<std::endl;
-		//if(picked_size == 0) return 0; //No new bubbles: return 0.
+		if(picked_size == 0) return 0; //No new bubbles: return 0.
 		this->parallel_.Barrier();
 
 		//send the picked_positions to all the processes.

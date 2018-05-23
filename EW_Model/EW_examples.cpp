@@ -171,7 +171,8 @@ void EW_Random_Nucl(const int n_rows, const int n_cols){
        
         bubble.EvolveInterior_RadialDamping();
         obs.SaveDensityData(id+"_den_" + std::to_string(i) + ".h5", DensityDataSaveFreq);
-
+	
+	obs.SaveDataTable(id+"_dtable.txt", 50);
         bubble.TimeAdvance();
     }
     obs.SaveDataTable(id+"_dtable.txt");
