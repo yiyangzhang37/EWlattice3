@@ -213,10 +213,10 @@ namespace EW_BubbleNucleation{
 	bool BubbleNucleation<DIM>::CheckEarlyStop(const ElectroweakObserver<DIM>& obs) const {
 		auto T = this->time_step_;
 		if(T > STOP_MEAN_STEPS){
-			auto dtable = obs.get_data_table();
+			const auto& dtable = obs.get_data_table();
 			const auto& col_vals = dtable.get_column("MinHiggsMagnitude2");
 			auto mean = std::accumulate(
-						col_vals.end() - STOP_MEAN_STEPS, col_vals.end(), 0.0) / STOP_MEAN_STEPS;
+						col_vals.end() - STOP_MEAN_STEPS, col_vals.end(), 0.0) / (v2 * STOP_MEAN_STEPS);
 			if(mean >= EARLY_STOP_LIMIT) return true;
 			else return false;
 		} else {

@@ -167,6 +167,7 @@ void EW_Random_Nucl(const int n_rows, const int n_cols){
 
     for(auto i = 0; i <= Ntimesteps; ++i){
         obs.ExtendMeasure();
+
         bubble.UpdateFields();
 
         /*nucleation is inserted here*/
