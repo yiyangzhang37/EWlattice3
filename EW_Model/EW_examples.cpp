@@ -142,7 +142,7 @@ void EW_Random_Nucl(const int n_rows, const int n_cols){
 	transform_gridrank_to_gridloc(grid_rank, grid_loc);
 
     Lattice<DIM> lat(nSize, halo, node_size, grid_loc);
-    std::string id = "random_nucl";
+    std::string id = ReadConfigIni("RUN_ID");
     BubbleNucleation<DIM> bubble(lat, parallel, id);
     bubble.RecordParameters();
     bubble.RecordCustomParameters();
@@ -170,9 +170,18 @@ void EW_Random_Nucl(const int n_rows, const int n_cols){
         bubble.RandomBubbleNucleation();
        
         bubble.EvolveInterior_RadialDamping();
-        obs.SaveDensityData(id+"_den_" + std::to_string(i) + ".h5", DensityDataSaveFreq);
-	
-	obs.SaveDataTable(id+"_dtable.txt", 50);
+        obs.SaveDensityData(id + "_den_" + std::to_string(i) + ".h5", DensityDataSaveFreq);
+	    obs.SaveDataTable(id+"_dtable.txt", 50);
+
+        if( bubble.CheckEarlyStop(obs) ) {
+            NucleationObserver<DIM> bfield(bubble);
+            bfield.SetObservables(ObserverFlags::OBS_MagneticField, 
+                                    ObserverFlags::OBS_MagneticField);
+            bfield.Measure();
+            bfield.SaveDensityData(id + "bfield.h5");
+            break;
+        }
+
         bubble.TimeAdvance();
     }
     obs.SaveDataTable(id+"_dtable.txt");

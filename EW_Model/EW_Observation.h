@@ -9,7 +9,7 @@ namespace Electroweak{
 
     using namespace ParaSite;
 
-	typedef unsigned int FlagType;
+	typedef unsigned long long FlagType;
 
 	namespace ObserverFlags {
 
@@ -22,18 +22,24 @@ namespace Electroweak{
 		const FlagType OBS_HiggsMagnitude2 = 1 << 6;      // HiggsMagnitude2
 		const FlagType OBS_MinHiggsMagnitude2 = 1 << 7;   // MinHiggsMagnitude2
 		const FlagType OBS_HiggsWinding = 1 << 8;         // HiggsWinding
-		const FlagType OBS_EnergyKinetic = 1 << 9;
-		const FlagType OBS_EnergyGradient = 1 << 10;
-		const FlagType OBS_EnergyPotential = 1 << 11;
-		const FlagType OBS_EnergyU1 = 1 << 12;
-		const FlagType OBS_EnergySU2 = 1 << 13;
+		const FlagType OBS_EnergyKinetic = 1 << 9;		  // E_Kinetic
+		const FlagType OBS_EnergyGradient = 1 << 10;      // E_Grad
+		const FlagType OBS_EnergyPotential = 1 << 11;	  // E_Pot
+		const FlagType OBS_EnergyU1 = 1 << 12;            // E_U1
+		const FlagType OBS_EnergySU2 = 1 << 13;           // E_SU2
+		const FlagType OBS_MagneticField_x = 1 << 14;     // MagneticField_x
+		const FlagType OBS_MagneticField_y = 1 << 15;     // MagneticField_y
+		const FlagType OBS_MagneticField_z = 1 << 16;     // MagneticField_z
 
 		//Combined observations
 		const FlagType OBS_EnergyAllParts = OBS_TotalEnergy | OBS_EnergyKinetic | OBS_EnergyGradient
 						| OBS_EnergyPotential | OBS_EnergyU1 | OBS_EnergySU2;
+		const FlagType OBS_MagneticField = OBS_MagneticField_x | OBS_MagneticField_y | OBS_MagneticField_z;
 		
 		//The flags can be extended.
-		//Custom flags should be start at 1 << 21.
+		//Custom flags should be start at 1 << 31.
+		//When more flags are added, we also need to add corresponding terms in
+		// init_name_vector() and Measure() functions.
 	}
 	
 	template<int DIM>
@@ -81,6 +87,10 @@ namespace Electroweak{
 		void CalcHiggsMagnitude2(const int time_step);
 		void CalcMinHiggsMagnitude2(const int time_step);
 		void CalcHiggsWinding(const int time_step);
+		void CalcMagneticField(const int time_step, const int direction);
+		void CalcMagneticField_x(const int time_step);
+		void CalcMagneticField_y(const int time_step);
+		void CalcMagneticField_z(const int time_step);
 
 		void CalcSimple(const int time_step, 
 			const std::string& data_table_key,
@@ -109,6 +119,8 @@ namespace Electroweak{
 		void SaveDensityData(const std::string& file_name, 
 							const int freq = 1, 
 							const int starting_time_step = 0) const;
+		const DataTable& get_data_table() const {return this->data_table_;}
+
 
     protected:
 		const ElectroweakEvolution<DIM>& evo_;
@@ -173,6 +185,7 @@ namespace Electroweak{
 		Real sc_MagneticEnergy(const Site<DIM>& x, const int T) const;
 		Real sc_ElectricEnergy(const Site<DIM>& x, const int T) const;
 		Real sc_HiggsWinding(const Site<DIM>& x, const int T) const;
+		Real sc_MagneticField(const Site<DIM>& x, const int T, const int direction) const;
 
     };
 
@@ -266,6 +279,15 @@ namespace Electroweak{
 		}
 		if (flags & ObserverFlags::OBS_EnergySU2) {
 			names.push_back("E_SU2");
+		}
+		if (flags & ObserverFlags::OBS_MagneticField_x){
+			names.push_back("MagneticField_x");
+		}
+		if (flags & ObserverFlags::OBS_MagneticField_y){
+			names.push_back("MagneticField_y");
+		}
+		if (flags & ObserverFlags::OBS_MagneticField_z){
+			names.push_back("MagneticField_z");
 		}
 		return;
 	}
@@ -532,6 +554,47 @@ namespace Electroweak{
 	}
 
 	template<int DIM>
+	void ElectroweakObserver<DIM>::CalcMagneticField(const int time_step, const int direction) {
+		switch(direction) {
+		case 0: {
+			this->CalcMagneticField_x(time_step);
+			break;
+		}
+		case 1: {
+			this->CalcMagneticField_y(time_step);
+			break;
+		}
+		case 2: {
+			this->CalcMagneticField_z(time_step);
+			break;
+		}
+		}
+		return;
+	}
+	
+	template<int DIM>
+	void ElectroweakObserver<DIM>::CalcMagneticField_x(const int time_step) {
+		this->CalcSimple(time_step, "MagneticField_x", "MagneticField_x",
+					std::bind(&ElectroweakObserver::sc_MagneticField, this, 
+					 std::placeholders::_1, std::placeholders::_2, 0));
+	}
+
+	template<int DIM>
+	void ElectroweakObserver<DIM>::CalcMagneticField_y(const int time_step) {
+		this->CalcSimple(time_step, "MagneticField_y", "MagneticField_y",
+					std::bind(&ElectroweakObserver::sc_MagneticField, this, 
+					 std::placeholders::_1, std::placeholders::_2, 1));
+	}
+
+	template<int DIM>
+	void ElectroweakObserver<DIM>::CalcMagneticField_z(const int time_step) {
+		this->CalcSimple(time_step, "MagneticField_z", "MagneticField_z",
+					std::bind(&ElectroweakObserver::sc_MagneticField, this, 
+					 std::placeholders::_1, std::placeholders::_2, 2));
+	}
+
+
+	template<int DIM>
 	void ElectroweakObserver<DIM>::CalcSimple(const int time_step, 
 			const std::string& data_table_key,
 			const std::string& density_key,
@@ -591,6 +654,15 @@ namespace Electroweak{
 		if (this->data_table_flags_ & ObserverFlags::OBS_HiggsWinding) {
 			this->CalcHiggsWinding(time_step);
 		}
+		if (this->data_table_flags_ & ObserverFlags::OBS_MagneticField_x) {
+			this->CalcMagneticField(time_step, 0);
+		}
+		if (this->data_table_flags_ & ObserverFlags::OBS_MagneticField_y) {
+			this->CalcMagneticField(time_step, 1);
+		}
+		if (this->data_table_flags_ & ObserverFlags::OBS_MagneticField_z) {
+			this->CalcMagneticField(time_step, 2);
+		}
 		return;
 	}
 
@@ -623,6 +695,14 @@ namespace Electroweak{
 		return 0.5*(pow(EM_F_SITE(x, T, 0, 1, phi_, U_, V_), 2)
 				+ pow(EM_F_SITE(x, T, 1, 2, phi_, U_, V_), 2)
 				+ pow(EM_F_SITE(x, T, 0, 2, phi_, U_, V_), 2));
+	}
+
+	template<int DIM>
+	Real ElectroweakObserver<DIM>::sc_MagneticField(
+		const Site<DIM>& x, const int T, const int direction) const {
+		auto i = (direction + 1) % DIM;
+		auto j = (direction + 2) % DIM;
+		return - EM_F_SITE(x, T, i, j, phi_, U_, V_);
 	}
 
 

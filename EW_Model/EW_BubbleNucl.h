@@ -8,7 +8,7 @@
 namespace Electroweak{
 	//extend the ObserverFlags
 	namespace ObserverFlags {
-		const FlagType OBS_NewBubbleCount = 1 << 21; //"NewBubbleCount"
+		const FlagType OBS_NewBubbleCount = 1 << 31; //"NewBubbleCount"
 	}
 }
 
@@ -28,9 +28,11 @@ namespace EW_BubbleNucleation{
 	// time offset due to the starting point of bubble collision at different time 
 	const int RECORD_TIME_OFFSET = std::stoi(ReadConfigIni("RECORD_TIME_OFFSET"));
 
-	const int NUCL_REGION_LIMIT_SPPEDUP = 1000000; //11 if NUCLEATION_RADIUS_SITE <= 6
-
-	const int STOP_MEAN_STEPS = 10;
+	
+	// The threshold value of Phi^2/eta^2.
+	constexpr Real EARLY_STOP_LIMIT = 0.25; 
+	// The mean average steps taken to calculate the early stopping value.
+	constexpr int STOP_MEAN_STEPS = 10;
 
 	template<int DIM>
     class BubbleNucleation : public ElectroweakEvolution<DIM> {
@@ -54,11 +56,17 @@ namespace EW_BubbleNucleation{
 		*/
         int RandomBubbleNucleation();
 
-		void OneBubbleTest();
-        void TwoBubblesTest(const int sep);
-        void NonRandomTest(const int half_sep, unsigned int& new_bubble_count);
-
+		void OneBubbleTest() const;
+        void TwoBubblesTest(const int sep) const;
+        void NonRandomTest(const int half_sep, unsigned int& new_bubble_count) const;
+		
+		//get the new bubble count for the current time step.
 		int GetNewBubbleCount() const {return this->new_bubbles_count_;}
+
+		//check whether the simulation satisfies the early stopping condition.
+		//return true if the condition is satisfied, and can perform early stop.
+		//otherwise return false.
+		bool CheckEarlyStop(const ElectroweakObserver<DIM>& obs) const;
 
     private:
 		/*
@@ -199,6 +207,16 @@ namespace EW_BubbleNucleation{
 		this->V_.update_halo();
 		this->E_.update_halo();
 		return;
+	}
+
+	template<int DIM>
+	bool BubbleNucleation<DIM>::CheckEarlyStop(const ElectroweakObserver<DIM>& obs) const {
+		auto dtable = obs.get_data_table();
+		const auto& col_vals = dtable.get_column("MinHiggsMagnitude2");
+		auto mean = std::accumulate(
+					col_vals.end() - STOP_MEAN_STEPS, col_vals.end(), 0.0) / STOP_MEAN_STEPS;
+		if(mean >= EARLY_STOP_LIMIT) return true;
+		else return false;
 	}
 
 	template<int DIM>
@@ -463,7 +481,7 @@ namespace EW_BubbleNucleation{
 	}
 
 	template<int DIM>
-	void BubbleNucleation<DIM>::OneBubbleTest() {
+	void BubbleNucleation<DIM>::OneBubbleTest() const {
 		Site<DIM> x(this->lat_);
 		if (this->time_step_ == 0) {
 			auto T = (this->time_step_ + 1) % CYCLE;
@@ -477,7 +495,7 @@ namespace EW_BubbleNucleation{
 	}
 
 	template<int DIM>
-	void BubbleNucleation<DIM>::TwoBubblesTest(const int half_sep) {
+	void BubbleNucleation<DIM>::TwoBubblesTest(const int half_sep) const {
 		Site<DIM> x(this->lat_);
 		if (this->time_step_ == 0) {
 			auto T = (this->time_step_ + 1) % CYCLE;
@@ -495,7 +513,7 @@ namespace EW_BubbleNucleation{
 	}
 
 	template<int DIM>
-	void BubbleNucleation<DIM>::NonRandomTest(const int half_sep, unsigned int& new_bubble_count) {
+	void BubbleNucleation<DIM>::NonRandomTest(const int half_sep, unsigned int& new_bubble_count) const {
 		/*
 		if (_time_step == 0) {
 			const auto num_in_line = nSize[0] / (2 * half_sep);
