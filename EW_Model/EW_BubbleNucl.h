@@ -177,7 +177,7 @@ namespace EW_BubbleNucleation{
 
 	template<int DIM>
 	void BubbleNucleation<DIM>::RecordCustomParameters() {
-		this->param_.add("NucleationProbability", NUCLEATION_PROB);
+		this->param_.add("NucleationProbability", NUCLEATION_PROB, true);
 		this->param_.add("NucleationLimit", NUCLEATION_LIMIT);
 		this->param_.add("BubbleRadius(in units of DX)", NUCLEATION_RADIUS_SITE);
 		this->param_.add("BubbleRadius", NUCLEATION_RADIUS_LEN);

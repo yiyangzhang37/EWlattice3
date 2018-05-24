@@ -49,7 +49,7 @@ private:
 class Parameters {
 public:
 	Parameters();
-	void add(const std::string& key, const double val);
+	void add(const std::string& key, const double val, const bool is_scientific = false);
 	void add(const std::string& key, const int val);
 	void add(const std::string& key, const std::string& val);
 	template<class Type>

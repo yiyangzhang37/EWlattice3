@@ -1,4 +1,6 @@
 #include "EW_helper.h"
+#include <sstream>
+#include <iomanip>
 
 std::string ReadConfigIni(const std::string& key, const std::string& file_path) {
 	std::ifstream fin;
@@ -140,8 +142,13 @@ Parameters::Parameters()
 	params_()
 {}
 
-void Parameters::add(const std::string& key, const double val) {
-	add(key, std::to_string(val));
+void Parameters::add(const std::string& key, const double val, const bool is_scientific) {
+	std::stringstream ss;
+	if(is_scientific)
+		ss << std::scientific << std::setprecision(6) << val; 
+	else 
+		ss << std::setprecision(6) << val;
+	add(key, ss.str());
 	return;
 }
 
