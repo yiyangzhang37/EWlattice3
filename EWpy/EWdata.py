@@ -20,6 +20,9 @@ class H5Reader:
         for (idx, item) in enumerate(self.dataset_.attrs):
             self.attrs_[item] = self.dataset_.attrs[item][0]
             self.idx_attrs_[idx] = self.dataset_.attrs[item][0]
+    
+    def close(self):
+        self.file_.close()
 
 class constants:
     eta_ = 6.0
@@ -91,16 +94,28 @@ class FourierTransform:
         else:
             plt.bar(vals, spec, align='center', width = 0.01)
         return seps, spec
-    
+        
     def fft(self):
-        kdata_0 = np.fft.fftshift( np.fft.fftn(self.xdata_[:,:,:,0]) )
-        kdata_1 = np.fft.fftshift( np.fft.fftn(self.xdata_[:,:,:,1]) )
-        kdata_2 = np.fft.fftshift( np.fft.fftn(self.xdata_[:,:,:,2]) )
+        #kdata_0 = np.fft.fftshift( np.fft.fftn(self.xdata_[:,:,:,0]) )
+        #kdata_1 = np.fft.fftshift( np.fft.fftn(self.xdata_[:,:,:,1]) )
+        #kdata_2 = np.fft.fftshift( np.fft.fftn(self.xdata_[:,:,:,2]) )
+        kdata_0 = np.fft.fftn(self.xdata_[:,:,:,0])
+        kdata_1 = np.fft.fftn(self.xdata_[:,:,:,1])
+        kdata_2 = np.fft.fftn(self.xdata_[:,:,:,2])
         self.kdata_ = np.stack([kdata_0, kdata_1, kdata_2], axis = 3)
-        freq_0 = np.fft.fftshift( np.fft.fftfreq(self.shape_[0]) )
-        freq_1 = np.fft.fftshift( np.fft.fftfreq(self.shape_[1]) )
-        freq_2 = np.fft.fftshift( np.fft.fftfreq(self.shape_[2]) )
+        #freq_0 = np.fft.fftshift( np.fft.fftfreq(self.shape_[0]) )
+        #freq_1 = np.fft.fftshift( np.fft.fftfreq(self.shape_[1]) )
+        #freq_2 = np.fft.fftshift( np.fft.fftfreq(self.shape_[2]) )
+        freq_0 = np.fft.fftfreq(self.shape_[0])
+        freq_1 = np.fft.fftfreq(self.shape_[1])
+        freq_2 = np.fft.fftfreq(self.shape_[2])
         self.freq_ = (freq_0, freq_1, freq_2)
+    
+    def ifft(self):
+        xdata_0 = np.fft.ifftn(self.kdata_[:,:,:,0])
+        xdata_1 = np.fft.ifftn(self.kdata_[:,:,:,1])
+        xdata_2 = np.fft.ifftn(self.kdata_[:,:,:,2])
+        return np.stack([xdata_0, xdata_1, xdata_2], axis = 3)
     
     def energy_spectrum(self):
         '''Compute the energy spectrum.
@@ -139,14 +154,20 @@ class FourierTransform:
         seps, vals = self.configure_magnitude_bins(sep_number, is_zero_mode_separated)
         # The radial spectrum is calculated first supposing is_zero_mode_separated == True.
         radial_spectrum = np.zeros(sep_number, dtype = float)
-        for xi in range(self.shape_[0]):
-            for yi in range(self.shape_[1]):
-                for zi in range(self.shape_[2]):
-                    k_mag = np.sqrt(self.freq_[0][xi]**2 \
-                                      + self.freq_[1][yi]**2 \
-                                      + self.freq_[2][zi]**2)
-                    bn = self.query_bin_number(k_mag, seps)
-                    radial_spectrum[bn] += self.kenergy_[xi, yi, zi]
+        k_mag = self.k_magnitude()
+        flatk = k_mag.flatten()
+        flate = self.kenergy_.flatten()
+        for k, e in zip(flatk, flate):
+            bn = self.query_bin_number(k, seps)
+            radial_spectrum[bn] += e
+        #for xi in range(self.shape_[0]):
+        #    for yi in range(self.shape_[1]):
+        #        for zi in range(self.shape_[2]):
+        #            k_mag = np.sqrt(self.freq_[0][xi]**2 \
+        #                              + self.freq_[1][yi]**2 \
+        #                              + self.freq_[2][zi]**2)
+        #            bn = self.query_bin_number(k_mag, seps)
+        #            radial_spectrum[bn] += self.kenergy_[xi, yi, zi]
         if(is_zero_mode_separated == False):
             radial_spectrum[1] = radial_spectrum[0] + radial_spectrum[1]
             radial_spectrum[0] = 0
@@ -178,16 +199,20 @@ class FourierTransform:
         '''
         calculate the mean value of k, weighted by self.kenergy_.
         '''
-        gridx, gridy, gridz = np.meshgrid(self.freq_[0], self.freq_[1], self.freq_[2], indexing = 'ij')
+        gridx, gridy, gridz = self.build_kspace_mesh()
         kspec = np.sum( self.kenergy_ * np.sqrt( np.square(gridx) + np.square(gridy) + np.square(gridz) ) )
         return kspec / self.kenergy_.sum()
         
     def build_kspace_mesh(self):
         '''
         build a k-space from self.freq_.
-        return: k-space mesh, shape = [size_x, size_y, size_z, 3]
+        return: tuple, k-space mesh, (gridx, gridy, gridz), each with shape [size_x, size_y, size_z].
         '''
-        return None
+        return np.meshgrid(self.freq_[0], self.freq_[1], self.freq_[2], indexing = 'ij')
+   
+    def k_magnitude(self):
+        gridx, gridy, gridz = self.build_kspace_mesh()
+        return np.sqrt( np.square(gridx) + np.square(gridy) + np.square(gridz) )
         
     def max_k(self):
         '''

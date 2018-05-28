@@ -48,10 +48,11 @@ void EW_Nucl_OneBubble(const int n_rows, const int n_cols){
 	transform_gridrank_to_gridloc(grid_rank, grid_loc);
 
     Lattice<DIM> lat(nSize, halo, node_size, grid_loc);
-    BubbleNucleation<DIM> bubble(lat, parallel, "one_bubble");
+    std::string id = ReadConfigIni("RUN_ID");
+    BubbleNucleation<DIM> bubble(lat, parallel, id);
     bubble.RecordParameters();
     bubble.RecordCustomParameters();
-    bubble.SaveParameters("one_bubble_param.txt");
+    bubble.SaveParameters(id+"_param.txt");
     
     NucleationObserver<DIM> obs(bubble);
     obs.SetObservables(ObserverFlags::OBS_EnergyAllParts |
@@ -75,12 +76,12 @@ void EW_Nucl_OneBubble(const int n_rows, const int n_cols){
         bubble.OneBubbleTest();
 
         bubble.EvolveInterior_KS();
-        obs.SaveDensityData("one_bubble_den_" + std::to_string(i) + ".h5", DensityDataSaveFreq);
+        obs.SaveDensityData(id + "_den_" + std::to_string(i) + ".h5", DensityDataSaveFreq);
 
         bubble.TimeAdvance();
     }
-    obs.SaveDataTable("one_bubble_dtable.txt");
-    bubble.ConcludeEvolution("one_bubble_param.txt");
+    obs.SaveDataTable(id + "_dtable.txt");
+    bubble.ConcludeEvolution(id + "_param.txt");
     return;
 }
 
@@ -95,7 +96,7 @@ void EW_Nucl_TwoBubbles(const int n_rows, const int n_cols){
 	transform_gridrank_to_gridloc(grid_rank, grid_loc);
 
     Lattice<DIM> lat(nSize, halo, node_size, grid_loc);
-    std::string id = "two_bubbles";
+    std::string id = ReadConfigIni("RUN_ID");
     BubbleNucleation<DIM> bubble(lat, parallel, id);
     bubble.RecordParameters();
     bubble.RecordCustomParameters();

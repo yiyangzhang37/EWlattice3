@@ -8,6 +8,7 @@
 *param.txt
 result.txt
 compare_data/
+reports/
 
 # HDF5 data files
 *.h5
