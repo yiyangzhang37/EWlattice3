@@ -56,7 +56,7 @@ namespace ParaSite{
         int stride_[2];
 
         /*
-        a pointer pointed to the Parallel2D object.
+        a pointer to the Parallel2D object.
         */
         const ParallelObject* parallel_ptr;
 
@@ -74,9 +74,17 @@ namespace ParaSite{
     public:
         /*
         define a vector field, with dimension = components.
+        If the parallel object is not assigned now, 
+        it needs to be assigned manually later, before any computations.
         */
         Field(const Lattice<DIM>& lattice, const int mat_rows);
+        /*
+        define a matrix field, with dimension (mat_rows, mat_cols).
+        */
         Field(const Lattice<DIM>& lattice, const int mat_rows, const int mat_cols);
+        /*
+        define fields as described above, also assign the parallel object to the field.
+        */
 		Field(const Lattice<DIM>& lattice, const int mat_rows, 
 			const ParallelObject& parallel_object);
 		Field(const Lattice<DIM>& lattice, const int mat_rows, const int mat_cols,
@@ -84,6 +92,9 @@ namespace ParaSite{
         ~Field();
 
         void assign_parallel_object(const ParallelObject& parallel_object);
+        /*
+        reinitialize the filed, including reallocate the memory.
+        */
 		void reinit(const int mat_rows, const int mat_cols);
 
         //data retrieval and modification
@@ -109,7 +120,6 @@ namespace ParaSite{
         void update_halo() const;
         
         const Lattice<DIM>& get_lattice() const {return *(this->lattice_);}
-        //Lattice<DIM>& get_lattice() const {return const_cast<Lattice<DIM>>(*(this->lattice_));}
         constexpr int get_rows() const {return this->mat_rows_;}
         constexpr int get_cols() const {return this->mat_cols_;}
         constexpr int get_components() const {return this->components_;}

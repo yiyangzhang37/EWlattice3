@@ -14,6 +14,7 @@ namespace HDF5_Wrapper{
 
     /*
     Get the correponding HDF5 DataType.
+    This template should have specification explicitly for each type being used.
     */
     template<class Type>
     hid_t get_H5_datatype(){
@@ -46,11 +47,13 @@ namespace HDF5_Wrapper{
     template<>
     hid_t get_H5_datatype<char>();
 
-    
+    /*
+    class HDF5Wrapper
+    Each object will handle one file only.
+    */
 
     class HDF5Wrapper{
     private:
-        //const ParallelObject* parallel_ = nullptr;
         std::string file_name_;
         hid_t file_id_ = -1;
         hid_t dataset_id_ = -1;
@@ -66,10 +69,10 @@ namespace HDF5_Wrapper{
         one object will only open one HDF5 file.
         */
         HDF5Wrapper(const std::string& file_name);
-        //HDF5Wrapper(const ParallelObject& parallel);
         
         /*
-        when the destructor is called, the h5 file is closed.
+        The close file operation should preceed the destructor.
+        The destructor may free the file_id_ first.
         */
         ~HDF5Wrapper();
 
@@ -131,7 +134,7 @@ namespace HDF5_Wrapper{
         create a new h5 file, and move the current_loc_ to this->file_id_.
         accepted flags: 
         H5F_ACC_TRUNC: truncate file.
-        H5F_ACC_EXCL: fail if it already exists.
+        H5F_ACC_EXCL: fail if it already exists. (default)
         If creation fails, return a negative value.
         */
         hid_t create_file(
@@ -142,7 +145,7 @@ namespace HDF5_Wrapper{
         open a h5 file, and move the current_loc_ to this->file_id_.
         accepted flags:
         H5F_ACC_RDONLY: read_only.
-        H5F_ACC_RDWR: read and write.
+        H5F_ACC_RDWR: read and write. (default)
         If open fails, return a negative value.
         */
         hid_t open_file(
@@ -183,6 +186,9 @@ namespace HDF5_Wrapper{
             const std::string& dataset_name,
             const hsize_t* size);
         
+        /*
+        reset the size of the existing dataset.
+        */
         template<int DIM>
         herr_t reset_dataset_size(
             const hid_t dataset_id,
@@ -199,7 +205,14 @@ namespace HDF5_Wrapper{
         template<class Type>
         herr_t read_dataset(Type* data) const;
 
-        /* write/read the whole data buffer to selected region in the dataset*/
+        /* 
+        write/read the selected part of the data buffer to selected region in the dataset.
+        file_offset: the offset(coordinates) of the selected region in the file.
+        file_block_size: the size of the selected region to be written/read in the file.
+        mem_size: the whole memory size of the data buffer.
+        mem_offset: the offset of the selected part of the data buffer.
+        mem_block_size: the size of the selected part in the memory. 
+        */
         template<class Type, int DIM>
         herr_t write_dataset(
             const Type* data, 
@@ -258,6 +271,9 @@ namespace HDF5_Wrapper{
             const Type* vals,
             const hsize_t len) const;
         
+        /*
+        attach attributes to the current dataset.
+        */
         template<class Type>
         herr_t attach_attribute_to_dataset(
             const std::string& name,

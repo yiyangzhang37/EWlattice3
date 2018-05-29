@@ -17,7 +17,7 @@
 namespace ParaSite{
 
     //IndexType and GridIndexType should be SIGNED integer types.
-    //sizeof(GridIndexType) < sizeof(IndexType)
+    //sizeof(GridIndexType) <= sizeof(IndexType)
     typedef int32_t IndexType;
     typedef int32_t GridIndexType;
     typedef double DistanceType;
@@ -25,6 +25,8 @@ namespace ParaSite{
     /*
     helper function to transform Parallel2D grid_rank to grid_loc in this class.
     The grid_loc definition is independent of the Parallel2D implementation.
+    The grid_loc is the intuitive row and column number of a 2D grid,
+    in the form (row_num, col_num).
     If Parallel2D convention changes, we only need to change the following 2 functions.
     */
     inline GridIndexType* transform_gridrank_to_gridloc(const GridIndexType grid_rank[2], GridIndexType grid_loc[2]){
@@ -58,7 +60,7 @@ namespace ParaSite{
         Lattice(const IndexType size, 
                 const IndexType halo, 
                 const GridIndexType* node_size = nullptr,
-                const GridIndexType* grid_loc = nullptr); // need test
+                const GridIndexType* grid_loc = nullptr);
 		//Lattice(const IndexType* size,
 		//	const IndexType halo,
 		//	const Parallel2D& parallel);
@@ -94,8 +96,14 @@ namespace ParaSite{
           including halo sites. This gives the site location in the memory.
         / local_mem_coord: the coordinate of a local site in the full local lattice.
         / local_vis_coord: the coordinate of a local site in the visible local lattice.
+        / local_vis_index: the index of a local visible site.
         For efficiency, most of the functions will assume the input is valid.
         */
+
+       /*
+       Transform bewteen the global index and global coordinate.
+       The transformation is controlled by the global_stride_[DIM].
+       */
         IndexType global_coord2index(const IndexType* global_coord) const;
         IndexType* global_index2coord(const IndexType global_index, IndexType* global_coord) const;
 		/*
@@ -111,6 +119,9 @@ namespace ParaSite{
 			const int steps, 
 			const int direction) const;
 
+        /*
+        Transformation between the local_mem_index and local_mem_coord.
+        */
         IndexType local_mem_coord2index(const IndexType* local_mem_coord) const;
 		IndexType* local_mem_index2coord(const IndexType local_mem_index,
 			IndexType* local_mem_coord) const;
@@ -128,12 +139,15 @@ namespace ParaSite{
 			const int steps,
 			const int direction) const;
 
+        /*
+        Transformation between the local_vis_index and local_vis_coord.
+        */
         IndexType local_vis_coord2index(const IndexType* local_vis_coord) const;
         IndexType* local_vis_index2coord(const IndexType local_vis_index, 
             IndexType* local_vix_coord) const;
 
         /*
-        transformation between local_mem_coord and local_vis_coord
+        Transformation between local_mem_coord and local_vis_coord
         */
         IndexType* local_mem_coord_to_local_vis_coord(
             const IndexType* local_mem_coord,
@@ -143,7 +157,7 @@ namespace ParaSite{
             IndexType* local_mem_coord) const;
 
         /*
-        transformation between local_vis_coord and global_coord.
+        Transformation between local_vis_coord and global_coord.
         */
         IndexType* local_vis_coord_to_global_coord(
             const IndexType* local_vis_coord, 
@@ -153,14 +167,14 @@ namespace ParaSite{
             IndexType* local_vis_coord) const;
 
         /*
-        transform local_mem_coord to global_coord
+        Transform local_mem_coord to global_coord
         */
         IndexType* local_mem_coord_to_global_coord(
             const IndexType* local_mem_coord,
             IndexType* global_coord) const;
 
 		/*
-		transformation between three kinds of indices.
+		Transformation between three kinds of indices.
 		/ when transforming from global_index to local_vis_index,
 		the global_index is assumed to be in the local visible region.
 		/ when transforming from local_mem_index to local_vis_index,
@@ -205,17 +219,25 @@ namespace ParaSite{
 		constexpr IndexType get_local_halo_next_to_last() const;
 
         /*
-        relate the halo site coordinate with the local visible coordinate being mapped (mapped_coord).
+        Each halo site is a copy of some local visible site in other blocks.
+        These functions relate the halo site coordinate 
+        with the local visible coordinate being mapped (mapped_coord).
         All the coordinates are local_mem_coord.
         */
         IndexType get_mapped_coord(
            const IndexType halo_coord, const int direction) const;
         IndexType* get_mapped_coord(
             const IndexType* halo_coord, IndexType* mapped_coord) const;
+        /*
+        Get the grid_loc of the mapped coord.
+        */
         GridIndexType* get_mapped_grid_loc_from_halo_coord(
             const IndexType* halo_coord, GridIndexType grid_loc[2]) const;
         GridIndexType* get_mapped_grid_loc_from_rel_grid_loc(
             const GridIndexType rel_grid_loc[2], GridIndexType grid_loc[2]) const;
+        /*
+        Get the relative grid_loc of the mapped coord, relative to the current grid_loc.
+        */
         GridIndexType* get_mapped_relative_grid_loc(
             const IndexType* halo_coord, GridIndexType rel_grid_loc[2]) const;    
 

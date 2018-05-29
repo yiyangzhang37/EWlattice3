@@ -18,29 +18,30 @@ namespace ParaSite{
         ~Site();
 
 		/*
-		move the Site object to the first local visible site
+		Move the Site object to the first local visible site.
+		Return the reference of the current object.
 		*/
         Site& first();
 
 		/*
-		move the Site object to the next local visible site.
-		(assuming right now the object is at a local visible site)
+		Move the Site object to the next local visible site.
+		(assuming right now the object is at a local visible site).
+		Return the reference of the current object.
 		*/
         Site& next();
 
 		/*
-		check if the Site object is not beyond the last local 
-		visible site
+		check if the Site object is not beyond the last local visible site.
 		*/
         bool test() const;
 
 		/*
-		move the Site object to the first local halo site.
+		Move the Site object to the first local halo site.
 		*/
         Site& halo_first();
 
 		/*
-		move the Site object to the next local halo site.
+		Move the Site object to the next local halo site.
 		(assuming right now the object is at a local halo site)
 		*/
         Site& halo_next();
@@ -75,6 +76,11 @@ namespace ParaSite{
         Site& operator>(const int direction);
         Site& operator<(const int direction);
 
+		/*
+		Directly set the index_ varible of the Site object.
+		This method does not do boundary check. 
+		So one needs to make sure the input is a valid local_mem_index.
+		*/
 		void set_index(const IndexType new_index) {
 			this->index_ = new_index;
 		}
@@ -104,13 +110,13 @@ namespace ParaSite{
 		IndexType coord_local_mem(const int direction) const;
 
         const Lattice<DIM>& get_lattice() const {return *(this->lattice_);}
-        //Lattice<DIM>& get_lattice() const {return const_cast<Lattice<DIM>>(*(this->lattice_));}
+
         constexpr IndexType get_index() const {return this->index_;}
 
     private:
         const Lattice<DIM>* lattice_;
         /*
-        this index_ should be the local_mem_index in the Lattice class convention.
+        this index_ is the local_mem_index in the Lattice class convention.
         */
         IndexType index_;
 

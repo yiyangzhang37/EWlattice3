@@ -16,7 +16,8 @@ namespace MPI_Wrapper{
 	int Parallel_Finalize();
 
 	/*
-	get the corresponding MPI_DataType.
+	Get the corresponding MPI_DataType.
+	One needs to write each type specification explicitly.
 	*/
 	template<class Type>
 	MPI_Datatype get_MPI_Datatype(){
@@ -57,9 +58,14 @@ namespace MPI_Wrapper{
 		typedef unsigned int ArraySize;
 		//CONSTRUCTOR AND DESTRUCTOR ========================
 		/*
-		The constructor will take care of all the initialization that is not related to 2D grid structure.
+		This constructor will take care of all the initialization that is not related to 2D grid structure.
+		Need to call InitializeGrid() after this function.
 		*/
 		Parallel2D(MPI_Comm world_comm = MPI_COMM_WORLD);
+		/*
+		This constructor will also take care of the 2D grid structure.
+		It will call InitializeGrid().
+		*/
 		Parallel2D(const int n_rows,
 					const int n_cols,
 					MPI_Comm world_comm = MPI_COMM_WORLD);
@@ -78,6 +84,9 @@ namespace MPI_Wrapper{
 		//void AbortRequest();
 
 		//BARRIER ===========================================
+		/*
+		Barrier of all the processes defined by the current object.
+		*/
 		int Barrier() const;
 
 		//GLOBAL AND DIRECTIONAL PROCESSES COMMUNICATIONS ===
@@ -252,7 +261,7 @@ namespace MPI_Wrapper{
 
 		//TRANSFORMS ========================================
 		/*
-		transform between world rank and 2D grid rank.
+		Transformation between world rank and 2D grid rank.
 		*/
 		int* rank_world2grid(const int world_rank, int* grid_rank) const {
 			grid_rank[0] = world_rank % this->stride_[0];
@@ -263,15 +272,18 @@ namespace MPI_Wrapper{
 			return grid_rank[0] * this->stride_[1] + grid_rank[1] * this->stride_[0];
 		}
 
+		/*
+		Transformation between the world_rank and the grid_loc (i.e., row and column number).
+		*/
 		int* world_rank_to_rowcol(const int world_rank, int* row_col) const {
 			row_col[0] = world_rank / this->stride_[0];
 			row_col[1] = world_rank % this->stride_[0];
 			return row_col;
 		}
-
 		int rowcol_to_world_rank(const int* rowcol) const {
 			return rowcol[0] * this->stride_[0] + rowcol[1] * this->stride_[1];
 		}
+
 		//MISCELLANEOUS =====================================
 		int get_world_size() const { return this->world_size_;}
 		int get_world_rank() const { return this->world_rank_;}
@@ -309,9 +321,10 @@ namespace MPI_Wrapper{
 		//last index changes first.
 		int stride_[2];
 
+		// Return the world_rank of the root process.
 		int root_;
+		// check if the current process is the root process.
 		bool is_root_;
-		// bool last_proc_[2];
 
 		// world_comm_: communicator that controls all the processes, including IO processes.
 		// row_comm_: communicator array with size grid_size_[0].
@@ -344,7 +357,6 @@ namespace MPI_Wrapper{
 	template<class Type>
 	int Parallel2D::Broadcast(Type& message, const int from) const {
 		return MPI_Bcast(&message, sizeof(Type), MPI_BYTE, from, this->world_comm_);
-		//return MPI_Bcast(&message, sizeof(Type), MPI_BYTE, from, MPI_COMM_WORLD);
 	}
 
 	template<class Type>
