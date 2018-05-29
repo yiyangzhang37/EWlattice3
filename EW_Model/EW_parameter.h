@@ -59,7 +59,7 @@ namespace Electroweak{
     const Real CENTER_POS[DIM] = { nSize[0] / 2 - 0.5 , nSize[1] / 2 - 0.5 , nSize[2] / 2 - 0.5 };
 
     const Real lambda = std::stod(ReadConfigIni("lambda"));//lambda=0.129
-    const Real v = 6.0;
+    const Real v = std::stod(ReadConfigIni("eta"));
     const Real v2 = v*v;
 
     //Higgs mass
