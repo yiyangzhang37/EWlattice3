@@ -9,7 +9,7 @@
             "name": "(lldb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/MPIWrapper2D/lat_test",
+            "program": "${workspaceFolder}/emlat.out",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

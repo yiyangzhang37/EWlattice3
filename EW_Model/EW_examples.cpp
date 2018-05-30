@@ -180,6 +180,8 @@ void EW_Random_Nucl(const int n_rows, const int n_cols){
 
         /*early stop*/
         if( bubble.CheckEarlyStop(obs) ) {
+            obs.ExtendMeasure();
+            obs.SaveDensityData(id + "_den_es" + ".h5", DensityDataSaveFreq);
             bfield.Measure();
             bfield.SaveDensityData(id + "_bfield.h5");
             break;

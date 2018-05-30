@@ -29,6 +29,7 @@ HDF_LIB = $(HDF_INSTALL)/lib
 EXTLIB = -L$(HDF_LIB)
 HDF_LIB_FILES = $(HDF_LIB)/libhdf5.a $(HDF_LIB)/libhdf5_hl.a
 LIB = -lsz -lz -lm -ldl
+# LIB = -lz -lm -ldl
 
 # OPEN-MPI
 MPI_INSTALL = /usr/local/Cellar/open-mpi/3.1.0
