@@ -512,11 +512,11 @@ namespace EW_BubbleNucleation{
 			auto T = (this->time_step_ + 1) % CYCLE;
 			SU2vector phi_hat;
 			this->GenerateRandomHiggsComponents(phi_hat);
-			IndexType c1[DIM] = { nSize[0] / 2 - half_sep , nSize[1] / 2 , nSize[2] / 2 };
+			IndexType c1[DIM] = { nSize[0] / 2 , nSize[1] / 2 , nSize[2] / 2 - half_sep };
 			this->NucleateOneBubble(T, c1, phi_hat);
 
 			this->GenerateRandomHiggsComponents(phi_hat);
-			IndexType c2[DIM] = { nSize[0] / 2 + half_sep , nSize[1] / 2 , nSize[2] / 2 };
+			IndexType c2[DIM] = { nSize[0] / 2 , nSize[1] / 2 , nSize[2] / 2 + half_sep };
 			this->NucleateOneBubble(T, c2, phi_hat);
 			this->phi_.update_halo();
 		}
