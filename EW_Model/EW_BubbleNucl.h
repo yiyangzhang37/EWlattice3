@@ -68,6 +68,12 @@ namespace EW_BubbleNucleation{
 		//otherwise return false.
 		bool CheckEarlyStop(const ElectroweakObserver<DIM>& obs) const;
 
+		//check whether the Higgs field has all left the symmetric phase.
+		//by looking at the MinHiggsMagnitude2
+		//if yes, then skip the random nucleation.
+		///This function purely for efficiency.
+		bool CheckHiggsAllInBrokenPhase(const ElectroweakObserver<DIM>& obs) const;
+
     private:
 		/*
 		check whether each site is in symmtric phase (0) or not (1), for the time slice nowTime.
@@ -220,6 +226,22 @@ namespace EW_BubbleNucleation{
 			if(mean >= EARLY_STOP_LIMIT) return true;
 			else return false;
 		} else {
+			return false;
+		}
+	}
+
+	template<int DIM>
+	bool BubbleNucleation<DIM>::CheckHiggsAllInBrokenPhase(
+		const ElectroweakObserver<DIM>& obs) const {
+		auto T = this->time_step_;
+		if(T > 50){ //only use this check after 50 timesteps
+			const auto& dtable = obs.get_data_table();
+			const auto& col_vals = dtable.get_column("MinHiggsMagnitude2");
+			auto last_val = *col_vals.end();
+			if(last_val >= 10 * NUCLEATION_LIMIT) return true;
+			else return false;
+
+		} else{
 			return false;
 		}
 	}
