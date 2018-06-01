@@ -48,7 +48,7 @@ namespace ParaSite{
         stores the shape of the matrix field.
         if it is a vector field, then the components will be stored in mat_rows_,
         while mat_cols will be set to 1.
-        /// It will follow row-first convention.
+        /// It will follow row-change-first convention.
         */
         int components_;
         int mat_rows_;
