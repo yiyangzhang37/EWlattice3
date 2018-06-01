@@ -12,10 +12,15 @@ MPIRUN = mpirun
 CFLAGS = -std=c++11 -O2
 
 # Red-Hat 
-REDHAT_INCLUDE = /usr/include
-REDHAT_LIB = /usr/lib64
+DEFAULT_INCLUDE = /usr/include
 
-EXT_REDHAT_LIB = -L$(REDHAT_LIB)
+ifeq ($(detected_OS), Linux)
+	REDHAT_LIB = /usr/lib64
+	EXT_REDHAT_LIB = -L$(REDHAT_LIB)
+else
+	REDHAT_LIB =
+	EXT_REDHAT_LIB =
+endif
 
 # HDF5
 ifeq ($(detected_OS), Darwin) 
@@ -49,11 +54,11 @@ EWMODEL_PATH = ./EW_Model
 
 # define any directories containing header files other than /usr/include
 #
-INCLUDES = -I.$(PARASITE_PATH) \
-			-I.$(TEST_PATH) \
+INCLUDES = -I$(PARASITE_PATH) \
+			-I$(TEST_PATH) \
 			-I$(HDF_INSTALL)/include \
 			-I$(MPI_INSTALL)/include \
-			-I$(REDHAT_INCLUDE)
+			-I$(DEFAULT_INCLUDE)
 
 LIBSHDF = $(EXTLIB) \
 		$(EXT_REDHAT_LIB) \
