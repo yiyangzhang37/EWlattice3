@@ -1,53 +1,41 @@
 #include "FFTWrapper.h"
 #include <algorithm>
 #include <functional>
-#include <iostream>
-#include <cassert>
-
-template<int DIM, class InType, class OutType>
-FFTBase::FFTBase(const int* size){
-    this->resize(size);
-}
-
-template<int DIM, class InType, class OutType>
-FFTBase::~FFTBase() {
-    this->deallocate();
-}
 
 
-template<int DIM, class InType, class OutType>
-void FFTBase::resize(const int* size){
-    std::copy_n(size, DIM, this->size_);
-    this->len_ = std::accumulate(size, size + DIM, 1, std::multiplies());
-    assert(this->len_ > 0);
-    return;
-}
+namespace FFT_Wrapper{
 
+    ComplexFFT1D::ComplexFFT1D(const int size)
+        :
+        FFTBase<1, complex_t, complex_t>(&size)
+        {}
 
-template<int DIM, class InType, class OutType>
-void FFTBase::allocate() {
-    if( this->data_out_ != nullptr ){
-        std::cerr << "Memory already been allocated." << std::endl;
+    ComplexFFT1D::~ComplexFFT1D(){
     }
-    this->data_out_ = static_cast<OutType*>( fftw_malloc(sizeof(OutType)* this->len_) );
-    return;
-}
 
-template<int DIM, class InType, class OutType>
-void FFTBase::deallocate() {
-    if( this->data_out_ == nullptr ){
-        std::cerr << "No memory was allocated." << std::endl;
+    void ComplexFFT1D::fft(const complex_t* data_in) {
+        this->fft_impl(data_in, FFTW_FORWARD);
     }
-    fftw_free(this->data_out_);
-    this->data_out_ = nullptr;
-    return;
+
+    void ComplexFFT1D::ifft(const complex_t* data_in) {
+        this->fft_impl(data_in, FFTW_BACKWARD);
+    }
+
+    void ComplexFFT1D::fft_impl(const complex_t* data_in, const int sign){
+        this->set_input_ptr(data_in);
+        this->reallocate();
+        auto plan = fftw_plan_dft_1d(this->size_[0], 
+                                    reinterpret_cast<fftw_complex*>(const_cast<complex_t*>(this->data_in_)),
+                                    reinterpret_cast<fftw_complex*>(this->data_out_),
+                                    sign,
+                                    FFTW_ESTIMATE);
+        fftw_execute(plan);
+        fftw_destroy_plan(plan);
+        return;                            
+    }
+
 }
 
-template<int DIM, class InType, class OutType>
-void FFTBase::reallocate() {
-    this->deallocate();
-    this->allocate();
-    return;
-}
+
 
 

@@ -12,10 +12,15 @@ MPIRUN = mpirun
 CFLAGS = -std=c++11 -O2
 
 # Red-Hat 
-REDHAT_INCLUDE = /usr/include
-REDHAT_LIB = /usr/lib64
-
-EXT_REDHAT_LIB = -L$(REDHAT_LIB)
+ifeq ($(detected_OS), Linux)
+	REDHAT_INCLUDE = /usr/include
+	REDHAT_LIB = /usr/lib64
+	EXT_REDHAT_LIB = -L$(REDHAT_LIB)
+else
+	REDHAT_INCLUDE = 
+	REDHAT_LIB = 
+	EXT_REDHAT_LIB = 
+endif
 
 # HDF5
 ifeq ($(detected_OS), Darwin) 
@@ -28,7 +33,8 @@ endif
 HDF_LIB = $(HDF_INSTALL)/lib
 EXTLIB = -L$(HDF_LIB)
 HDF_LIB_FILES = $(HDF_LIB)/libhdf5.a $(HDF_LIB)/libhdf5_hl.a
-LIB = -lsz -lz -lm -ldl
+
+LIB = -lsz -lz -lm -ldls
 # LIB = -lz -lm -ldl
 
 # OPEN-MPI
@@ -49,8 +55,8 @@ EWMODEL_PATH = ./EW_Model
 
 # define any directories containing header files other than /usr/include
 #
-INCLUDES = -I.$(PARASITE_PATH) \
-			-I.$(TEST_PATH) \
+INCLUDES = -I$(PARASITE_PATH) \
+			-I$(TEST_PATH) \
 			-I$(HDF_INSTALL)/include \
 			-I$(MPI_INSTALL)/include \
 			-I$(REDHAT_INCLUDE)
@@ -63,10 +69,15 @@ LIBSHDF = $(EXTLIB) \
 # define the C source files
 MPI_SRCS = $(PARASITE_PATH)/MPIWrapper2D.cpp
 HDF5_SRCS = $(PARASITE_PATH)/HDF5Wrapper.cpp
+FFT_SRCS = $(PARASITE_PATH)/FFTWrapper.cpp
 TEST_SRCS = $(TEST_PATH)/tests.cpp
 
-SRCS = main.cpp $(EWMODEL_PATH)/EW_helper.cpp $(EWMODEL_PATH)/EW_examples.cpp \
-		 $(MPI_SRCS) $(HDF5_SRCS)
+
+SRCS = main.cpp \
+		$(EWMODEL_PATH)/EW_helper.cpp \
+		$(EWMODEL_PATH)/EW_examples.cpp \
+		$(MPI_SRCS) $(HDF5_SRCS) $(FFT_SRCS) \
+		# $(TEST_SRCS)
 
 # define the C object files 
 #
