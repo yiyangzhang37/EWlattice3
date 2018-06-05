@@ -45,6 +45,12 @@
         "alignedvector3": "cpp",
         "istream": "cpp",
         "*.ipp": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "slist": "cpp",
+        "cinttypes": "cpp",
+        "cstdint": "cpp",
+        "cstdio": "cpp",
+        "cwchar": "cpp",
+        "cwctype": "cpp"
     }
 }

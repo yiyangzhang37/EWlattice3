@@ -33,7 +33,8 @@ endif
 HDF_LIB = $(HDF_INSTALL)/lib
 EXTLIB = -L$(HDF_LIB)
 HDF_LIB_FILES = $(HDF_LIB)/libhdf5.a $(HDF_LIB)/libhdf5_hl.a
-LIB = -lsz -lz -lm -ldl
+
+LIB = -lsz -lz -lm -ldl -lfftw3
 # LIB = -lz -lm -ldl
 
 # OPEN-MPI
@@ -68,10 +69,15 @@ LIBSHDF = $(EXTLIB) \
 # define the C source files
 MPI_SRCS = $(PARASITE_PATH)/MPIWrapper2D.cpp
 HDF5_SRCS = $(PARASITE_PATH)/HDF5Wrapper.cpp
+FFT_SRCS = $(PARASITE_PATH)/FFTWrapper.cpp
 TEST_SRCS = $(TEST_PATH)/tests.cpp
 
-SRCS = main.cpp $(EWMODEL_PATH)/EW_helper.cpp $(EWMODEL_PATH)/EW_examples.cpp \
-		 $(MPI_SRCS) $(HDF5_SRCS)
+
+SRCS = main.cpp \
+		$(MPI_SRCS) $(HDF5_SRCS) $(FFT_SRCS) \
+		$(EWMODEL_PATH)/EW_helper.cpp \
+		#$(EWMODEL_PATH)/EW_examples.cpp
+		# $(TEST_SRCS)
 
 # define the C object files 
 #

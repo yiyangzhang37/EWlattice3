@@ -1,20 +1,18 @@
 //#include "./tests/Test_MPIWrapper2D.h"
 #include <iostream>
-#include <thread>
 #include <chrono>
-#include <array>
-
-//#include <hdf5_hl.h>
 
 #include "./ParaSite/ParaSite.h"
 
-#include "./EW_Model/EW_Model.h"
+//#include "./EW_Model/EW_Base.h"
 
-#include "./EW_Model/EW_examples.h"
+//#include "./EW_Model/EW_examples.h"
+
+#include "./tests/test_fft.h"
 
 using namespace MPI_Wrapper;
 using namespace ParaSite;
-using namespace Electroweak;
+//using namespace Electroweak;
 using namespace HDF5_Wrapper;
 
 int main(int argc, char** argv) {
@@ -34,8 +32,8 @@ int main(int argc, char** argv) {
 			}
 		}
 
-		EW_Random_Nucl(n_rows, n_cols);
-
+		//EW_Random_Nucl(n_rows, n_cols);
+		test_FFT3D_r2cc2r();
 	}
 	Parallel_Finalize();
 	return 0;
