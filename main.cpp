@@ -2,21 +2,21 @@
 #include <iostream>
 #include <chrono>
 
-//#include "./ParaSite/ParaSite.h"
+#include "./ParaSite/ParaSite.h"
 
 //#include "./EW_Model/EW_Base.h"
 
-#include "./EW_Model/EW_examples.h"
+//#include "./EW_Model/EW_examples.h"
 
-//#include "./tests/test_fft.h"
+#include "./tests/test_fft.h"
 
 using namespace MPI_Wrapper;
 using namespace ParaSite;
-using namespace Electroweak;
+//using namespace Electroweak;
 using namespace HDF5_Wrapper;
 
 int main(int argc, char** argv) {
-	//Parallel_Init();
+	Parallel_Init();
 	{
 		int n_rows = 1, n_cols = 1;
 		for (int i = 1; i < argc; i++) {
@@ -33,7 +33,8 @@ int main(int argc, char** argv) {
 		}
 
 		//EW_Random_Nucl(n_rows, n_cols);
+		test_FFT3D_r2cc2r();
 	}
-	//Parallel_Finalize();
+	Parallel_Finalize();
 	return 0;
 } 

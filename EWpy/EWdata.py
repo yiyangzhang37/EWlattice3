@@ -24,6 +24,22 @@ class H5Reader:
     def close(self):
         self.file_.close()
 
+class ParamReader:
+    file_path_ = None
+    contents_ = {}
+    def __init__(self, file_path):
+        self.file_path_ = file_path
+        f = open(file_path)
+        for line in f:
+            item = line.rstrip().split(' = ')
+            if item[0] != '':
+                self.contents_[item[0]] = item[1]
+        f.close()
+    
+    def __getitem__(self, index):
+        return self.contents_[index]
+
+    
 class constants:
     eta_ = 6.0
     dx_ = 0.25

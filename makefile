@@ -12,14 +12,14 @@ MPIRUN = mpirun
 CFLAGS = -std=c++11 -O2
 
 # Red-Hat 
+DEFAULT_INCLUDE = /usr/include
+
 ifeq ($(detected_OS), Linux)
-	REDHAT_INCLUDE = /usr/include
 	REDHAT_LIB = /usr/lib64
 	EXT_REDHAT_LIB = -L$(REDHAT_LIB)
 else
-	REDHAT_INCLUDE = 
-	REDHAT_LIB = 
-	EXT_REDHAT_LIB = 
+	REDHAT_LIB =
+	EXT_REDHAT_LIB =
 endif
 
 # HDF5
@@ -34,7 +34,7 @@ HDF_LIB = $(HDF_INSTALL)/lib
 EXTLIB = -L$(HDF_LIB)
 HDF_LIB_FILES = $(HDF_LIB)/libhdf5.a $(HDF_LIB)/libhdf5_hl.a
 
-LIB = -lsz -lz -lm -ldls
+LIB = -lsz -lz -lm -ldl -lfftw3
 # LIB = -lz -lm -ldl
 
 # OPEN-MPI
@@ -59,7 +59,7 @@ INCLUDES = -I$(PARASITE_PATH) \
 			-I$(TEST_PATH) \
 			-I$(HDF_INSTALL)/include \
 			-I$(MPI_INSTALL)/include \
-			-I$(REDHAT_INCLUDE)
+			-I$(DEFAULT_INCLUDE)
 
 LIBSHDF = $(EXTLIB) \
 		$(EXT_REDHAT_LIB) \
@@ -74,9 +74,9 @@ TEST_SRCS = $(TEST_PATH)/tests.cpp
 
 
 SRCS = main.cpp \
-		$(EWMODEL_PATH)/EW_helper.cpp \
-		$(EWMODEL_PATH)/EW_examples.cpp \
 		$(MPI_SRCS) $(HDF5_SRCS) $(FFT_SRCS) \
+		$(EWMODEL_PATH)/EW_helper.cpp \
+		#$(EWMODEL_PATH)/EW_examples.cpp
 		# $(TEST_SRCS)
 
 # define the C object files 
