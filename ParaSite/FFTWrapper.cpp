@@ -4,7 +4,7 @@
 
 
 namespace FFT_Wrapper{
-
+/*
     FFT1D::FFT1D(
         const int size,
         const bool copy_input_data,
@@ -106,7 +106,7 @@ namespace FFT_Wrapper{
         fftw_destroy_plan(plan);
         return;
     }
-
+*/
 }
 
 

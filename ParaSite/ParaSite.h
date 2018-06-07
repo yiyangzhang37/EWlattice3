@@ -11,5 +11,7 @@
 #include "ParaSite_Site.h"
 #include "ParaSite_Field.h"
 
+#include "ParaSite_FFT.h"
+
 
 #endif

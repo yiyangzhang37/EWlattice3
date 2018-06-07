@@ -106,10 +106,13 @@ namespace Electroweak{
 						const int starting_time_step = 0) const {
 			if(this->evo_.get_parallel_object().is_root()){
 				auto t = this->evo_.get_time_step();
-				if( ((t - starting_time_step) >= 0) && ((t - starting_time_step)%freq ==0) ){
-					this->data_table_.save_table(file_name);
+				if(freq > 0){
+					if( ((t - starting_time_step) >= 0) && ((t - starting_time_step)%freq ==0) ){
+						this->data_table_.save_table(file_name);
+					}
 				}
 			}
+			this->evo_.get_parallel_object().Barrier();
 		}
 
 		/*
@@ -120,6 +123,7 @@ namespace Electroweak{
 							const int freq = 1, 
 							const int starting_time_step = 0) const;
 		const DataTable& get_data_table() const {return this->data_table_;}
+		const Field< RealSave, DIM >& get_density_data() const {return this->density_data_;}
 
 
     protected:
@@ -749,8 +753,10 @@ namespace Electroweak{
 							const int freq, 
 							const int starting_time_step) const {
 		auto t = this->evo_.get_time_step();
-		if( ((t - starting_time_step) >= 0) && ((t - starting_time_step)%freq == 0) ){
-			this->density_data_.write(file_name, &(this->density_names_));
+		if(freq > 0){
+			if( ((t - starting_time_step) >= 0) && ((t - starting_time_step)%freq == 0) ){
+				this->density_data_.write(file_name, &(this->density_names_));
+			}
 		}
 		return;
 	}

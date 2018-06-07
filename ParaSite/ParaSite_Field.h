@@ -106,9 +106,9 @@ namespace ParaSite{
         FieldType& operator()(const Site<DIM>& site, const int i_row) const;
         FieldType& operator()(const Site<DIM>& site, const int i_row, const int j_col) const;
 
-        FieldType& operator()(const IndexType index) const;
-        FieldType& operator()(const IndexType index, const int i_row) const;
-        FieldType& operator()(const IndexType index, const int i_row, const int j_col) const;
+        //FieldType& operator()(const IndexType index) const;
+        //FieldType& operator()(const IndexType index, const int i_row) const;
+        //FieldType& operator()(const IndexType index, const int i_row, const int j_col) const;
         
         //file operations
         void read(const std::string& file_name, 
@@ -116,13 +116,24 @@ namespace ParaSite{
         void write(const std::string& file_name,
                 const std::vector<std::string>* col_names = nullptr,
                 const std::string& dataset_name = "") const;
-
-        void update_halo() const;
         
+        // update halo
+        void update_halo() const;
+
+        //serialize
+        //gather the (row, col)-component of the field to root process, 
+        //and reorder it to the single-process order.
+        std::vector<FieldType> serialize(
+            const int row, 
+            const int col,
+            const bool root_only = true) const;
+    
+        // miscellaneous
         const Lattice<DIM>& get_lattice() const {return *(this->lattice_);}
         constexpr int get_rows() const {return this->mat_rows_;}
         constexpr int get_cols() const {return this->mat_cols_;}
         constexpr int get_components() const {return this->components_;}
+        const ParallelObject& get_parallel_object() const {return *(this->parallel_ptr);}
 
         auto get_update_halo_table() const -> const decltype(this->update_halo_table_)&
             {return this->update_halo_table_;} 
@@ -336,6 +347,63 @@ namespace ParaSite{
 
         return;
     }
+
+    template<class FieldType, int DIM>
+    std::vector<FieldType> Field<FieldType, DIM>::serialize(
+        const int row, 
+        const int col,
+        const bool root_only) const {
+        // extract local visible data of the wanted component.
+        auto lv_size = this->lattice_.get_visible_local_sites();
+        std::vector<FieldType> lv_copy(lv_size);
+        Site<DIM> x(this->lattice_);
+        IndexType counter = 0;
+        for(x.first(); x.test(); x.next()){
+            lv_copy[counter] = this->operator()(x, row, col);
+        }
+        
+        // gather data
+        std::vector<FieldType> gathered;
+        auto global_size = this->lattice_.get_visible_global_sites();
+        if(this->get_parallel_object().is_root()) gathered.resize(global_size);
+        this->get_parallel_object().Gather(lv_copy.data(), 
+                                    lv_size,
+                                    gathered, 
+                                    this->get_parallel_object().get_root());
+
+        // reorder data on the root process
+        std::vector<FieldType> sorted;
+        if(root_only){
+            if(this->get_parallel_object().is_root()) sorted.resize(global_size);
+        } else {
+            sorted.resize(global_size);
+        }
+        if(this->get_parallel_object().is_root()){
+            for(auto i = 0; i < global_size; ++i){
+                auto world_rank = i / lv_size;
+                IndexType lv_idx = i % lv_size;
+                IndexType lv_coord[DIM], global_coord[DIM];
+                int grid_loc[2];
+                this->parallel_object_.world_rank_to_rowcol(world_rank, grid_loc);
+                this->lattice_.local_vis_index2coord(lv_idx, lv_coord);
+                local_vis_coord_to_global_coord(lv_coord, 
+                                                global_coord, 
+                                                grid_loc, 
+                                                this->lattice_.get_local_size());
+                auto global_idx = this->lattice_.global_coord2index(global_coord);
+                sorted[global_idx] = gathered[i];
+            }
+        }
+        this->get_parallel_object().Barrier();
+        if(! root_only ){
+            this->get_parallel_object().Broadcast(
+                sorted.data(), 
+                global_size, 
+                this->get_parallel_object().get_root());
+        }
+        return sorted;
+    }
+
 
     template<class FieldType, int DIM>
     void Field<FieldType, DIM>::write(

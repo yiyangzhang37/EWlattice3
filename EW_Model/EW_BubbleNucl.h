@@ -58,7 +58,7 @@ namespace EW_BubbleNucleation{
 
 		void OneBubbleTest() const;
         void TwoBubblesTest(const int sep) const;
-        void NonRandomTest(const int half_sep, unsigned int& new_bubble_count) const;
+        void NonRandomTest(const int half_sep) const;
 		
 		//get the new bubble count for the current time step.
 		int GetNewBubbleCount() const {return this->new_bubbles_count_;}
@@ -546,7 +546,32 @@ namespace EW_BubbleNucleation{
 	}
 
 	template<int DIM>
-	void BubbleNucleation<DIM>::NonRandomTest(const int half_sep, unsigned int& new_bubble_count) const {
+	void BubbleNucleation<DIM>::NonRandomTest(const int half_sep) const {
+		Site<DIM> x(this->lat_);
+		if (this->time_step_ == 0) {
+			auto T = (this->time_step_ + 1) % CYCLE;
+			int num_in_line[DIM];
+			std::transform(nSize, nSize + DIM,
+							num_in_line,
+							[half_sep](IndexType x){return x/(2*half_sep); });
+			auto total_bubbles = std::accumulate(num_in_line, num_in_line + DIM, 1, 
+												std::multiplies<int>());
+			for(auto i = 0; i < num_in_line[0]; ++i){
+				for(auto j = 0; j < num_in_line[1]; ++j){
+					for(auto k = 0; k < num_in_line[2]; ++k){
+						IndexType core_pos[3] = {(2*i+1)*half_sep, (2*j+1)*half_sep, (2*k+1)*half_sep};
+						SU2vector phi_hat;
+						this->GenerateRandomHiggsComponents(phi_hat);
+						this->NucleateOneBubble(T, core_pos, phi_hat);
+					}
+				}
+			}
+			this->new_bubbles_count_ = total_bubbles;
+			this->phi_.update_halo();
+		} else{
+			this->new_bubbles_count_ = 0;
+		}
+		return;
 		/*
 		if (_time_step == 0) {
 			const auto num_in_line = nSize[0] / (2 * half_sep);
@@ -569,8 +594,6 @@ namespace EW_BubbleNucleation{
 		}*/
 		return;
 	}
-
-	
 
 	template<int DIM>
 	NucleationObserver<DIM>::NucleationObserver(const BubbleNucleation<DIM>& bubble)

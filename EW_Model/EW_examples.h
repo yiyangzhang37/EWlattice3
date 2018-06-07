@@ -13,6 +13,8 @@ void EW_Nucl_OneBubble(const int n_rows, const int n_cols);
 
 void EW_Nucl_TwoBubbles(const int n_rows, const int n_cols);
 
+void EW_Nucl_NonRand(const int n_rows, const int n_cols);
+
 void EW_Random_Nucl(const int n_rows, const int n_cols);
 
 

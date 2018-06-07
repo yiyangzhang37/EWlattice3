@@ -160,7 +160,7 @@ namespace FFT_Wrapper{
     private:
         void fft_impl(const complex_t* data_in, const int sign);
     };
-
+/*
     class FFT1D : public FFTBase<1, complex_t, complex_t>{
     public:
         FFT1D(
@@ -204,7 +204,7 @@ namespace FFT_Wrapper{
     private:
         void fft_impl(const complex_t* data_in, const int sign);
     };
-
+*/
 
     template<int DIM, class InType, class OutType = InType>
     class FFTBaseMPI : public FFTBase<DIM, InType, OutType> {
