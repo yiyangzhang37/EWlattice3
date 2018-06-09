@@ -58,7 +58,7 @@ namespace EW_BubbleNucleation{
 
 		void OneBubbleTest() const;
         void TwoBubblesTest(const int sep) const;
-        void NonRandomTest(const int half_sep) const;
+        void NonRandomTest(const int half_sep);
 		
 		//get the new bubble count for the current time step.
 		int GetNewBubbleCount() const {return this->new_bubbles_count_;}
@@ -546,7 +546,7 @@ namespace EW_BubbleNucleation{
 	}
 
 	template<int DIM>
-	void BubbleNucleation<DIM>::NonRandomTest(const int half_sep) const {
+	void BubbleNucleation<DIM>::NonRandomTest(const int half_sep) {
 		Site<DIM> x(this->lat_);
 		if (this->time_step_ == 0) {
 			auto T = (this->time_step_ + 1) % CYCLE;

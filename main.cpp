@@ -4,7 +4,7 @@
 
 #include "./ParaSite/ParaSite.h"
 
-//#include "./EW_Model/EW_examples.h"
+#include "./EW_Model/EW_examples.h"
 
 //#include "./tests/test_fft.h"
 
@@ -29,7 +29,8 @@ int main(int argc, char** argv) {
 				break;
 			}
 		}
-
+		
+		EW_Nucl_NonRand(n_rows, n_cols);
 		//EW_Random_Nucl(n_rows, n_cols);
 		//test_FFT3D_r2cc2r();
 	}

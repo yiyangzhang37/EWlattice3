@@ -76,7 +76,7 @@ TEST_SRCS = $(TEST_PATH)/tests.cpp
 SRCS = main.cpp \
 		$(MPI_SRCS) $(HDF5_SRCS) $(FFT_SRCS) \
 		$(EWMODEL_PATH)/EW_helper.cpp \
-		#$(EWMODEL_PATH)/EW_examples.cpp
+		$(EWMODEL_PATH)/EW_examples.cpp
 		# $(TEST_SRCS)
 
 # define the C object files 

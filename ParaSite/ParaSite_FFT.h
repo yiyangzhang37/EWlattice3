@@ -10,6 +10,7 @@
 namespace ParaSite{
 
     using ParallelObject = MPI_Wrapper::Parallel2D;
+    using FileProcessor = HDF5_Wrapper::HDF5Wrapper;
     using namespace FFT_Wrapper;
 
     /* Custom type traits: complex type */
@@ -79,7 +80,7 @@ namespace ParaSite{
         
         // save the transformed data to an HDF5 file.
         // This function only performs on root process.
-        void save(const std::string& file_name, const std::string& item_name);
+        void save(const std::string& file_name, const std::string& dataset_name);
     };
 
     template<int DIM, class TypeIn, class TypeOut>
@@ -219,8 +220,31 @@ namespace ParaSite{
     template<int DIM, class TypeIn, class TypeOut>
     void FieldFFT<DIM, TypeIn, TypeOut>::save(
         const std::string& file_name, 
-        const std::string& item_name) {
-        //TODO
+        const std::string& dataset_name) {
+        FileProcessor fp;
+
+        std::string dst_name;
+        if(dataset_name == "") dst_name = file_name;
+        else dst_name = dataset_name;
+
+        if(this->parallel_object_.is_root()){
+            fp.SaveSingleDatasetFile<TypeOut, DIM>(
+                                file_name,
+                                dst_name,
+                                this->size_, /*dataset_size*/
+                                this->data_out_.data());
+            fp.open_file(file_name);
+            fp.open_dataset(dst_name);
+            int count = 0;
+            for(auto i = 0; i < DIM; ++i){
+                fp.attach_attribute_to_dataset<std::string>("col_" + std::to_string(i), 
+                                                    "axis_" + std::to_string(DIM-1-i));
+            } 
+            fp.close_dataset();
+            fp.close_file();
+        }
+        this->parallel_object_.Barrier();
+        return;
     }
 
 
