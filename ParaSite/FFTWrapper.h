@@ -5,6 +5,8 @@
 #include <fftw3.h>
 #include <iostream>
 #include <numeric>
+#include <algorithm>
+#include <functional>
 #include <cassert>
 
 

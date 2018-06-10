@@ -1,5 +1,4 @@
 #include "FFTWrapper.h"
-#include <algorithm>
 #include <functional>
 
 
