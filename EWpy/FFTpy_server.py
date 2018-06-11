@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 import h5py
 import EWdata
+from multiprocessing import Pool
 
 root_path = '/data/yiyang.zhang/EWlattice3'
 c1 = EWdata.constants(eta = 1.0, dx = 0.25, nSize = 256)
@@ -12,7 +13,7 @@ BINS = 120
 
 files = ['nr_1_bfield_' + str(i) +'.h5' for i in range(16, 4000, 50)]
 
-for idx, f in enumerate(files):
+def fft(f):
     file_path = os.path.join(root_path, f)
     h5file = EWdata.H5Reader(file_path)
     dset = h5file.dataset_
@@ -38,4 +39,16 @@ for idx, f in enumerate(files):
     output = np.array([vals, s])
     output_name = os.path.join(root_path, f[:-3] + '.npy')
     np.save(output_name, output)
+
+def fft_single_process():
+    for f in files:
+        fft(f)
+
+def fft_multi_process():
+    pool = Pool(8)
+    pool.map(fft, files)
+
     
+if __name__ == '__main__':
+    fft_multi_process()
+
