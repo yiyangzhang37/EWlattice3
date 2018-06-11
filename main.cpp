@@ -6,7 +6,7 @@
 
 #include "./EW_Model/EW_examples.h"
 
-//#include "./tests/test_fft.h"
+#include "./tests/test_fft.h"
 
 using namespace MPI_Wrapper;
 using namespace ParaSite;
@@ -30,9 +30,9 @@ int main(int argc, char** argv) {
 			}
 		}
 		
-		EW_Nucl_NonRand(n_rows, n_cols);
+		//EW_Nucl_NonRand(n_rows, n_cols);
 		//EW_Random_Nucl(n_rows, n_cols);
-		//test_FFT3D_r2cc2r();
+		test_FFT3D_r2cc2r();
 	}
 	Parallel_Finalize();
 	return 0;

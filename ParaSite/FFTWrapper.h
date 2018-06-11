@@ -54,12 +54,25 @@ namespace FFT_Wrapper{
         The input data is assumed to be known, with size given by this->size_.
         This class will neither allocate, nor deallocate the memory of data_in.
         */
-        virtual void fft(const InType* data_in) {;}
+        void fft(const InType* data_in) {
+            this->fft_impl(data_in, FFTW_FORWARD);
+        }
 
         /*
         run an inverse FFT given the input data. The result is stored in the data_out_.
         */
-        virtual void ifft(const InType* data_in) {;}
+        void ifft(const InType* data_in) {
+            this->fft_impl(data_in, FFTW_BACKWARD);
+            //This is consistent with either FFT or FFTc2r.
+            //It is not okay with FFTr2c, but in FFTr2c, ifft() is undefined.
+            auto size = this->get_output_size();
+            auto norm = static_cast<real_t>(std::accumulate(size, size + DIM, 1, std::multiplies<int>()));
+            std::transform(this->data_out_, this->data_out_ + this->get_output_len(), 
+                        this->data_out_,
+                        [norm](const OutType& x) { return x / norm; });
+        }
+
+        virtual void fft_impl(const InType* data_in, const int sign) = 0;
         
         const int* get_input_size() const { return this->input_size_; }
         const int* get_output_size() const { return this->output_size_; }
@@ -124,8 +137,6 @@ namespace FFT_Wrapper{
             const unsigned fft_flags = FFTW_ESTIMATE);
         ~FFT();
 
-        void fft(const complex_t* data_in) override;
-        void ifft(const complex_t* data_in) override;
     private:
         void fft_impl(const complex_t* data_in, const int sign);
     };
@@ -143,8 +154,7 @@ namespace FFT_Wrapper{
             const unsigned fft_flags = FFTW_ESTIMATE);
         ~FFTr2c();
 
-        void fft(const real_t* data_in) override;
-        void ifft(const real_t* data_in) override {;} //undefined
+        void ifft(const real_t* data_in) {;} //undefined
     private:
         void fft_impl(const real_t* data_in, const int sign);
     };
@@ -157,8 +167,7 @@ namespace FFT_Wrapper{
             const unsigned fft_flags = FFTW_ESTIMATE);
         ~FFTc2r();
 
-        void fft(const complex_t* data_in) override {;} //undefined
-        void ifft(const complex_t* data_in) override;
+        void fft(const complex_t* data_in) {;} //undefined
     private:
         void fft_impl(const complex_t* data_in, const int sign);
     };
@@ -352,22 +361,6 @@ namespace FFT_Wrapper{
     FFT<DIM>::~FFT() {}
 
     template<int DIM>
-    void FFT<DIM>::fft(const complex_t* data_in){
-        this->fft_impl(data_in, FFTW_FORWARD);
-    }
-
-    template<int DIM>
-    void FFT<DIM>::ifft(const complex_t* data_in){
-        this->fft_impl(data_in, FFTW_BACKWARD);
-        auto size = this->get_output_size();
-        auto norm = static_cast<real_t>(std::accumulate(size, size + DIM, 1, std::multiplies<int>()));
-        std::transform(this->data_out_, this->data_out_ + this->get_output_len(), 
-                        this->data_out_,
-                        [norm](const complex_t& x) { return x / norm; });
-        return;
-    }
-
-    template<int DIM>
     void FFT<DIM>::fft_impl(const complex_t* data_in, const int sign){
         this->init_input_data(data_in);
         this->reallocate_output_data();
@@ -399,12 +392,6 @@ namespace FFT_Wrapper{
 
     template<int DIM>
     FFTr2c<DIM>::~FFTr2c() {}
-
-    template<int DIM>
-    void FFTr2c<DIM>::fft(const real_t* data_in){
-        this->fft_impl(data_in, FFTW_FORWARD);
-        return;
-    }
 
     template<int DIM>
     void FFTr2c<DIM>::fft_impl(const real_t* data_in, const int sign){
@@ -439,18 +426,6 @@ namespace FFT_Wrapper{
     FFTc2r<DIM>::~FFTc2r() {}
 
     template<int DIM>
-    void FFTc2r<DIM>::ifft(const complex_t* data_in) {
-        this->fft_impl(data_in, FFTW_BACKWARD);
-        auto size = this->get_output_size();
-        auto norm = static_cast<real_t>(std::accumulate(size, size + DIM, 1, std::multiplies<int>()));
-        std::transform(this->data_out_, this->data_out_ + this->get_output_len(), 
-                        this->data_out_,
-                        [norm](const real_t x) { return x / norm; });
-        return;
-
-    }
-
-    template<int DIM>
     void FFTc2r<DIM>::fft_impl(const complex_t* data_in, const int sign){
         this->init_input_data(data_in);
         this->reallocate_output_data();
@@ -464,10 +439,6 @@ namespace FFT_Wrapper{
         fftw_destroy_plan(plan);
         return;
     }
-
-
-
-
 
 }
 

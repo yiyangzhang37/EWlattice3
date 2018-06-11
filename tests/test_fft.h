@@ -5,6 +5,7 @@
 using namespace FFT_Wrapper;
 
 // I am just lazy. Don't want to write another cpp file.
+/*
 template<int _ = 0>
 void test_FFT1D(){
 
@@ -65,6 +66,7 @@ void test_FFT1D_r2c_c2r() {
     }
     return;
 }
+*/
 
 template<int _ = 0>
 void test_FFT3D() {
