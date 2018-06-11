@@ -175,7 +175,7 @@ void EW_Nucl_NonRand(const int n_rows, const int n_cols) {
         obs.SaveDensityData(id + "_den_" + std::to_string(i) + ".h5", DensityDataSaveFreq);
 	    obs.SaveDataTable(id + "_dtable.txt", 50);
 
-        if( (i - RECORD_TIME_OFFSET >= 0) && (i - RECORD_TIME_OFFSET) % 20 == 0 ){
+        if( (i - RECORD_TIME_OFFSET >= 0) && (i - RECORD_TIME_OFFSET) % 50 == 0 ){
             bfield.Measure();
             bfield.SaveDensityData(id + "_bfield_" + std::to_string(i) + ".h5");
         }
