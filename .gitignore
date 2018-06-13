@@ -15,6 +15,7 @@ result.txt
 build/
 bin/*
 !bin/config.ini
+!bin/makefile
 
 # HDF5 data files
 **/*.h5
@@ -28,6 +29,3 @@ bin/*
 
 # .DS_Store
 # **/.DS_Store
-
-# debug
-**/debug/

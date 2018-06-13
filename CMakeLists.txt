@@ -1,5 +1,5 @@
 # specify CMake minimum version
-cmake_minimum_required(VERSION 3.9.0)
+cmake_minimum_required(VERSION 2.8)
 
 # project name
 project(EWlattice3)
@@ -13,6 +13,7 @@ project(EWlattice3)
 set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # set CXX flags
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2")
@@ -46,8 +47,9 @@ find_library(FFTW_LIBRARIES NAMES fftw3)
 include_directories(SYSTEM ${FFTW_INCLUDE_DIRS})
 
 ### Eigen
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
-find_package(Eigen3 REQUIRED)
+# set CMAKE_MODULE_PATH and the find_package works in MODULE mode.
+# the FindEigen3.cmake file is required in the CMAKE_MODULE_PATH folder.
+find_package(Eigen3 REQUIRED MODULE)
 if (EIGEN3_FOUND)
     include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
 else (EIGEN3_FOUND)
@@ -68,8 +70,6 @@ add_executable(emlat.out ${SRCS})
 target_link_libraries(emlat.out ${MPI_CXX_LIBRARIES})
 target_link_libraries(emlat.out ${HDF5_LIBRARIES})
 target_link_libraries(emlat.out ${FFTW_LIBRARIES})
-
-
 
 
 
