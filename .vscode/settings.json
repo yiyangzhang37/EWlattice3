@@ -51,6 +51,7 @@
         "cstdint": "cpp",
         "cstdio": "cpp",
         "cwchar": "cpp",
-        "cwctype": "cpp"
+        "cwctype": "cpp",
+        "eigen": "cpp"
     }
 }

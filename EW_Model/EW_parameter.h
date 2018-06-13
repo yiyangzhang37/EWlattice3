@@ -1,7 +1,7 @@
 #ifndef EW_PARAMETER_H
 #define EW_PARAMETER_H
 
-#include "../eigen/Eigen/Eigen"
+#include <Eigen/Eigen>
 #include "../ParaSite/ParaSite.h"
 #include "EW_helper.h"
 

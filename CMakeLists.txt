@@ -45,6 +45,14 @@ find_path(FFTW_INCLUDE_DIRS fftw3.h)
 find_library(FFTW_LIBRARIES NAMES fftw3)
 include_directories(SYSTEM ${FFTW_INCLUDE_DIRS})
 
+### Eigen
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
+find_package(Eigen3 REQUIRED)
+if (EIGEN3_FOUND)
+    include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
+else (EIGEN3_FOUND)
+    message(SEND_ERROR "This application cannot compile without Eigen3")
+endif (EIGEN3_FOUND)
 
 # the following folders will be included
 include_directories(${PROJECT_SOURCE_DIR})
