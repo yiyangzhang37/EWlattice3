@@ -24,7 +24,7 @@ run8:$(TARGET)
 	$(MPIRUN) -np 8 ./$(TARGET) -r 2 -c 4 &> $(OUTPUT) &
 run32:$(TARGET)
 	$(MPIRUN) -np 32 ./$(TARGET) -r 4 -c 8 &> $(OUTPUT) &
-run32:$(TARGET)
+run40:$(TARGET)
 	$(MPIRUN) -np 40 ./$(TARGET) -r 5 -c 8 &> $(OUTPUT) &
 
 clean:

@@ -28,4 +28,4 @@ bin/*
 **/*.lyx~
 
 # .DS_Store
-# **/.DS_Store
+**/.DS_Store
