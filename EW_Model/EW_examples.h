@@ -18,5 +18,7 @@ void EW_Nucl_NonRand(const int n_rows, const int n_cols);
 void EW_Random_Nucl(const int n_rows, const int n_cols);
 
 
+// Efficiency tests
+void Lattice_Indexing();
 
 #endif

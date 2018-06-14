@@ -52,6 +52,8 @@
         "cstdio": "cpp",
         "cwchar": "cpp",
         "cwctype": "cpp",
-        "eigen": "cpp"
+        "eigen": "cpp",
+        "__bit_reference": "cpp",
+        "chrono": "cpp"
     }
 }

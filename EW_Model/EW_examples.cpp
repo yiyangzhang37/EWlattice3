@@ -95,6 +95,7 @@ void EW_Nucl_TwoBubbles(const int n_rows, const int n_cols){
 	transform_gridrank_to_gridloc(grid_rank, grid_loc);
 
     Lattice<DIM> lat(nSize, halo, node_size, grid_loc);
+    //lat.make_all_index_tables();
     std::string id = ReadConfigIni("RUN_ID");
     BubbleNucleation<DIM> bubble(lat, parallel, id);
     bubble.RecordParameters();
