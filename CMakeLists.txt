@@ -16,7 +16,7 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # set CXX flags
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2")
+set(CMAKE_CXX_FLAGS "-std=c++11 -m64 -O2 -ffast-math -flto -funroll-loops -march=native")
 
 ### external libraries
 

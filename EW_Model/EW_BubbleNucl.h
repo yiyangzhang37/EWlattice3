@@ -329,7 +329,8 @@ namespace EW_BubbleNucleation{
 
 		//generate Higgs angular components on each process with the same seed.
 		//The seed is broadcasted from the root process.
-		std::vector<SU2vector> phi_hat(picked_size);
+		//specify aligned allocator so that the optimization can work.
+		std::vector<SU2vector, Eigen::aligned_allocator<SU2vector>> phi_hat(picked_size);
 		for(auto i = 0; i < picked_size; ++i){
 			auto ptr = phi_hat.data() + i;
 			this->GenerateRandomHiggsComponents(*ptr);
