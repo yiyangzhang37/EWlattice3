@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
 				break;
 			}
 		}
-		auto begin = std::chrono::high_resolution_clock::now();
+		//auto begin = std::chrono::high_resolution_clock::now();
 
 		//EW_Nucl_TwoBubbles(n_rows, n_cols);
 		//EW_Nucl_NonRand(n_rows, n_cols);
@@ -37,8 +37,8 @@ int main(int argc, char** argv) {
 		EW_Random_Nucl_LongTimeSpectrum(n_rows, n_cols);
 		//test_FFT3D_r2cc2r();
 
-		auto end = std::chrono::high_resolution_clock::now();
-		std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end-begin).count() << "ms" << std::endl;
+		//auto end = std::chrono::high_resolution_clock::now();
+		//std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end-begin).count() << "ms" << std::endl;
 		
 	}
 	Parallel_Finalize();
