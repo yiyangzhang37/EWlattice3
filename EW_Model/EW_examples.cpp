@@ -243,6 +243,69 @@ void EW_Random_Nucl(const int n_rows, const int n_cols){
             bfield.SaveDensityData(id + "_bfield.h5");
             break;
         }
+        
+
+        bubble.TimeAdvance();
+    }
+    obs.SaveDataTable(id+"_dtable.txt");
+    bubble.ConcludeEvolution(id+"_param.txt");
+    return;
+}
+
+void EW_Random_Nucl_LongTimeSpectrum(const int n_rows, const int n_cols){
+    using namespace EW_BubbleNucleation;
+    Parallel2D parallel(n_rows, n_cols, MPI_COMM_WORLD);
+    GridIndexType node_size[] = { n_rows, n_cols };
+    GridIndexType grid_rank[] = { parallel.get_grid_rank()[0], parallel.get_grid_rank()[1] };
+
+    GridIndexType grid_loc[2];
+	transform_gridrank_to_gridloc(grid_rank, grid_loc);
+
+    Lattice<DIM> lat(nSize, halo, node_size, grid_loc);
+    std::string id = ReadConfigIni("RUN_ID");
+    BubbleNucleation<DIM> bubble(lat, parallel, id);
+    bubble.RecordParameters();
+    bubble.RecordCustomParameters();
+    bubble.SaveParameters(id+"_param.txt");
+    
+    NucleationObserver<DIM> obs(bubble);
+    obs.SetObservables(ObserverFlags::OBS_EnergyAllParts |
+                        ObserverFlags::OBS_MagneticEnergy |
+                        ObserverFlags::OBS_HiggsMagnitude2 |
+                        ObserverFlags::OBS_MinHiggsMagnitude2 |
+                        ObserverFlags::OBS_NewBubbleCount,
+
+                        ObserverFlags::OBS_TotalEnergy | 
+                        ObserverFlags::OBS_MagneticEnergy |
+                        ObserverFlags::OBS_HiggsMagnitude2);
+ 
+    NucleationObserver<DIM> bfield(bubble);
+    bfield.SetObservables(ObserverFlags::OBS_MagneticField, 
+                            ObserverFlags::OBS_MagneticField);
+
+    bubble.InitializeSymmetricPhase();
+
+    for(auto i = 0; i <= Ntimesteps; ++i){
+        obs.ExtendMeasure();
+
+        bubble.UpdateFields();
+
+        /*nucleation is inserted here*/
+        //if( ! bubble.CheckHiggsAllInBrokenPhase(obs) ){
+            bubble.RandomBubbleNucleation();
+        //}
+       
+        bubble.EvolveInterior_RadialDamping();
+        obs.SaveDensityData(id + "_den_" + std::to_string(i) + ".h5", DensityDataSaveFreq);
+	    obs.SaveDataTable(id+"_dtable.txt", 50);
+
+        /*save bfield*/
+        if( bubble.get_time_step() % BFIELD_SAVE_FREQ == 0 ) {
+            bfield.Measure();
+            bfield.SaveDensityData(id + "_bfield_" + std::to_string(bubble.get_time_step()) + ".h5");
+            break;
+        }
+        
 
         bubble.TimeAdvance();
     }

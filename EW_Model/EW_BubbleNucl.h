@@ -28,6 +28,8 @@ namespace EW_BubbleNucleation{
 	// time offset due to the starting point of bubble collision at different time 
 	const int RECORD_TIME_OFFSET = std::stoi(ReadConfigIni("RECORD_TIME_OFFSET"));
 
+	const int BFIELD_SAVE_FREQ = std::stoi(ReadConfigIni("EWLAT_BFIELD_SAVE_FREQ"));
+
 	
 	// The threshold value of Phi^2/eta^2.
 	constexpr Real EARLY_STOP_LIMIT = 0.25; 
