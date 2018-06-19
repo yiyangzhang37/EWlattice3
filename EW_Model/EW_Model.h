@@ -57,12 +57,13 @@ namespace Electroweak{
 			return isBD;
 		}
 
+		void record_basic_parameters();
+
     public:
 		ElectroweakEvolution(const Lattice<DIM>& lat, const Parallel2D& parallel, const std::string& id);
         ~ElectroweakEvolution() = default;
 
-		void RecordParameters();
-        virtual void RecordCustomParameters() {;}
+		virtual void RecordParameters();
 		void SaveParameters(const std::string& name, const bool is_root_save_only = true) const;
 		
 		/*
@@ -82,10 +83,10 @@ namespace Electroweak{
         void EvolveU1OneSite_KS(const Site<DIM>& x, const int component, const int nowTime, const int futureTime) const;
         void EvolveSU2OneSite_KS(const Site<DIM>& x, const int component, const int nowTime, const int futureTime) const;
 
-		const int is_constraint_region(const Site<DIM>& x) const {
+		virtual const int is_constraint_region(const Site<DIM>& x) const {
 			return test_periodic_boundary(x);
 		}
-		const int is_boundary(const Site<DIM>& x) const {
+		virtual const int is_boundary(const Site<DIM>& x) const {
 			return test_periodic_boundary(x);
 		}
 
@@ -129,6 +130,11 @@ namespace Electroweak{
 
 	template<int DIM>
 	void ElectroweakEvolution<DIM>::RecordParameters() {
+		this->record_basic_parameters();
+	}
+
+	template<int DIM>
+	void ElectroweakEvolution<DIM>::record_basic_parameters(){
 		std::stringstream ss1, ss2;
     	ss1 << std::ctime(&start_time_);
 		//ss2 << std::put_time(std::localtime(&finish_time_), "%Y-%m-%d %X");

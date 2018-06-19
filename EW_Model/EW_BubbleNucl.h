@@ -43,7 +43,7 @@ namespace EW_BubbleNucleation{
 			const std::string& id);
 		BubbleNucleation() = default;
 
-		void RecordCustomParameters() override;
+		void RecordParameters() override;
 		
 		/*Initial condition*/
 		void InitializeSymmetricPhase() const;
@@ -150,11 +150,7 @@ namespace EW_BubbleNucleation{
 		NucleationObserver(const BubbleNucleation<DIM>& bubble);
 		~NucleationObserver() = default;
 		
-		void SetObservables(
-			const FlagType data_table_flags,
-			const FlagType density_data_flags) override;
-		
-		void ExtendMeasure() override;
+		void Measure() override;
 
 		void CalcNewBubbleCount(const int time_step);
 	
@@ -162,10 +158,7 @@ namespace EW_BubbleNucleation{
 
 		const BubbleNucleation<DIM>& nucl_;
 
-		void init_data_table() override;
-		void init_density_data() override;
-
-		void init_extend_name_vector(
+		void init_name_vector(
 			const FlagType flags,
 			std::vector<std::string>& names) const override;
 
@@ -182,7 +175,8 @@ namespace EW_BubbleNucleation{
 	}
 
 	template<int DIM>
-	void BubbleNucleation<DIM>::RecordCustomParameters() {
+	void BubbleNucleation<DIM>::RecordParameters() {
+		this->record_basic_parameters();
 		this->param_.add("NucleationProbability", NUCLEATION_PROB, true);
 		this->param_.add("NucleationLimit", NUCLEATION_LIMIT);
 		this->param_.add("BubbleRadius(in units of DX)", NUCLEATION_RADIUS_SITE);
@@ -604,26 +598,28 @@ namespace EW_BubbleNucleation{
 
 	}
 
+	/*
 	template<int DIM>
 	void NucleationObserver<DIM>::SetObservables(
 			const FlagType data_table_flags,
 			const FlagType density_data_flags) {
 		this->data_table_flags_ = data_table_flags;
 		this->density_data_flags_ = density_data_flags;
-		init_data_table();
-		init_density_data();
+		this->init_data_table();
+		this->init_density_data();
 	}
+	*/
 
 	template<int DIM>
-	void NucleationObserver<DIM>::ExtendMeasure() {
-		this->Measure();
+	void NucleationObserver<DIM>::Measure() {
+		this->basic_measure();
 		auto time_step = this->evo_.get_time_step();
 		if (this->data_table_flags_ & ObserverFlags::OBS_NewBubbleCount) {
 			this->CalcNewBubbleCount(time_step);
 		}
 		return;
 	}
-
+/*
 	template<int DIM>
 	void NucleationObserver<DIM>::init_data_table(){
 		std::vector<std::string> data_table_names;
@@ -640,12 +636,13 @@ namespace EW_BubbleNucleation{
 		this->density_data_.reinit(this->density_names_.size(), 1);
 		return;
 	}
-
+*/
 	template<int DIM>
-	void NucleationObserver<DIM>::init_extend_name_vector(
+	void NucleationObserver<DIM>::init_name_vector(
 			const FlagType flags,
 			std::vector<std::string>& names) const {
-		this->init_name_vector(flags, names);
+		names.clear();
+		this->init_basic_name_vector(flags, names);
 		if (flags & ObserverFlags::OBS_NewBubbleCount) {
 				names.push_back("NewBubbleCount");
 		}

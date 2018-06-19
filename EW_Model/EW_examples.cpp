@@ -50,7 +50,6 @@ void EW_Nucl_OneBubble(const int n_rows, const int n_cols){
     std::string id = ReadConfigIni("RUN_ID");
     BubbleNucleation<DIM> bubble(lat, parallel, id);
     bubble.RecordParameters();
-    bubble.RecordCustomParameters();
     bubble.SaveParameters(id+"_param.txt");
     
     NucleationObserver<DIM> obs(bubble);
@@ -68,7 +67,7 @@ void EW_Nucl_OneBubble(const int n_rows, const int n_cols){
     bubble.InitializeSymmetricPhase();
 
     for(auto i = 0; i <= Ntimesteps; ++i){
-        obs.ExtendMeasure();
+        obs.Measure();
         bubble.UpdateFields();
 
         /*nucleation is inserted here*/
@@ -99,7 +98,6 @@ void EW_Nucl_TwoBubbles(const int n_rows, const int n_cols){
     std::string id = ReadConfigIni("RUN_ID");
     BubbleNucleation<DIM> bubble(lat, parallel, id);
     bubble.RecordParameters();
-    bubble.RecordCustomParameters();
     bubble.SaveParameters(id+"_param.txt");
     
     NucleationObserver<DIM> obs(bubble);
@@ -117,7 +115,7 @@ void EW_Nucl_TwoBubbles(const int n_rows, const int n_cols){
     bubble.InitializeSymmetricPhase();
 
     for(auto i = 0; i <= Ntimesteps; ++i){
-        obs.ExtendMeasure();
+        obs.Measure();
         bubble.UpdateFields();
 
         /*nucleation is inserted here*/
@@ -146,7 +144,6 @@ void EW_Nucl_NonRand(const int n_rows, const int n_cols) {
     std::string id = ReadConfigIni("RUN_ID");
     BubbleNucleation<DIM> bubble(lat, parallel, id);
     bubble.RecordParameters();
-    bubble.RecordCustomParameters();
     bubble.SaveParameters(id+"_param.txt");
     
     NucleationObserver<DIM> obs(bubble);
@@ -167,7 +164,7 @@ void EW_Nucl_NonRand(const int n_rows, const int n_cols) {
     bubble.InitializeSymmetricPhase();
 
     for(auto i = 0; i <= Ntimesteps; ++i){
-        obs.ExtendMeasure();
+        obs.Measure();
 
         bubble.UpdateFields();
         bubble.NonRandomTest(BUBBLES_HALF_SEP);
@@ -201,7 +198,6 @@ void EW_Random_Nucl(const int n_rows, const int n_cols){
     std::string id = ReadConfigIni("RUN_ID");
     BubbleNucleation<DIM> bubble(lat, parallel, id);
     bubble.RecordParameters();
-    bubble.RecordCustomParameters();
     bubble.SaveParameters(id+"_param.txt");
     
     NucleationObserver<DIM> obs(bubble);
@@ -222,7 +218,7 @@ void EW_Random_Nucl(const int n_rows, const int n_cols){
     bubble.InitializeSymmetricPhase();
 
     for(auto i = 0; i <= Ntimesteps; ++i){
-        obs.ExtendMeasure();
+        obs.Measure();
 
         bubble.UpdateFields();
 
@@ -237,7 +233,7 @@ void EW_Random_Nucl(const int n_rows, const int n_cols){
 
         /*early stop*/
         if( bubble.CheckEarlyStop(obs) ) {
-            obs.ExtendMeasure();
+            obs.Measure();
             obs.SaveDensityData(id + "_den_es" + ".h5");
             bfield.Measure();
             bfield.SaveDensityData(id + "_bfield.h5");
@@ -264,7 +260,6 @@ void EW_Random_Nucl_FFT(const int n_rows, const int n_cols){
     std::string id = ReadConfigIni("RUN_ID");
     BubbleNucleation<DIM> bubble(lat, parallel, id);
     bubble.RecordParameters();
-    bubble.RecordCustomParameters();
     bubble.SaveParameters(id+"_param.txt");
     
     NucleationObserver<DIM> obs(bubble);
@@ -285,7 +280,7 @@ void EW_Random_Nucl_FFT(const int n_rows, const int n_cols){
     bubble.InitializeSymmetricPhase();
 
     for(auto i = 0; i <= Ntimesteps; ++i){
-        obs.ExtendMeasure();
+        obs.Measure();
 
         bubble.UpdateFields();
 
@@ -305,7 +300,7 @@ void EW_Random_Nucl_FFT(const int n_rows, const int n_cols){
 
         /*early stop*/
         if( bubble.CheckEarlyStop(obs) ) {
-            obs.ExtendMeasure();
+            obs.Measure();
             obs.SaveDensityData(id + "_den_es" + ".h5");
             bfield.Measure();
             bfield.SaveDensityData(id + "_bfield.h5");

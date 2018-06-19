@@ -53,19 +53,16 @@ namespace Electroweak{
 		density_data_flags should be a subset of data_table_flags.
 		This function is declared as virtual and it should be re-implemented in derived class.
 		*/
-		virtual void SetObservables(
+		void SetObservables(
 			const FlagType data_table_flags,
 			const FlagType density_data_flags);
 		/*
-		measure all the quantities determined by the flags.
-		*/
-		void Measure();
-		/*
-		Measure more quantities, including those defined in the derived class.
+		Measure all the quantities defined by flags, 
+		including those defined in the derived class.
 		This function should be re-implemented in the derived class.
 		The form should be:
-		void ExtendMeasure(){
-			this->Measure();
+		void Measure(){
+			this->basic_measure();
 			auto time_step = this->evo_.get_time_step();
 			if (this->data_table_flags_ & OBS_YourCustomFlag) {
 				this->CalcCustomQuantity(time_step);
@@ -74,8 +71,8 @@ namespace Electroweak{
 			return;
 		}
 		*/
-		virtual void ExtendMeasure() {;} 
-
+		virtual void Measure();
+		
 		void CalcEnergy(const int time_step);
 		void CalcCSNumber(const int time_step);
 		void CalcMagneticEnergy(const int time_step);
@@ -152,17 +149,15 @@ namespace Electroweak{
 		and should be re-implemented in derived class,
 		with init_name_vector() replaced by init_extend_name_vector().
 		*/
-		virtual void init_data_table();
-		virtual void init_density_data();
+		void init_data_table();
+		void init_density_data();
 
-		void init_name_vector(
-			const FlagType flags,
-			std::vector<std::string>& names) const;
 		/*
-		This function should be re-implemented in derived class to take the position of init_name_vector.
+		This function should be re-implemented in derived class.
 		The function should take the form:
-		init_extend_name_vector(...){
-			this->init_name_vector(...);
+		init_name_vector(...){
+			names.clear();
+			this->init_basic_name_vector(...);
 			if (flags & ObserverFlags::YourCustomFlag) {
 				names.push_back("YourCustomId");
 			}
@@ -170,11 +165,16 @@ namespace Electroweak{
 			return;
 		}
 		*/
-		virtual void init_extend_name_vector(
-					const FlagType flags,
-					std::vector<std::string>& names) const {;}
+		virtual void init_name_vector(
+			const FlagType flags,
+			std::vector<std::string>& names) const;
+		
+		void init_basic_name_vector(const FlagType flags,
+					std::vector<std::string>& names) const;
 
 		int find_index(const std::vector<std::string>& names, const std::string& key) const;
+
+		void basic_measure();
 
 		/*single cell quantities*/
 		/*
@@ -215,8 +215,8 @@ namespace Electroweak{
 		const FlagType density_data_flags) {
 		this->data_table_flags_ = data_table_flags;
 		this->density_data_flags_ = density_data_flags;
-		init_data_table();
-		init_density_data();
+		this->init_data_table();
+		this->init_density_data();
 	}
 
 	template<int DIM>
@@ -242,6 +242,13 @@ namespace Electroweak{
 		const FlagType flags,
 		std::vector<std::string>& names) const {
 		names.clear();
+		this->init_basic_name_vector(flags, names);
+	}
+
+	template<int DIM>
+	void ElectroweakObserver<DIM>::init_basic_name_vector(
+		const FlagType flags,
+		std::vector<std::string>& names) const {
 		if (flags & ObserverFlags::OBS_TotalEnergy) {
 			names.push_back("TotalEnergy");
 		}
@@ -629,7 +636,7 @@ namespace Electroweak{
 	}
 
 	template<int DIM>
-	void ElectroweakObserver<DIM>::Measure() {
+	void ElectroweakObserver<DIM>::basic_measure(){
 		auto time_step = this->evo_.get_time_step();
 		if (this->data_table_flags_ & ObserverFlags::OBS_TotalEnergy) {
 			this->CalcEnergy(time_step);
@@ -668,6 +675,11 @@ namespace Electroweak{
 			this->CalcMagneticField(time_step, 2);
 		}
 		return;
+	}
+
+	template<int DIM>
+	void ElectroweakObserver<DIM>::Measure() {
+		this->basic_measure();
 	}
 
 	template<int DIM>
