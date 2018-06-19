@@ -45,6 +45,10 @@ namespace Electroweak{
 		time_t start_time_;
 		time_t finish_time_;
 
+		/*
+		Here are the two common ways to define boundary region (or constraint region).
+		periodic boundary is just no boundary at all.
+		*/
 		constexpr int test_periodic_boundary(const Site<DIM>& x) const {
 			return 0;
 		}
@@ -83,6 +87,10 @@ namespace Electroweak{
         void EvolveU1OneSite_KS(const Site<DIM>& x, const int component, const int nowTime, const int futureTime) const;
         void EvolveSU2OneSite_KS(const Site<DIM>& x, const int component, const int nowTime, const int futureTime) const;
 
+		/*
+		The constraint region and boundary region can be modified 
+		by specific problems.
+		*/
 		virtual const int is_constraint_region(const Site<DIM>& x) const {
 			return test_periodic_boundary(x);
 		}
@@ -90,7 +98,7 @@ namespace Electroweak{
 			return test_periodic_boundary(x);
 		}
 
-        /* boundary conditions */
+		/* boundary conditions */
 
 		/* trivial initial condition*/
 		void TrivialInitialCondition() const;
