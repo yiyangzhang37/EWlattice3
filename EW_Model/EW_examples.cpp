@@ -261,7 +261,6 @@ void EW_Random_Nucl_LongTimeSpectrum(const int n_rows, const int n_cols){
     std::string id = ReadConfigIni("RUN_ID");
     BubbleNucleation<DIM> bubble(lat, parallel, id);
     bubble.RecordParameters();
-    bubble.RecordCustomParameters();
     bubble.SaveParameters(id+"_param.txt");
     
     NucleationObserver<DIM> obs(bubble);
@@ -282,7 +281,7 @@ void EW_Random_Nucl_LongTimeSpectrum(const int n_rows, const int n_cols){
     bubble.InitializeSymmetricPhase();
 
     for(auto i = 0; i <= Ntimesteps; ++i){
-        obs.ExtendMeasure();
+        obs.Measure();
 
         bubble.UpdateFields();
 
