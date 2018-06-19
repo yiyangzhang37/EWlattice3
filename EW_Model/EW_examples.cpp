@@ -223,9 +223,9 @@ void EW_Random_Nucl(const int n_rows, const int n_cols){
         bubble.UpdateFields();
 
         /*nucleation is inserted here*/
-        //if( ! bubble.CheckHiggsAllInBrokenPhase(obs) ){
+        if( ! bubble.isHiggsAllInBrokenPhase(obs) ){
             bubble.RandomBubbleNucleation();
-        //}
+        }
        
         bubble.EvolveInterior_RadialDamping();
         obs.SaveDensityData(id + "_den_" + std::to_string(i) + ".h5", DensityDataSaveFreq);

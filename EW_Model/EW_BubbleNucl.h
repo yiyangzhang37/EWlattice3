@@ -74,9 +74,10 @@ namespace EW_BubbleNucleation{
 		//by looking at the MinHiggsMagnitude2
 		//if yes, then skip the random nucleation.
 		///This function purely for efficiency.
-		bool CheckHiggsAllInBrokenPhase(const ElectroweakObserver<DIM>& obs) const;
+		//not working yet.
+		bool isHiggsAllInBrokenPhase(const ElectroweakObserver<DIM>& obs) const;
 
-    private:
+    protected:
 		/*
 		check whether each site is in symmtric phase (0) or not (1), for the time slice nowTime.
 		The threshold is set by phi2_limit.
@@ -109,9 +110,7 @@ namespace EW_BubbleNucleation{
 			const IndexType global_index, 
 			const SU2vector& phi_hat) const;
 		
-		/*
-		Wrapper
-		*/
+		/* Wrapper */
 		void NucleateOneBubble(
 			const int nowTime,
 			const IndexType* global_coord, 
@@ -227,13 +226,13 @@ namespace EW_BubbleNucleation{
 	}
 
 	template<int DIM>
-	bool BubbleNucleation<DIM>::CheckHiggsAllInBrokenPhase(
+	bool BubbleNucleation<DIM>::isHiggsAllInBrokenPhase(
 		const ElectroweakObserver<DIM>& obs) const {
 		auto T = this->time_step_;
 		if(T > 50){ //only use this check after 50 timesteps
 			const auto& dtable = obs.get_data_table();
 			const auto& col_vals = dtable.get_column("MinHiggsMagnitude2");
-			auto last_val = *col_vals.end();
+			auto last_val = *(col_vals.end()--);
 			if(last_val >= 10 * NUCLEATION_LIMIT) return true;
 			else return false;
 
@@ -569,27 +568,6 @@ namespace EW_BubbleNucleation{
 			this->new_bubbles_count_ = 0;
 		}
 		return;
-		/*
-		if (_time_step == 0) {
-			const auto num_in_line = nSize[0] / (2 * half_sep);
-			vector<int> core_pos(num_in_line);
-			for (int i = 0; i < num_in_line; ++i) {
-				core_pos[i] = (2 * i + 1)*half_sep;
-			}
-			const auto len = core_pos.size();
-			new_bubble_count = 0;
-			for (int i = 0; i < len; ++i) {
-				for (int j = 0; j < len; ++j) {
-					for (int k = 0; k < len; ++k) {
-						int c[DIM] = { core_pos[i], core_pos[j], core_pos[k] };
-						x.setCoord(c);
-						NucleateRegion_Exp(x, NUCLEATION_RADIUS_SITE, 1);
-						new_bubble_count++;
-					}
-				}
-			}
-		}*/
-		return;
 	}
 
 	template<int DIM>
@@ -600,18 +578,6 @@ namespace EW_BubbleNucleation{
 
 	}
 
-	/*
-	template<int DIM>
-	void NucleationObserver<DIM>::SetObservables(
-			const FlagType data_table_flags,
-			const FlagType density_data_flags) {
-		this->data_table_flags_ = data_table_flags;
-		this->density_data_flags_ = density_data_flags;
-		this->init_data_table();
-		this->init_density_data();
-	}
-	*/
-
 	template<int DIM>
 	void NucleationObserver<DIM>::Measure() {
 		this->basic_measure();
@@ -621,24 +587,7 @@ namespace EW_BubbleNucleation{
 		}
 		return;
 	}
-/*
-	template<int DIM>
-	void NucleationObserver<DIM>::init_data_table(){
-		std::vector<std::string> data_table_names;
-		this->init_extend_name_vector(this->data_table_flags_, data_table_names);
-		this->data_table_.initialize(data_table_names);
-		this->data_table_names_ = data_table_names;
-	}
 
-	template<int DIM>
-	void NucleationObserver<DIM>::init_density_data() {
-		std::vector<std::string> density_data_names;
-		this->init_extend_name_vector(this->density_data_flags_, density_data_names);
-		this->density_names_ = density_data_names;
-		this->density_data_.reinit(this->density_names_.size(), 1);
-		return;
-	}
-*/
 	template<int DIM>
 	void NucleationObserver<DIM>::init_name_vector(
 			const FlagType flags,
