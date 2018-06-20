@@ -32,7 +32,7 @@ namespace EW_BubbleNucleation {
 
     template<int DIM>
     void CSBubble<DIM>::OneBubble_Transformed(const int winding){
-        
+        HedgehogWinding<winding> 
     }
 }
 
