@@ -232,10 +232,9 @@ namespace EW_BubbleNucleation{
 		if(T > 50){ //only use this check after 50 timesteps
 			const auto& dtable = obs.get_data_table();
 			const auto& col_vals = dtable.get_column("MinHiggsMagnitude2");
-			auto last_val = *(col_vals.end()--);
+			auto last_val = col_vals.back();
 			if(last_val >= 10 * NUCLEATION_LIMIT) return true;
 			else return false;
-
 		} else{
 			return false;
 		}
