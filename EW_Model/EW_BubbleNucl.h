@@ -43,7 +43,7 @@ namespace EW_BubbleNucleation{
 			const Lattice<DIM>& lat, 
 			const Parallel2D& parallel, 
 			const std::string& id);
-		BubbleNucleation() = default;
+		~BubbleNucleation() = default;
 
 		void RecordParameters() override;
 		
