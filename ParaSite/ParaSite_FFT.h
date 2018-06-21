@@ -235,7 +235,7 @@ namespace ParaSite{
                                 this->data_out_.data());
             fp.open_file(file_name);
             fp.open_dataset(dst_name);
-            int count = 0;
+            //int count = 0;
             for(auto i = 0; i < DIM; ++i){
                 fp.attach_attribute_to_dataset<std::string>("col_" + std::to_string(i), 
                                                     "axis_" + std::to_string(DIM-1-i));

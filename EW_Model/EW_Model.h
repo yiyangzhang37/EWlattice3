@@ -123,14 +123,14 @@ namespace Electroweak{
         :
         lat_(lat),
         parallel_(parallel),
-        id_(id),
-		param_(),
 		phi_(lat, CYCLE, parallel),
 		pi_(lat, CYCLE, parallel),
 		U_(lat, DIM, CYCLE, parallel),
 		F_(lat, DIM, CYCLE, parallel),
 		V_(lat, DIM, CYCLE, parallel),
 		E_(lat, DIM, CYCLE, parallel),
+		param_(),
+        id_(id),
 		start_time_(std::time(nullptr)),
 		finish_time_(std::time(nullptr))
     {       

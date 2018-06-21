@@ -245,7 +245,7 @@ namespace EW_BubbleNucleation{
 		// I feel the nucleation should be more natural to be after update fields.
 		// and the nucleation is performed on the updated fields.
 		const auto T = (this->time_step_ + 1) % CYCLE;
-		int new_bubble_count = 0;
+		//int new_bubble_count = 0;
 
 		//get Higgs field phase info from all the processes.
 		auto global_size = this->lat_.get_visible_global_sites();
@@ -572,8 +572,8 @@ namespace EW_BubbleNucleation{
 	template<int DIM>
 	NucleationObserver<DIM>::NucleationObserver(const BubbleNucleation<DIM>& bubble)
 		:
-		nucl_(bubble),
-		ElectroweakObserver<DIM>(bubble){
+		ElectroweakObserver<DIM>(bubble),
+		nucl_(bubble){
 
 	}
 
