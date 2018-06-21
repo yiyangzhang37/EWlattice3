@@ -248,7 +248,7 @@ namespace ParaSite{
     void Field<FieldType, DIM>::make_update_halo_table() {
         update_halo_table_ = std::vector<std::tuple<IndexType, IndexType, int, int>>(
                             this->lattice_->get_local_mem_sites() - this->lattice_->get_visible_local_sites());
-        auto first_halo = this->lattice_->get_local_halo_first();
+        //auto first_halo = this->lattice_->get_local_halo_first();
         auto next_to_last_halo = this->lattice_->get_local_halo_next_to_last();
         auto h = this->lattice_->get_local_halo_first();
         IndexType halo_coord[DIM], mapped_coord[DIM];

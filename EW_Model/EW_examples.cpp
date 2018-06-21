@@ -355,7 +355,7 @@ void EW_Random_Nucl_FFT(const int n_rows, const int n_cols){
 
         if(bubble.get_time_step() % 20 == 0){
             bfield.Measure();
-            const auto& bfield_data = bfield.get_density_data();
+            //const auto& bfield_data = bfield.get_density_data();
         }
 
         /*early stop*/
