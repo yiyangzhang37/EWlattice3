@@ -12,7 +12,7 @@ namespace Electroweak {
     {}
 
     void HedgehogWinding::set_location(const double r, const double* unit_dir) {
-        std::array<double, 3> coord = {r*unit_dir[0], r*unit_dir[1], r*unit_dir[2]};
+        std::array<double, 3> coord = {{r*unit_dir[0], r*unit_dir[1], r*unit_dir[2]}};
         this->set_location(coord.data());
     }
 
@@ -28,20 +28,24 @@ namespace Electroweak {
     double HedgehogWinding::profile_df() const {
         return 2.0 * PI * this->winding_ / (this->r_scale_ * pow(cosh(this->radius_/this->r_scale_), 2));
     }
-
-    SU2matrix HedgehogWinding::winding_mat() const {
-        return cos(0.5*this->profile_f()) * Ident + sin(0.5*this->profile_f()) * 
+    
+    SU2matrix HedgehogWinding::winding_mat_impl(const int sign) const {
+        if(this->radius_ < 1e-6) return Ident;
+        return cos(0.5*this->profile_f()) * Ident + sign * sin(0.5*this->profile_f()) * 
         (iPauli[0]*this->unit_dir(0) + iPauli[1]*this->unit_dir(1) + iPauli[2]*this->unit_dir(2));
+    }
+    SU2matrix HedgehogWinding::winding_mat() const {
+        return this->winding_mat_impl(1);
     }
 
     SU2matrix HedgehogWinding::inv_winding_mat() const {
-        return cos(0.5*this->profile_f()) * Ident - sin(0.5*this->profile_f()) * 
-        (iPauli[0]*this->unit_dir(0) + iPauli[1]*this->unit_dir(1) + iPauli[2]*this->unit_dir(2));
+        return this->winding_mat_impl(-1);
     }
 
     SU2matrix HedgehogWinding::d_mat_impl(
         const int dir, 
-        const int sign) const {    
+        const int sign) const {
+        if(this->radius_ < 1e-6) return sign*0.5*I*this->profile_df()*Pauli[dir];   
         auto sinf2 = sin(0.5*this->profile_f());
         auto cosf2 = cos(0.2*this->profile_f());
         auto dfi = this->profile_df() * this->dr(dir);
@@ -54,12 +58,12 @@ namespace Electroweak {
 
     SU2matrix HedgehogWinding::d_winding_mat(
         const int dir) const {
-        this->d_mat_impl(dir, 1);
+        return this->d_mat_impl(dir, 1);
     }
 
     SU2matrix HedgehogWinding::d_inv_winding_mat(
         const int dir) const {
-        this->d_mat_impl(dir, -1);
+        return this->d_mat_impl(dir, -1);
     }
 
     SU2matrix HedgehogWinding::pure_gauge(const int dir) const {
@@ -70,16 +74,21 @@ namespace Electroweak {
     }
 
     double HedgehogWinding::pure_gauge(const int dir, const int wa) const {
-        auto sinfr = sin(this->profile_f()) / this->radius_;
-        auto dfr = this->profile_df();
-        auto xaxi = this->unit_dir(dir) * this->unit_dir(wa);
-        auto result = (dir==wa)*sinfr + (dfr-sinfr)*xaxi;
-        if(dir != wa){
-            auto cosr2 = (1-cos(this->profile_f())) / (this->radius_*this->radius_);
-            auto b = 3-dir-wa; //this only works for DIM==3.
-            result += cosr2 * levi_civita_3d(wa, dir, b) * this->coord_[b];
+        if(this->radius_ < 1e-6){
+            if(dir==wa) return this->profile_df();
+            else return 0.0;
+        } else{
+            auto sinfr = sin(this->profile_f()) / this->radius_;
+            auto dfr = this->profile_df();
+            auto xaxi = this->unit_dir(dir) * this->unit_dir(wa);
+            auto result = (dir==wa)*sinfr + (dfr-sinfr)*xaxi;
+            if(dir != wa){
+                auto cosr2 = (1-cos(this->profile_f())) / (this->radius_*this->radius_);
+                auto b = 3-dir-wa; //this only works for DIM==3.
+                result += cosr2 * levi_civita_3d(wa, dir, b) * this->coord_[b];
+            }
+            return result; 
         }
-        return result; 
     }
 
     SU2vector HedgehogWinding::gauge_transform(const SU2vector& phi) const{

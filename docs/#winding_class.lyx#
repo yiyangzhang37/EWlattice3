@@ -284,18 +284,6 @@ gW_{i}^{a} & =w^{a}\partial_{i}f+\sin f\ \partial_{i}w^{a}-(1-\cos f)\ \epsilon_
 \end_layout
 
 \begin_layout Standard
-In the limit of 
-\begin_inset Formula $r\rightarrow0$
-\end_inset
-
-,
-\end_layout
-
-\begin_layout Standard
-
-\end_layout
-
-\begin_layout Standard
 The CS number for the pure gauge field is 
 \end_layout
 

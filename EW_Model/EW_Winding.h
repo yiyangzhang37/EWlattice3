@@ -77,6 +77,7 @@ namespace Electroweak{
         }
 
         SU2matrix d_mat_impl(const int dir, const int sign) const;
+        SU2matrix winding_mat_impl(const int sign) const;
     
     };
 
