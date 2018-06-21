@@ -31,7 +31,7 @@ namespace EW_BubbleNucleation {
             const int nowTime,
             const IndexType global_index,
             const SU2vector& phi_hat,
-            const HedgehogWinding& w) const;
+            const HedgehogWinding& winding) const;
 
     };
 
@@ -45,8 +45,8 @@ namespace EW_BubbleNucleation {
     {}
 
     template<int DIM>
-    void CSBubble<DIM>::OneBubbleTest_WithWinding(const int winding){
-        HedgehogWinding w(1, NUCLEATION_CS_RADIUS);
+    void CSBubble<DIM>::OneBubbleTest_WithWinding(const int winding) const {
+        HedgehogWinding w(winding, NUCLEATION_CS_RADIUS);
         Site<DIM> x(this->lat_);
 		if (this->time_step_ == 0) {
 			auto T = (this->time_step_ + 1) % CYCLE;
@@ -54,8 +54,8 @@ namespace EW_BubbleNucleation {
 			phi_hat(0) = Cmplx(0,0);
             phi_hat(1) = Cmplx(1,0);
 			IndexType global_coord[] = {nSize[0] / 2, nSize[1] / 2, nSize[2] / 2};
-            auto global_idx = this->evo_.global_coord2index(global_coord);
-			this->NucleateOneBubble_Exp_WithWinding(T, global_idx, phi_hat, );
+            auto global_idx = this->get_lattice().global_coord2index(global_coord);
+			this->NucleateOneBubble_Exp_WithWinding(T, global_idx, phi_hat, w);
 			this->phi_.update_halo();
             this->U_.update_halo();
 		}
@@ -68,7 +68,8 @@ namespace EW_BubbleNucleation {
         const int nowTime,
         const IndexType global_index,
         const SU2vector& phi_hat,
-        const HedgehogWinding& w) const {
+        const HedgehogWinding& winding) const {
+        auto w = winding;
         //First of all, the bubble is still limited within 
         //NUCLEATION_RADIUS_SITE lattice distance.
         /*
@@ -78,8 +79,11 @@ namespace EW_BubbleNucleation {
         */
         std::vector<IndexType> region_list;
 		this->GetBubbleRegion(global_index, NUCLEATION_RADIUS_SITE, region_list);
-        IndexType gcc[DIM]; //global_center_coord.
-        this->evo_.gloabl_index2coord(global_index, gcc);
+        IndexType global_center_coord[DIM];
+        this->get_lattice().global_index2coord(global_index, global_center_coord);
+        Real gcc[DIM];
+        std::transform(global_center_coord, global_center_coord + DIM,
+            gcc, [](IndexType c){return static_cast<Real>(c); });
     
         Site<DIM> x(this->lat_);
         for(auto gidx : region_list){

@@ -33,9 +33,11 @@ int main(int argc, char** argv) {
 
 		//EW_Nucl_TwoBubbles(n_rows, n_cols);
 		//EW_Nucl_NonRand(n_rows, n_cols);
-		EW_Random_Nucl(n_rows, n_cols);
+		//EW_Random_Nucl(n_rows, n_cols);
 		//EW_Random_Nucl_LongTimeSpectrum(n_rows, n_cols);
 		//test_FFT3D_r2cc2r();
+
+		EW_CSB_OneBubble(n_rows, n_cols);
 
 		//auto end = std::chrono::high_resolution_clock::now();
 		//std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end-begin).count() << "ms" << std::endl;

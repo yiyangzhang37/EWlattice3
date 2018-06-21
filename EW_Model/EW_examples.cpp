@@ -373,3 +373,51 @@ void EW_Random_Nucl_FFT(const int n_rows, const int n_cols){
     bubble.ConcludeEvolution(id+"_param.txt");
     return;
 }
+
+void EW_CSB_OneBubble(const int n_rows, const int n_cols){
+    using namespace EW_BubbleNucleation;
+    Parallel2D parallel(n_rows, n_cols, MPI_COMM_WORLD);
+    GridIndexType node_size[] = { n_rows, n_cols };
+    GridIndexType grid_rank[] = { parallel.get_grid_rank()[0], parallel.get_grid_rank()[1] };
+
+    GridIndexType grid_loc[2];
+	transform_gridrank_to_gridloc(grid_rank, grid_loc);
+
+    Lattice<DIM> lat(nSize, halo, node_size, grid_loc);
+    std::string id = ReadConfigIni("RUN_ID");
+    CSBubble<DIM> bubble(lat, parallel, id);
+    bubble.RecordParameters();
+    bubble.SaveParameters(id+"_param.txt");
+    
+    NucleationObserver<DIM> obs(bubble);
+    obs.SetObservables(ObserverFlags::OBS_EnergyAllParts |
+                        ObserverFlags::OBS_CSNumber |
+                        ObserverFlags::OBS_MagneticEnergy |
+                        ObserverFlags::OBS_HiggsMagnitude2 |
+                        ObserverFlags::OBS_MinHiggsMagnitude2 |
+                        ObserverFlags::OBS_HiggsWinding |
+                        ObserverFlags::OBS_NewBubbleCount,
+
+                        ObserverFlags::OBS_TotalEnergy | 
+                        ObserverFlags::OBS_MagneticEnergy |
+                        ObserverFlags::OBS_HiggsMagnitude2);
+    
+    bubble.InitializeSymmetricPhase();
+
+    for(auto i = 0; i <= Ntimesteps; ++i){
+        obs.Measure();
+
+        bubble.UpdateFields();
+
+        bubble.OneBubbleTest_WithWinding(1);
+       
+        bubble.EvolveInterior_RadialDamping();
+        obs.SaveDensityData(id + "_den_" + std::to_string(i) + ".h5", DensityDataSaveFreq);
+	    obs.SaveDataTable(id+"_dtable.txt", 50);
+
+        bubble.TimeAdvance();
+    }
+    obs.SaveDataTable(id+"_dtable.txt");
+    bubble.ConcludeEvolution(id+"_param.txt");
+    return;
+}
