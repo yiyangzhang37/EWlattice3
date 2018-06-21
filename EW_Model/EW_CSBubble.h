@@ -103,15 +103,27 @@ namespace EW_BubbleNucleation {
                 //Set pure-gauge SU(2) field.
                 Real gc_x[] = {rgx(x, 0, DX, gcc), rx(x, 1, DX, gcc), rx(x, 2, DX, gcc)};
                 w.set_location(gc_x);
-                this->U_(x, 0, nowTime) = w.pure_gauge(0) / g;
+                auto gWx = w.pure_gauge(0);
+                Cmplx SU2_Ucomp_x[] = {(iPauli[0]*gWx).trace(), 
+                                    (iPauli[1]*gWx).trace(), 
+                                    (iPauli[2]*gWx).trace()};
+                su2field2U(x, 0, this->U_, nowTime, SU2_Ucomp_x);
 
                 Real gc_y[] = {rx(x, 0, DX, gcc), rgx(x, 1, DX, gcc), rx(x, 2, DX, gcc)};
                 w.set_location(gc_y);
-                this->U_(x, 1, nowTime) = w.pure_gauge(1) / g;
+                auto gWy = w.pure_gauge(1);
+                Cmplx SU2_Ucomp_y[] = {(iPauli[0]*gWy).trace(), 
+                                    (iPauli[1]*gWy).trace(), 
+                                    (iPauli[2]*gWy).trace()};
+                su2field2U(x, 1, this->U_, nowTime, SU2_Ucomp_y);
 
                 Real gc_z[] = {rx(x, 0, DX, gcc), rx(x, 1, DX, gcc), rgx(x, 2, DX, gcc)};
                 w.set_location(gc_z);
-                this->U_(x, 2, nowTime) = w.pure_gauge(2) / g;
+                auto gWz = w.pure_gauge(2);
+                Cmplx SU2_Ucomp_z[] = {(iPauli[0]*gWz).trace(), 
+                                    (iPauli[1]*gWz).trace(), 
+                                    (iPauli[2]*gWz).trace()};
+                su2field2U(x, 2, this->U_, nowTime, SU2_Ucomp_z);
                 
 			} else continue;
 		}

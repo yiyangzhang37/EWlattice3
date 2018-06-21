@@ -744,6 +744,12 @@ namespace Electroweak {
 		return su2F;
 	}
 
+	template<int D>
+	SU2matrix su2W2U(const SU2matrix& gw) {
+		//TODO
+		;
+	}
+
 }
 
 #endif

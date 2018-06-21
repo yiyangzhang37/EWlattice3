@@ -47,7 +47,7 @@ namespace Electroweak{
         //compute the SU2 field gauge transform: U*gW_i*U^-1 + U*d_i(U^-1). 
         SU2matrix gauge_transform(const SU2matrix& gw, const int dir) const;
 
-        constexpr int get_winding_number() const {return this->winding_;}
+        const int get_winding_number() const {return this->winding_;}
         const int r() const {return this->radius_;}
         const int coord(const int i) const {return this->coord_[i];}
     
