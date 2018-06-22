@@ -744,10 +744,29 @@ namespace Electroweak {
 		return su2F;
 	}
 
-	template<int D>
-	SU2matrix su2W2U(const SU2matrix& gw) {
-		//TODO
-		;
+	template<int _ = 0>
+	SU2matrix su2_W2U(const SU2matrix& gw, const double dx = DX) {
+		//This is a new function
+		/*gw=sigma^a/(2i)*W^a*/
+		assert( std::abs(gw.trace()) < 1e-6 ); // gw should be traceless.
+		//compute gW^a*dx (complex)
+		Cmplx cwa[SU2DIM] = {(iPauli[0]*gw*dx).trace(), (iPauli[1]*gw*dx).trace(), (iPauli[2]*gw*dx).trace()};
+		assert( std::abs(cwa[0].imag()) < 1e-6 );
+		assert( std::abs(cwa[1].imag()) < 1e-6 );
+		assert( std::abs(cwa[2].imag()) < 1e-6 );
+		Real su2_Usum = 0;
+		for(auto a = 0; a < SU2DIM; ++a){
+			su2_Usum += pow(cwa[a].real(), 2);
+		}
+		su2_Usum *= 0.25;
+		
+		assert(su2_Usum <= 1.0);
+		Real su2_U0 = sqrt(1.0 - su2_Usum);
+		SU2matrix U = su2_U0*Ident;
+		for (int a = 0; a < SU2DIM; ++a) {
+			U -= 0.5 * iPauli[a] * cwa[a].real();
+		}
+		return U;
 	}
 
 }

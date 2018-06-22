@@ -20,6 +20,7 @@ namespace EW_BubbleNucleation {
         ~CSBubble() = default;
 
         void OneBubbleTest_WithWinding(const int winding) const;
+        void InitPureGauge(const int winding, const double r_scale) const;
     protected:
         /*
         Nucleate a bubble with the exponential profile,
@@ -96,6 +97,8 @@ namespace EW_BubbleNucleation {
 				auto vis_idx = this->lat_.global_index_to_local_vis_index(gidx);
 				auto mem_idx = this->lat_.local_vis_index_to_local_mem_index(vis_idx);
 				x.set_index(mem_idx);
+                //this->phi_(x, nowTime) = mag * v * phi_hat;
+                
                 //Higgs field is transformed.
                 Real coord[] = {rx(x, 0, DX, gcc), rx(x, 1, DX, gcc), rx(x, 2, DX, gcc)};
                 w.set_location(coord);
@@ -104,29 +107,68 @@ namespace EW_BubbleNucleation {
                 Real gc_x[] = {rgx(x, 0, DX, gcc), rx(x, 1, DX, gcc), rx(x, 2, DX, gcc)};
                 w.set_location(gc_x);
                 auto gWx = w.pure_gauge(0);
-                Cmplx SU2_Ucomp_x[] = {(iPauli[0]*gWx).trace(), 
-                                    (iPauli[1]*gWx).trace(), 
-                                    (iPauli[2]*gWx).trace()};
+                Cmplx SU2_Ucomp_x[] = {(iPauli[0]*gWx).trace()*DX, 
+                                    (iPauli[1]*gWx).trace()*DX, 
+                                    (iPauli[2]*gWx).trace()*DX};
                 su2field2U(x, 0, this->U_, nowTime, SU2_Ucomp_x);
 
                 Real gc_y[] = {rx(x, 0, DX, gcc), rgx(x, 1, DX, gcc), rx(x, 2, DX, gcc)};
                 w.set_location(gc_y);
                 auto gWy = w.pure_gauge(1);
-                Cmplx SU2_Ucomp_y[] = {(iPauli[0]*gWy).trace(), 
-                                    (iPauli[1]*gWy).trace(), 
-                                    (iPauli[2]*gWy).trace()};
+                Cmplx SU2_Ucomp_y[] = {(iPauli[0]*gWy).trace()*DX, 
+                                    (iPauli[1]*gWy).trace()*DX, 
+                                    (iPauli[2]*gWy).trace()*DX};
                 su2field2U(x, 1, this->U_, nowTime, SU2_Ucomp_y);
 
                 Real gc_z[] = {rx(x, 0, DX, gcc), rx(x, 1, DX, gcc), rgx(x, 2, DX, gcc)};
                 w.set_location(gc_z);
                 auto gWz = w.pure_gauge(2);
-                Cmplx SU2_Ucomp_z[] = {(iPauli[0]*gWz).trace(), 
-                                    (iPauli[1]*gWz).trace(), 
-                                    (iPauli[2]*gWz).trace()};
+                Cmplx SU2_Ucomp_z[] = {(iPauli[0]*gWz).trace()*DX, 
+                                    (iPauli[1]*gWz).trace()*DX, 
+                                    (iPauli[2]*gWz).trace()*DX};
                 su2field2U(x, 2, this->U_, nowTime, SU2_Ucomp_z);
                 
 			} else continue;
 		}
+		return;
+    }
+
+    template<int DIM>
+    void CSBubble<DIM>::InitPureGauge(const int winding, const double r_scale) const {
+        Site<DIM> x(this->lat_);
+        HedgehogWinding w(winding, r_scale);
+		for (auto t = 0; t < CYCLE; ++t) {
+			for (x.first(); x.test(); x.next()) {
+				this->phi_(x, t) = SU2vector(0, 0);
+				this->pi_(x, t) = SU2vector(0, 0);
+				for (auto i = 0; i < DIM; ++i) {
+					this->F_(x, i, t) = UNITY_F * Ident;
+					this->V_(x, i, t) = Cmplx(1, 0);
+					this->E_(x, i, t) = UNITY_E * Cmplx(1, 0);
+				}
+                Real gc_x[] = {rgx(x, 0), rx(x, 1), rx(x, 2)};
+                w.set_location(gc_x);
+                SU2matrix gWx = w.pure_gauge(0);
+                this->U_(x, 0, t) = su2_W2U(gWx);
+                
+                Real gc_y[] = {rx(x, 0), rgx(x, 1), rx(x, 2)};
+                w.set_location(gc_y);
+                SU2matrix gWy = w.pure_gauge(1);
+                this->U_(x, 1, t) = su2_W2U(gWy);
+
+                Real gc_z[] = {rx(x, 0), rx(x, 1), rgx(x, 2)};
+                w.set_location(gc_z);
+                SU2matrix gWz = w.pure_gauge(2);
+                this->U_(x, 2, t) = su2_W2U(gWz);
+			}
+		}
+        //std::cout<<"PASS."<<std::endl;
+		this->phi_.update_halo();
+		this->pi_.update_halo();
+		this->U_.update_halo();
+		this->F_.update_halo();
+		this->V_.update_halo();
+		this->E_.update_halo();
 		return;
     }
 

@@ -402,18 +402,19 @@ void EW_CSB_OneBubble(const int n_rows, const int n_cols){
                         ObserverFlags::OBS_MagneticEnergy |
                         ObserverFlags::OBS_HiggsMagnitude2);
     
-    bubble.InitializeSymmetricPhase();
+    //bubble.InitializeSymmetricPhase();
+    bubble.InitPureGauge(1, DX*30);
 
     for(auto i = 0; i <= Ntimesteps; ++i){
         obs.Measure();
 
         bubble.UpdateFields();
 
-        bubble.OneBubbleTest_WithWinding(1);
+        //bubble.OneBubbleTest_WithWinding(1);
        
         bubble.EvolveInterior_RadialDamping();
         obs.SaveDensityData(id + "_den_" + std::to_string(i) + ".h5", DensityDataSaveFreq);
-	    obs.SaveDataTable(id+"_dtable.txt", 50);
+	    obs.SaveDataTable(id+"_dtable.txt", 2);
 
         bubble.TimeAdvance();
     }

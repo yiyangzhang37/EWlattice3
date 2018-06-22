@@ -56,7 +56,8 @@ namespace Electroweak{
 	const Real DX4 = DX * DX*DX*DX;
     const Real DT = DX / 4;
 
-    const Real CENTER_POS[DIM] = { nSize[0] / 2 - 0.5 , nSize[1] / 2 - 0.5 , nSize[2] / 2 - 0.5 };
+    //const Real CENTER_POS[DIM] = { nSize[0] / 2 - 0.5 , nSize[1] / 2 - 0.5 , nSize[2] / 2 - 0.5 };
+    const Real CENTER_POS[DIM] = { nSize[0] / 2.0, nSize[1] / 2.0, nSize[2] / 2.0 };
 
     const Real lambda = std::stod(ReadConfigIni("lambda"));//lambda=0.129
     const Real v = std::stod(ReadConfigIni("eta"));

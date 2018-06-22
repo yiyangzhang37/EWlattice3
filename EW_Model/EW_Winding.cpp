@@ -31,8 +31,8 @@ namespace Electroweak {
     
     SU2matrix HedgehogWinding::winding_mat_impl(const int sign) const {
         if(this->radius_ < 1e-6) return Ident;
-        return cos(0.5*this->profile_f()) * Ident + sign * sin(0.5*this->profile_f()) * 
-        (iPauli[0]*this->unit_dir(0) + iPauli[1]*this->unit_dir(1) + iPauli[2]*this->unit_dir(2));
+        return cos(0.5*this->profile_f()) * Ident + sign * sin(0.5*this->profile_f())  / this->radius_ * 
+        (iPauli[0]*this->coord_[0] + iPauli[1]*this->coord_[1] + iPauli[2]*this->coord_[2]);
     }
     SU2matrix HedgehogWinding::winding_mat() const {
         return this->winding_mat_impl(1);
@@ -45,9 +45,9 @@ namespace Electroweak {
     SU2matrix HedgehogWinding::d_mat_impl(
         const int dir, 
         const int sign) const {
-        if(this->radius_ < 1e-6) return sign*0.5*I*this->profile_df()*Pauli[dir];   
+        if(this->radius_ < 1e-6) return sign*0.5*this->profile_df()*iPauli[dir];   
         auto sinf2 = sin(0.5*this->profile_f());
-        auto cosf2 = cos(0.2*this->profile_f());
+        auto cosf2 = cos(0.5*this->profile_f());
         auto dfi = this->profile_df() * this->dr(dir);
         return -0.5 * sinf2 * dfi * Ident
             + sign * 
@@ -81,9 +81,9 @@ namespace Electroweak {
             auto sinfr = sin(this->profile_f()) / this->radius_;
             auto dfr = this->profile_df();
             auto xaxi = this->unit_dir(dir) * this->unit_dir(wa);
-            auto result = (dir==wa)*sinfr + (dfr-sinfr)*xaxi;
+            auto result = static_cast<double>(dir==wa)*sinfr + (dfr-sinfr)*xaxi;
             if(dir != wa){
-                auto cosr2 = (1-cos(this->profile_f())) / (this->radius_*this->radius_);
+                auto cosr2 = (1.0-cos(this->profile_f())) / (this->radius_*this->radius_);
                 auto b = 3-dir-wa; //this only works for DIM==3.
                 result += cosr2 * levi_civita_3d(wa, dir, b) * this->coord_[b];
             }

@@ -145,11 +145,10 @@ namespace Electroweak{
 	void ElectroweakEvolution<DIM>::record_basic_parameters(){
 		std::stringstream ss1, ss2;
     	ss1 << std::ctime(&start_time_);
-		//ss2 << std::put_time(std::localtime(&finish_time_), "%Y-%m-%d %X");
 		param_.add("ID", this->id_);
+		param_.add("Comment", ReadConfigIni("COMMENT"));
 		param_.add("Start Time", ss1.str());
-		//param_.add("Finish Time", ss2.str());
-		//param_.add("Time Cost(s)", std::difftime(finish_time_, start_time_));
+
 		param_.add("Dimension", DIM);
 		param_.add("HaloLayer", halo);
 		param_.add("LatticeSize(X)", nSize[0]);

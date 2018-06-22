@@ -2,6 +2,7 @@
 #define EW_WINDING_H
 
 #include <array>
+#include <numeric>
 #include "EW_parameter.h"
 
 namespace Electroweak{
@@ -48,8 +49,8 @@ namespace Electroweak{
         SU2matrix gauge_transform(const SU2matrix& gw, const int dir) const;
 
         const int get_winding_number() const {return this->winding_;}
-        const int r() const {return this->radius_;}
-        const int coord(const int i) const {return this->coord_[i];}
+        const double r() const {return this->radius_;}
+        const double coord(const int i) const {return this->coord_[i];}
     
     protected:
         double r_scale_;
@@ -60,11 +61,11 @@ namespace Electroweak{
         void set_radius(){
             this->radius_ = std::sqrt(
                 std::inner_product(this->coord_.begin(), this->coord_.end(), 
-                this->coord_.begin(), 0));
+                this->coord_.begin(), 0.0));
         }
 
         double unit_dir(const int i) const {
-            return this->coord_[i] / this->r();
+            return this->coord_[i] / this->radius_;
         }
         double w(const int wa) const {
             return this->unit_dir(wa);
@@ -73,7 +74,7 @@ namespace Electroweak{
             return this->unit_dir(i);
         }
         double dw(const int i, const int wa) const {
-            return (static_cast<double>(i==wa) - this->unit_dir(wa)*this->unit_dir(i))/this->r();
+            return (static_cast<double>(i==wa) - this->unit_dir(wa)*this->unit_dir(i))/this->radius_;
         }
 
         SU2matrix d_mat_impl(const int dir, const int sign) const;
