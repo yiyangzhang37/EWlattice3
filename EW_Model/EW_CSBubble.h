@@ -107,26 +107,17 @@ namespace EW_BubbleNucleation {
                 Real gc_x[] = {rgx(x, 0, DX, gcc), rx(x, 1, DX, gcc), rx(x, 2, DX, gcc)};
                 w.set_location(gc_x);
                 auto gWx = w.pure_gauge(0);
-                Cmplx SU2_Ucomp_x[] = {(iPauli[0]*gWx).trace()*DX, 
-                                    (iPauli[1]*gWx).trace()*DX, 
-                                    (iPauli[2]*gWx).trace()*DX};
-                su2field2U(x, 0, this->U_, nowTime, SU2_Ucomp_x);
+                this->U_(x, 0, nowTime) = su2_W2U(gWx);
 
                 Real gc_y[] = {rx(x, 0, DX, gcc), rgx(x, 1, DX, gcc), rx(x, 2, DX, gcc)};
                 w.set_location(gc_y);
                 auto gWy = w.pure_gauge(1);
-                Cmplx SU2_Ucomp_y[] = {(iPauli[0]*gWy).trace()*DX, 
-                                    (iPauli[1]*gWy).trace()*DX, 
-                                    (iPauli[2]*gWy).trace()*DX};
-                su2field2U(x, 1, this->U_, nowTime, SU2_Ucomp_y);
+                this->U_(x, 1, nowTime) = su2_W2U(gWy);
 
                 Real gc_z[] = {rx(x, 0, DX, gcc), rx(x, 1, DX, gcc), rgx(x, 2, DX, gcc)};
                 w.set_location(gc_z);
                 auto gWz = w.pure_gauge(2);
-                Cmplx SU2_Ucomp_z[] = {(iPauli[0]*gWz).trace()*DX, 
-                                    (iPauli[1]*gWz).trace()*DX, 
-                                    (iPauli[2]*gWz).trace()*DX};
-                su2field2U(x, 2, this->U_, nowTime, SU2_Ucomp_z);
+                this->U_(x, 2, nowTime) = su2_W2U(gWz);
                 
 			} else continue;
 		}
@@ -136,8 +127,8 @@ namespace EW_BubbleNucleation {
     template<int DIM>
     void CSBubble<DIM>::InitPureGauge(const int winding, const double r_scale) const {
         Site<DIM> x(this->lat_);
-        //HedgehogWinding w(winding, r_scale);
-        HedgehogWinding_Tanh2 w(winding, r_scale);
+        HedgehogWinding w(winding, r_scale);
+        //HedgehogWinding_Tanh2 w(winding, r_scale);
 		for (auto t = 0; t < CYCLE; ++t) {
 			for (x.first(); x.test(); x.next()) {
 				this->phi_(x, t) = SU2vector(0, 0);
@@ -163,7 +154,6 @@ namespace EW_BubbleNucleation {
                 this->U_(x, 2, t) = su2_W2U(gWz);
 			}
 		}
-        //std::cout<<"PASS."<<std::endl;
 		this->phi_.update_halo();
 		this->pi_.update_halo();
 		this->U_.update_halo();
