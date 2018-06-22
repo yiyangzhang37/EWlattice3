@@ -82,6 +82,25 @@ namespace Electroweak{
     
     };
 
+    class HedgehogWinding_Tanh2 : public HedgehogWinding {
+    public:
+        HedgehogWinding_Tanh2(const int winding, const double r_scale)
+            :
+            HedgehogWinding(winding, r_scale) 
+        {}
+        
+        ~HedgehogWinding_Tanh2() = default;
+
+        double profile_f() const override {
+            return 2.0 * PI * this->winding_ * tanh( pow(this->radius_/this->r_scale_, 2) );
+        }
+        double profile_df() const override {
+            auto& r = this->radius_;
+            auto& rg = this->r_scale_;
+            return 4.0*PI*this->winding_ * r / (rg*rg) / pow( cosh(pow(r/rg, 2)), 2 );
+        }
+    };
+
 }
 
 

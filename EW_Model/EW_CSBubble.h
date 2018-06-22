@@ -136,7 +136,8 @@ namespace EW_BubbleNucleation {
     template<int DIM>
     void CSBubble<DIM>::InitPureGauge(const int winding, const double r_scale) const {
         Site<DIM> x(this->lat_);
-        HedgehogWinding w(winding, r_scale);
+        //HedgehogWinding w(winding, r_scale);
+        HedgehogWinding_Tanh2 w(winding, r_scale);
 		for (auto t = 0; t < CYCLE; ++t) {
 			for (x.first(); x.test(); x.next()) {
 				this->phi_(x, t) = SU2vector(0, 0);

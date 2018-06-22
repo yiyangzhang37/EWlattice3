@@ -403,7 +403,7 @@ void EW_CSB_OneBubble(const int n_rows, const int n_cols){
                         ObserverFlags::OBS_HiggsMagnitude2);
     
     //bubble.InitializeSymmetricPhase();
-    bubble.InitPureGauge(1, DX*30);
+    bubble.InitPureGauge(3, DX*10);
 
     for(auto i = 0; i <= Ntimesteps; ++i){
         obs.Measure();
