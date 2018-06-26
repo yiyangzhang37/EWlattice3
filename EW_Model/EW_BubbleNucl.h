@@ -510,7 +510,7 @@ namespace EW_BubbleNucleation{
 		const int ir0 = static_cast<int>(std::floor(bubble_lat_radius));
 
 		region_list.clear();
-		region_list.reserve(ir0*ir0*ir0);
+		region_list.reserve(8*ir0*ir0*ir0);
 		IndexType center_coord[DIM];
 		this->lat_.global_index2coord(global_index, center_coord);
 		IndexType admitted_coord[DIM];

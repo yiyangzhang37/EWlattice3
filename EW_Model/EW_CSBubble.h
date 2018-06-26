@@ -176,6 +176,9 @@ namespace EW_BubbleNucleation {
 			//check if gidx is a local visible site
 			if(this->lat_.is_local(gidx)){
                 Real gc_x[] = {rgx(x, 0, DX, gcc), rx(x, 1, DX, gcc), rx(x, 2, DX, gcc)};
+                auto vis_idx = this->lat_.global_index_to_local_vis_index(gidx);
+				auto mem_idx = this->lat_.local_vis_index_to_local_mem_index(vis_idx);
+                x.set_index(mem_idx);
                 w.set_location(gc_x);
                 this->U_(x, 0, nowTime) = su2_W2U(w.pure_gauge(0));
             } else continue;
@@ -187,6 +190,9 @@ namespace EW_BubbleNucleation {
 			//check if gidx is a local visible site
 			if(this->lat_.is_local(gidx)){
                 Real gc_y[] = {rx(x, 0, DX, gcc), rgx(x, 1, DX, gcc), rx(x, 2, DX, gcc)};
+                auto vis_idx = this->lat_.global_index_to_local_vis_index(gidx);
+				auto mem_idx = this->lat_.local_vis_index_to_local_mem_index(vis_idx);
+                x.set_index(mem_idx);
                 w.set_location(gc_y);
                 this->U_(x, 1, nowTime) = su2_W2U(w.pure_gauge(1));
             } else continue;
@@ -198,13 +204,13 @@ namespace EW_BubbleNucleation {
 			//check if gidx is a local visible site
 			if(this->lat_.is_local(gidx)){
                 Real gc_z[] = {rx(x, 0, DX, gcc), rx(x, 1, DX, gcc), rgx(x, 2, DX, gcc)};
+                auto vis_idx = this->lat_.global_index_to_local_vis_index(gidx);
+				auto mem_idx = this->lat_.local_vis_index_to_local_mem_index(vis_idx);
+                x.set_index(mem_idx);
                 w.set_location(gc_z);
                 this->U_(x, 2, nowTime) = su2_W2U(w.pure_gauge(2));
             } else continue;
         }
-
-
-
 		return;
     }
 
