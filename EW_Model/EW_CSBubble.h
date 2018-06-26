@@ -33,6 +33,12 @@ namespace EW_BubbleNucleation {
             const IndexType global_index,
             const SU2vector& phi_hat,
             const HedgehogWinding& winding) const;
+        
+        //void SetLocalizedPureGaugeSU2Field(
+        //    const int nowTime,
+        //    const IndexType global_index,
+        //    const double lat_radius,
+        //    const HedgehogWinding& winding) const;
 
     };
 
@@ -63,7 +69,7 @@ namespace EW_BubbleNucleation {
 		return;
         
     }
-
+    /*
     template<int DIM>
     void CSBubble<DIM>::NucleateOneBubble_Exp_WithWinding(
         const int nowTime,
@@ -73,11 +79,11 @@ namespace EW_BubbleNucleation {
         auto w = winding;
         //First of all, the bubble is still limited within 
         //NUCLEATION_RADIUS_SITE lattice distance.
-        /*
-        This is quite sloppy, because the gauge field locations are on the links,
-        and the region_list for gauge field is not exactly the same as that 
-        for the Higgs field.
-        */
+        
+        //This is quite sloppy, because the gauge field locations are on the links,
+        //and the region_list for gauge field is not exactly the same as that 
+        //for the Higgs field.
+        
         std::vector<IndexType> region_list;
 		this->GetBubbleRegion(global_index, NUCLEATION_RADIUS_SITE, region_list);
         IndexType global_center_coord[DIM];
@@ -121,6 +127,84 @@ namespace EW_BubbleNucleation {
                 
 			} else continue;
 		}
+		return;
+    }
+    */
+    template<int DIM>
+    void CSBubble<DIM>::NucleateOneBubble_Exp_WithWinding(
+        const int nowTime,
+        const IndexType global_index,
+        const SU2vector& phi_hat,
+        const HedgehogWinding& winding) const {
+        auto w = winding;
+        //First of all, the bubble is still limited within 
+        //NUCLEATION_RADIUS_SITE lattice distance.
+
+        std::vector<IndexType> region_list;
+		this->GetBubbleRegion(global_index, NUCLEATION_RADIUS_SITE, region_list);
+        IndexType global_center_coord[DIM];
+        this->get_lattice().global_index2coord(global_index, global_center_coord);
+        Real gcc[DIM];
+        std::transform(global_center_coord, global_center_coord + DIM,
+            gcc, [](IndexType c){return static_cast<Real>(c); });
+
+        // set the Higgs field
+        Site<DIM> x(this->lat_);
+        for(auto gidx : region_list){
+			//check if gidx is a local visible site
+			if(this->lat_.is_local(gidx)){
+				//radial part
+				auto r = this->lat_.global_lat_distance(global_index, gidx) * DX; //distance to bubble center
+				auto mag = (1.0 + pow(sqrt(2.0) - 1.0, 2)) * exp(-mH * r / sqrt(2.0));
+				mag /= 1 + pow(sqrt(2.0) - 1, 2)*exp(-sqrt(2.0)*mH*r);
+				auto vis_idx = this->lat_.global_index_to_local_vis_index(gidx);
+				auto mem_idx = this->lat_.local_vis_index_to_local_mem_index(vis_idx);
+				x.set_index(mem_idx);
+                
+                //Higgs field is transformed.
+                Real coord[] = {rx(x, 0, DX, gcc), rx(x, 1, DX, gcc), rx(x, 2, DX, gcc)};
+                w.set_location(coord);
+				this->phi_(x, nowTime) = mag * v * w.gauge_transform(phi_hat);
+			} else continue;
+		}
+
+        //Set the SU2 field.
+        //x-component
+        this->GetLinkFieldRegion(global_index, 0,
+                                NUCLEATION_RADIUS_SITE, region_list);
+        for(auto gidx : region_list){
+			//check if gidx is a local visible site
+			if(this->lat_.is_local(gidx)){
+                Real gc_x[] = {rgx(x, 0, DX, gcc), rx(x, 1, DX, gcc), rx(x, 2, DX, gcc)};
+                w.set_location(gc_x);
+                this->U_(x, 0, nowTime) = su2_W2U(w.pure_gauge(0));
+            } else continue;
+        }
+        //y-component
+        this->GetLinkFieldRegion(global_index, 1,
+                                NUCLEATION_RADIUS_SITE, region_list);
+        for(auto gidx : region_list){
+			//check if gidx is a local visible site
+			if(this->lat_.is_local(gidx)){
+                Real gc_y[] = {rx(x, 0, DX, gcc), rgx(x, 1, DX, gcc), rx(x, 2, DX, gcc)};
+                w.set_location(gc_y);
+                this->U_(x, 1, nowTime) = su2_W2U(w.pure_gauge(1));
+            } else continue;
+        }
+        //z-component
+        this->GetLinkFieldRegion(global_index, 2,
+                                NUCLEATION_RADIUS_SITE, region_list);
+        for(auto gidx : region_list){
+			//check if gidx is a local visible site
+			if(this->lat_.is_local(gidx)){
+                Real gc_z[] = {rx(x, 0, DX, gcc), rx(x, 1, DX, gcc), rgx(x, 2, DX, gcc)};
+                w.set_location(gc_z);
+                this->U_(x, 2, nowTime) = su2_W2U(w.pure_gauge(2));
+            } else continue;
+        }
+
+
+
 		return;
     }
 

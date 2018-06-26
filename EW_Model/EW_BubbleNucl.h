@@ -3,6 +3,7 @@
 
 #include "EW_Base.h"
 #include <random>
+#include <cmath>
 #include <type_traits>
 
 namespace Electroweak{
@@ -122,12 +123,26 @@ namespace EW_BubbleNucleation{
 
 		/*
 		Given a global index, get the info about that site:
-		a list of all the sites (global index) within the bubble.
+		a list of all the sites (global index) within the bubble,
+		that is, within bubble_lat_radius(in lattice units).
 		Will assume DIM == 3.
+		The center must be on a lattice site.
 		*/
 		void GetBubbleRegion(
 			const IndexType global_index, 
 			const int bubble_lat_radius,
+			std::vector< IndexType >& region_list) const;
+		
+		/*
+		Similar function as GetBubbleRegion(),
+		but get the region list for the link fields in direction dir.
+		the bubble_lat_radius can be float number.
+		The center must be on a lattice site.
+		*/
+		void GetLinkFieldRegion(
+			const IndexType global_index,
+			const int dir,
+			const double bubble_lat_radius,
 			std::vector< IndexType >& region_list) const;
 		
 		/*
@@ -480,6 +495,44 @@ namespace EW_BubbleNucleation{
 			}
 		}
 		region_list = tmp_list;
+		return;
+	}
+
+	template<int DIM>
+	void BubbleNucleation<DIM>::GetLinkFieldRegion(
+			const IndexType global_index,
+			const int dir,
+			const double bubble_lat_radius,
+			std::vector< IndexType >& region_list) const{
+		static_assert(DIM == 3, "Dimension not equal to 3.");
+		const auto& r0 = bubble_lat_radius;
+		const auto r2 = r0*r0;
+		const int ir0 = static_cast<int>(std::floor(bubble_lat_radius));
+
+		region_list.clear();
+		region_list.reserve(ir0*ir0*ir0);
+		IndexType center_coord[DIM];
+		this->lat_.global_index2coord(global_index, center_coord);
+		IndexType admitted_coord[DIM];
+		const double offset[DIM] = {0.5*(dir==0), 0.5*(dir==1), 0.5*(dir==2)};
+
+		//The x,y,z denote the coordinate of the associated lattice site.
+		for(auto x = -ir0; x <= ir0; ++x){
+			for(auto y = -ir0; y <= ir0; ++y){
+				for(auto z = -ir0; z <= ir0; ++z){
+					if(pow(x+offset[0], 2) + pow(y+offset[1], 2) + pow(z+offset[2], 2) <= r2){
+						admitted_coord[0] = (center_coord[0] + x + this->lat_.get_global_size()[0]) 
+												% this->lat_.get_global_size()[0];
+						admitted_coord[1] = (center_coord[1] + y + this->lat_.get_global_size()[1]) 
+												% this->lat_.get_global_size()[1];
+						admitted_coord[2] = (center_coord[2] + z + this->lat_.get_global_size()[2]) 
+												% this->lat_.get_global_size()[2];
+						region_list.push_back(this->lat_.global_coord2index(admitted_coord));
+					}
+					//else continue.
+				}
+			}
+		}
 		return;
 	}
 
