@@ -20,6 +20,7 @@ namespace EW_BubbleNucleation {
         ~CSBubble() = default;
 
         void OneBubbleTest_WithWinding(const int winding) const;
+        void TwoBubblesTest_WithWinding(const int winding1, const int winding2) const;
         void InitPureGauge(const int winding, const double r_scale) const;
     protected:
         /*
@@ -69,67 +70,29 @@ namespace EW_BubbleNucleation {
 		return;
         
     }
-    /*
+
     template<int DIM>
-    void CSBubble<DIM>::NucleateOneBubble_Exp_WithWinding(
-        const int nowTime,
-        const IndexType global_index,
-        const SU2vector& phi_hat,
-        const HedgehogWinding& winding) const {
-        auto w = winding;
-        //First of all, the bubble is still limited within 
-        //NUCLEATION_RADIUS_SITE lattice distance.
-        
-        //This is quite sloppy, because the gauge field locations are on the links,
-        //and the region_list for gauge field is not exactly the same as that 
-        //for the Higgs field.
-        
-        std::vector<IndexType> region_list;
-		this->GetBubbleRegion(global_index, NUCLEATION_RADIUS_SITE, region_list);
-        IndexType global_center_coord[DIM];
-        this->get_lattice().global_index2coord(global_index, global_center_coord);
-        Real gcc[DIM];
-        std::transform(global_center_coord, global_center_coord + DIM,
-            gcc, [](IndexType c){return static_cast<Real>(c); });
-    
+    void CSBubble<DIM>::TwoBubblesTest_WithWinding(const int winding1, const int winding2) const {
+        HedgehogWinding w1(winding1, NUCLEATION_CS_RADIUS);
+        HedgehogWinding w2(winding2, NUCLEATION_CS_RADIUS);
         Site<DIM> x(this->lat_);
-        for(auto gidx : region_list){
-			//check if gidx is a local visible site
-			if(this->lat_.is_local(gidx)){
-				//radial part
-				auto r = this->lat_.global_lat_distance(global_index, gidx) * DX; //distance to bubble center
-				auto mag = (1.0 + pow(sqrt(2.0) - 1.0, 2)) * exp(-mH * r / sqrt(2.0));
-				mag /= 1 + pow(sqrt(2.0) - 1, 2)*exp(-sqrt(2.0)*mH*r);
-				auto vis_idx = this->lat_.global_index_to_local_vis_index(gidx);
-				auto mem_idx = this->lat_.local_vis_index_to_local_mem_index(vis_idx);
-				x.set_index(mem_idx);
-                //this->phi_(x, nowTime) = mag * v * phi_hat;
-                
-                //Higgs field is transformed.
-                Real coord[] = {rx(x, 0, DX, gcc), rx(x, 1, DX, gcc), rx(x, 2, DX, gcc)};
-                w.set_location(coord);
-				this->phi_(x, nowTime) = mag * v * w.gauge_transform(phi_hat);
-                //Set pure-gauge SU(2) field.
-                Real gc_x[] = {rgx(x, 0, DX, gcc), rx(x, 1, DX, gcc), rx(x, 2, DX, gcc)};
-                w.set_location(gc_x);
-                auto gWx = w.pure_gauge(0);
-                this->U_(x, 0, nowTime) = su2_W2U(gWx);
-
-                Real gc_y[] = {rx(x, 0, DX, gcc), rgx(x, 1, DX, gcc), rx(x, 2, DX, gcc)};
-                w.set_location(gc_y);
-                auto gWy = w.pure_gauge(1);
-                this->U_(x, 1, nowTime) = su2_W2U(gWy);
-
-                Real gc_z[] = {rx(x, 0, DX, gcc), rx(x, 1, DX, gcc), rgx(x, 2, DX, gcc)};
-                w.set_location(gc_z);
-                auto gWz = w.pure_gauge(2);
-                this->U_(x, 2, nowTime) = su2_W2U(gWz);
-                
-			} else continue;
+        if (this->time_step_ == 0) {
+			auto T = (this->time_step_ + 1) % CYCLE;
+			SU2vector phi_hat;
+			phi_hat(0) = Cmplx(0,0);
+            phi_hat(1) = Cmplx(1,0);
+			IndexType c1[] = {nSize[0] / 2, nSize[1] / 2, nSize[2] / 2 - BUBBLES_HALF_SEP};
+            IndexType c2[] = {nSize[0] / 2, nSize[1] / 2, nSize[2] / 2 + BUBBLES_HALF_SEP};
+            auto global_idx_1 = this->get_lattice().global_coord2index(c1);
+            auto global_idx_2 = this->get_lattice().global_coord2index(c2);
+			this->NucleateOneBubble_Exp_WithWinding(T, global_idx_1, phi_hat, w1);
+            this->NucleateOneBubble_Exp_WithWinding(T, global_idx_2, phi_hat, w2);
+			this->phi_.update_halo();
+            this->U_.update_halo();
 		}
-		return;
+        return;
     }
-    */
+
     template<int DIM>
     void CSBubble<DIM>::NucleateOneBubble_Exp_WithWinding(
         const int nowTime,

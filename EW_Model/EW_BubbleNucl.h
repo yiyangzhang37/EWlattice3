@@ -473,7 +473,8 @@ namespace EW_BubbleNucleation{
 		const auto& r0 = bubble_lat_radius;
 		const auto r2 = r0*r0;
 
-		std::vector<IndexType> tmp_list;
+		region_list.clear();
+		region_list.reserve(8*r0*r0*r0);
 		IndexType center_coord[DIM];
 		this->lat_.global_index2coord(global_index, center_coord);
 		IndexType admitted_coord[DIM];
@@ -488,13 +489,12 @@ namespace EW_BubbleNucleation{
 												% this->lat_.get_global_size()[1];
 						admitted_coord[2] = (center_coord[2] + z + this->lat_.get_global_size()[2]) 
 												% this->lat_.get_global_size()[2];
-						tmp_list.push_back(this->lat_.global_coord2index(admitted_coord));
+						region_list.push_back(this->lat_.global_coord2index(admitted_coord));
 					}
 					//else continue.
 				}
 			}
 		}
-		region_list = tmp_list;
 		return;
 	}
 
