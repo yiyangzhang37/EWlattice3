@@ -5,11 +5,16 @@
 
 namespace Electroweak {
     
-    HedgehogWinding::HedgehogWinding(const int winding, const double r_scale)
+    HedgehogWinding::HedgehogWinding(
+        const double* center, 
+        const int winding, 
+        const double r_scale)
         :
         r_scale_(r_scale),
         winding_(winding)
-    {}
+    {
+        std::copy_n(center, 3, this->center_.begin());
+    }
 
     void HedgehogWinding::set_location(const double r, const double* unit_dir) {
         std::array<double, 3> coord = {{r*unit_dir[0], r*unit_dir[1], r*unit_dir[2]}};
@@ -17,7 +22,9 @@ namespace Electroweak {
     }
 
     void HedgehogWinding::set_location(const double* coord) {
-        std::copy(coord, coord + 3, this->coord_.begin());
+        std::transform(coord, coord + 3, this->center_.begin(), 
+                        this->coord_.begin(), 
+                        [](double x, double c){return x-c;});
         this->set_radius();
     }
     

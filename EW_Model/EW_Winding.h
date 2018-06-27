@@ -17,7 +17,7 @@ namespace Electroweak{
 
     class HedgehogWinding{
     public:
-        HedgehogWinding(const int winding, const double r_scale);
+        HedgehogWinding(const double* center, const int winding, const double r_scale);
         ~HedgehogWinding() = default;
 
         /*
@@ -53,10 +53,14 @@ namespace Electroweak{
         const double coord(const int i) const {return this->coord_[i];}
     
     protected:
+        //center_ is the configuration center coordinate.
+        std::array<double, 3> center_;
         double r_scale_;
+        int winding_;
+
         double radius_;
         std::array<double, 3> coord_; //DIM==3 is assumed.
-        int winding_;
+        
 
         void set_radius(){
             this->radius_ = std::sqrt(
@@ -84,9 +88,9 @@ namespace Electroweak{
 
     class HedgehogWinding_Tanh2 : public HedgehogWinding {
     public:
-        HedgehogWinding_Tanh2(const int winding, const double r_scale)
+        HedgehogWinding_Tanh2(const double* center, const int winding, const double r_scale)
             :
-            HedgehogWinding(winding, r_scale) 
+            HedgehogWinding(center, winding, r_scale) 
         {}
         
         ~HedgehogWinding_Tanh2() = default;
