@@ -6,8 +6,11 @@ else
 	detected_OS := $(shell uname -s)
 endif
 
-MPICXX = mpic++
-MPIRUN = mpirun
+ifeq ($(detected_OS), Linux)
+	MPIRUN = /data/yiyang.zhang/bin/intel/compilers_and_libraries_2018.3.222/linux/mpi/intel64/bin/mpirun
+else
+	MPIRUN = mpirun
+endif
 
 TARGET = emlat.out
 OUTPUT = result.txt
