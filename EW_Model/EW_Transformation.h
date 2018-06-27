@@ -31,6 +31,7 @@ namespace Electroweak{
         The locations are different.
         */
         void set_location(const double r, const double* unit_dir);
+        //coord shall just be the absolute (physical, not lattice) coordinate. 
         void set_location(const double* coord);
 
         virtual SU2matrix transform_mat() const {return Ident;}

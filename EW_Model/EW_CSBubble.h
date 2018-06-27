@@ -55,10 +55,11 @@ namespace EW_BubbleNucleation {
     template<int DIM>
     void CSBubble<DIM>::OneBubbleTest_WithWinding(const int winding) const {
         IndexType global_coord[] = {nSize[0] / 2, nSize[1] / 2, nSize[2] / 2};
+        auto global_idx = this->get_lattice().global_coord2index(global_coord);
         double center_coord[DIM];
         std::transform(global_coord, global_coord + DIM, 
                     CENTER_POS, center_coord, 
-                    [](IndexType x, Real c){return x-c;});
+                    [](IndexType x, Real c){return (x-c)*DX;});
         HedgehogWinding w(center_coord, winding, NUCLEATION_CS_RADIUS);
         Site<DIM> x(this->lat_);
 		if (this->time_step_ == 0) {
@@ -66,8 +67,6 @@ namespace EW_BubbleNucleation {
 			SU2vector phi_hat;
 			phi_hat(0) = Cmplx(0,0);
             phi_hat(1) = Cmplx(1,0);
-			
-            auto global_idx = this->get_lattice().global_coord2index(global_coord);
 			this->NucleateOneBubble_Exp_WithWinding(T, global_idx, phi_hat, w);
 			this->phi_.update_halo();
             this->U_.update_halo();
@@ -83,10 +82,10 @@ namespace EW_BubbleNucleation {
         double center1[DIM], center2[DIM];
         std::transform(c1, c1+DIM, CENTER_POS, 
                     center1, 
-                    [](IndexType x, Real c){return x-c;});
+                    [](IndexType x, Real c){return (x-c)*DX;});
         std::transform(c2, c2+DIM, CENTER_POS, 
                     center2, 
-                    [](IndexType x, Real c){return x-c;});
+                    [](IndexType x, Real c){return (x-c)*DX;});
         HedgehogWinding w1(center1, winding1, NUCLEATION_CS_RADIUS);
         HedgehogWinding w2(center2, winding2, NUCLEATION_CS_RADIUS);
         Site<DIM> x(this->lat_);
@@ -119,9 +118,6 @@ namespace EW_BubbleNucleation {
 		this->GetBubbleRegion(global_index, NUCLEATION_RADIUS_SITE, region_list);
         IndexType global_center_coord[DIM];
         this->get_lattice().global_index2coord(global_index, global_center_coord);
-        Real gcc[DIM];
-        std::transform(global_center_coord, global_center_coord + DIM,
-            gcc, [](IndexType c){return static_cast<Real>(c); });
 
         // set the Higgs field
         Site<DIM> x(this->lat_);
@@ -137,7 +133,7 @@ namespace EW_BubbleNucleation {
 				x.set_index(mem_idx);
                 
                 //Higgs field is transformed.
-                Real coord[] = {rx(x, 0, DX, gcc), rx(x, 1, DX, gcc), rx(x, 2, DX, gcc)};
+                Real coord[] = {rx(x, 0), rx(x, 1), rx(x, 2)};
                 w.set_location(coord);
 				this->phi_(x, nowTime) = mag * v * w.gauge_transform(phi_hat);
 			} else continue;
@@ -153,7 +149,7 @@ namespace EW_BubbleNucleation {
                 auto vis_idx = this->lat_.global_index_to_local_vis_index(gidx);
 				auto mem_idx = this->lat_.local_vis_index_to_local_mem_index(vis_idx);
                 x.set_index(mem_idx);
-                Real gc_x[] = {rgx(x, 0, DX, gcc), rx(x, 1, DX, gcc), rx(x, 2, DX, gcc)};
+                Real gc_x[] = {rgx(x, 0), rx(x, 1), rx(x, 2)};
                 w.set_location(gc_x);
                 this->U_(x, 0, nowTime) = su2_W2U(w.pure_gauge(0));
             } else continue;
@@ -167,7 +163,7 @@ namespace EW_BubbleNucleation {
                 auto vis_idx = this->lat_.global_index_to_local_vis_index(gidx);
 				auto mem_idx = this->lat_.local_vis_index_to_local_mem_index(vis_idx);
                 x.set_index(mem_idx);
-                Real gc_y[] = {rx(x, 0, DX, gcc), rgx(x, 1, DX, gcc), rx(x, 2, DX, gcc)};
+                Real gc_y[] = {rx(x, 0), rgx(x, 1), rx(x, 2)};
                 w.set_location(gc_y);
                 this->U_(x, 1, nowTime) = su2_W2U(w.pure_gauge(1));
             } else continue;
@@ -181,7 +177,7 @@ namespace EW_BubbleNucleation {
                 auto vis_idx = this->lat_.global_index_to_local_vis_index(gidx);
 				auto mem_idx = this->lat_.local_vis_index_to_local_mem_index(vis_idx);
                 x.set_index(mem_idx);
-                Real gc_z[] = {rx(x, 0, DX, gcc), rx(x, 1, DX, gcc), rgx(x, 2, DX, gcc)};
+                Real gc_z[] = {rx(x, 0), rx(x, 1), rgx(x, 2)};
                 w.set_location(gc_z);
                 this->U_(x, 2, nowTime) = su2_W2U(w.pure_gauge(2));
             } else continue;
@@ -195,7 +191,7 @@ namespace EW_BubbleNucleation {
         double center_coord[DIM];
         std::transform(global_coord, global_coord + DIM, 
                     CENTER_POS, center_coord, 
-                    [](IndexType x, Real c){return x-c;});
+                    [](IndexType x, Real c){return (x-c)*DX;});
         Site<DIM> x(this->lat_);
         HedgehogWinding w(center_coord, winding, r_scale);
         //HedgehogWinding_Tanh2 w(winding, r_scale);
