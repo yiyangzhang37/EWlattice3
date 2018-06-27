@@ -15,10 +15,14 @@ namespace Electroweak{
         return (i-j)*(j-k)*(k-i)/2;
     }
 
-    class HedgehogWinding{
+    /*
+    Base class of a position-dependent SU2 gauge transformation.
+    The space dimension is assumed to be 3.
+    */
+    class SU2GaugeTransform {
     public:
-        HedgehogWinding(const double* center, const int winding, const double r_scale);
-        ~HedgehogWinding() = default;
+        SU2GaugeTransform(const double* center);
+        ~SU2GaugeTransform() = default;
 
         /*
         set the coordinate to compute the location-dependent transformations.
@@ -29,15 +33,11 @@ namespace Electroweak{
         void set_location(const double r, const double* unit_dir);
         void set_location(const double* coord);
 
-        virtual double profile_f() const;
-        virtual double profile_df() const;
+        virtual SU2matrix transform_mat() const {return Ident;}
+        virtual SU2matrix inv_transform_mat() const {return Ident;}
+        virtual SU2matrix d_transform_mat(const int dir) const {return SU2matrix::Zero();}
+        virtual SU2matrix d_inv_transform_mat(const int dir) const {return SU2matrix::Zero();}
 
-
-        SU2matrix winding_mat() const;
-        SU2matrix inv_winding_mat() const;
-        SU2matrix d_winding_mat(const int dir) const;
-        SU2matrix d_inv_winding_mat(const int dir) const;
-        
         //compute gW_i = U d_i(U^-1)
         SU2matrix pure_gauge(const int dir) const;
         //compute the component gW_i^a
@@ -48,29 +48,62 @@ namespace Electroweak{
         //compute the SU2 field gauge transform: U*gW_i*U^-1 + U*d_i(U^-1). 
         SU2matrix gauge_transform(const SU2matrix& gw, const int dir) const;
 
-        const int get_winding_number() const {return this->winding_;}
         const double r() const {return this->radius_;}
         const double coord(const int i) const {return this->coord_[i];}
     
     protected:
-        //center_ is the configuration center coordinate.
+        // The referece center of the gauge transformation.
         std::array<double, 3> center_;
-        double r_scale_;
-        int winding_;
-
-        double radius_;
-        std::array<double, 3> coord_; //DIM==3 is assumed.
-        
+        // The current relative (to the reference center) position of the measured point.
+        std::array<double, 3> coord_ = {};
+        // The current relative radius.
+        double radius_ = 0;
 
         void set_radius(){
             this->radius_ = std::sqrt(
                 std::inner_product(this->coord_.begin(), this->coord_.end(), 
                 this->coord_.begin(), 0.0));
-        }
+        } 
 
+        //This function does not check if this->radius_ is 0.
         double unit_dir(const int i) const {
             return this->coord_[i] / this->radius_;
         }
+
+    };
+
+    /*
+    Gauge transformtion with winding number, with Hedgehog ansatz.
+    */
+    class HedgehogWinding : public SU2GaugeTransform{
+    public:
+        HedgehogWinding(const double* center, const int winding, const double r_scale);
+        ~HedgehogWinding() = default;
+
+        virtual double profile_f() const;
+        virtual double profile_df() const;
+
+        SU2matrix transform_mat() const override;
+        SU2matrix inv_transform_mat() const override;
+        SU2matrix d_transform_mat(const int dir) const override;
+        SU2matrix d_inv_transform_mat(const int dir) const override;
+
+        SU2matrix winding_mat() const {return this->transform_mat();}
+        SU2matrix inv_winding_mat() const {return this->inv_transform_mat();}
+        SU2matrix d_winding_mat(const int dir) const {return this->d_transform_mat(dir);}
+        SU2matrix d_inv_winding_mat(const int dir) const {return this->d_inv_transform_mat(dir);}
+        
+        //compute gW_i = U d_i(U^-1)
+        SU2matrix pure_gauge_direct(const int dir) const;
+        //compute the component gW_i^a
+        double pure_gauge_direct(const int dir, const int wa) const;
+
+        const int get_winding_number() const {return this->winding_;}
+
+    protected:
+        double r_scale_;
+        int winding_;
+        
         double w(const int wa) const {
             return this->unit_dir(wa);
         }

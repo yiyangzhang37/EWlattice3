@@ -1,33 +1,55 @@
 #include <cmath>
 #include <numeric>
 #include <algorithm>
-#include "EW_Winding.h"
+#include "EW_Transformation.h"
 
 namespace Electroweak {
+
+    SU2GaugeTransform::SU2GaugeTransform(const double* center){
+        std::copy_n(center, 3, this->center_.begin());
+    }
+
+    void SU2GaugeTransform::set_location(const double r, const double* unit_dir) {
+        std::array<double, 3> coord = {{r*unit_dir[0], r*unit_dir[1], r*unit_dir[2]}};
+        this->set_location(coord.data());
+    }
+
+    void SU2GaugeTransform::set_location(const double* coord) {
+        std::transform(coord, coord + 3, this->center_.begin(), 
+                        this->coord_.begin(), 
+                        [](double x, double c){return x-c;});
+        this->set_radius();
+    }
+
+    SU2matrix SU2GaugeTransform::pure_gauge(const int dir) const {
+        return this->transform_mat()*this->d_inv_transform_mat(dir);
+    }
+
+    double SU2GaugeTransform::pure_gauge(const int dir, const int wa) const {
+        return (iPauli[wa]*this->pure_gauge(dir)).trace().real();
+    }
+
+    SU2vector SU2GaugeTransform::gauge_transform(const SU2vector& phi) const {
+        return this->transform_mat()*phi;
+    }
+
+    SU2matrix SU2GaugeTransform::gauge_transform(const SU2matrix& gw, const int dir) const {
+        return this->transform_mat() * gw * this->inv_transform_mat() 
+            + this->transform_mat() * this->d_inv_transform_mat(dir);
+    }
+
+
     
     HedgehogWinding::HedgehogWinding(
         const double* center, 
         const int winding, 
         const double r_scale)
         :
+        SU2GaugeTransform(center),
         r_scale_(r_scale),
         winding_(winding)
-    {
-        std::copy_n(center, 3, this->center_.begin());
-    }
-
-    void HedgehogWinding::set_location(const double r, const double* unit_dir) {
-        std::array<double, 3> coord = {{r*unit_dir[0], r*unit_dir[1], r*unit_dir[2]}};
-        this->set_location(coord.data());
-    }
-
-    void HedgehogWinding::set_location(const double* coord) {
-        std::transform(coord, coord + 3, this->center_.begin(), 
-                        this->coord_.begin(), 
-                        [](double x, double c){return x-c;});
-        this->set_radius();
-    }
-    
+    {}
+ 
     double HedgehogWinding::profile_f() const {
         return 2.0 * PI * this->winding_ * tanh(this->radius_/this->r_scale_);
     }
@@ -41,11 +63,11 @@ namespace Electroweak {
         return cos(0.5*this->profile_f()) * Ident + sign * sin(0.5*this->profile_f())  / this->radius_ * 
         (iPauli[0]*this->coord_[0] + iPauli[1]*this->coord_[1] + iPauli[2]*this->coord_[2]);
     }
-    SU2matrix HedgehogWinding::winding_mat() const {
+    SU2matrix HedgehogWinding::transform_mat() const {
         return this->winding_mat_impl(1);
     }
 
-    SU2matrix HedgehogWinding::inv_winding_mat() const {
+    SU2matrix HedgehogWinding::inv_transform_mat() const {
         return this->winding_mat_impl(-1);
     }
 
@@ -63,24 +85,24 @@ namespace Electroweak {
             + iPauli[2]*(this->dw(dir, 2)*sinf2 + 0.5*this->w(2)*cosf2*dfi) );
     }
 
-    SU2matrix HedgehogWinding::d_winding_mat(
+    SU2matrix HedgehogWinding::d_transform_mat(
         const int dir) const {
         return this->d_mat_impl(dir, 1);
     }
 
-    SU2matrix HedgehogWinding::d_inv_winding_mat(
+    SU2matrix HedgehogWinding::d_inv_transform_mat(
         const int dir) const {
         return this->d_mat_impl(dir, -1);
     }
 
-    SU2matrix HedgehogWinding::pure_gauge(const int dir) const {
+    SU2matrix HedgehogWinding::pure_gauge_direct(const int dir) const {
         return -0.5*(
             iPauli[0]*this->pure_gauge(dir, 0) +
             iPauli[1]*this->pure_gauge(dir, 1) +
             iPauli[2]*this->pure_gauge(dir, 2) );
     }
 
-    double HedgehogWinding::pure_gauge(const int dir, const int wa) const {
+    double HedgehogWinding::pure_gauge_direct(const int dir, const int wa) const {
         if(this->radius_ < 1e-6){
             if(dir==wa) return this->profile_df();
             else return 0.0;
@@ -96,14 +118,5 @@ namespace Electroweak {
             }
             return result; 
         }
-    }
-
-    SU2vector HedgehogWinding::gauge_transform(const SU2vector& phi) const{
-        return this->winding_mat()*phi;
-    }
-
-    SU2matrix HedgehogWinding::gauge_transform(const SU2matrix& gw, const int dir) const{
-        return this->winding_mat() * gw * this->inv_winding_mat() 
-            + this->winding_mat() * this->d_inv_winding_mat(dir);
     }
 }
