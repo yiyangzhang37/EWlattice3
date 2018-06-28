@@ -75,7 +75,9 @@ target_link_libraries(${TARGET} ${FFTW_LIBRARIES})
 ### Intel MKL (optional)
 find_package(MKL MODULE)
 if (MKL_FOUND)
+    include_directories(${MKL_INCLUDE_DIRS})
     target_link_libraries(${TARGET} ${MKL_LIBRARIES})
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DEIGEN_USE_MKL_ALL")
 endif()
 
 
