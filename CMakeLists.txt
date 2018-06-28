@@ -17,7 +17,15 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # set CXX flags
+<<<<<<< HEAD
 set(CMAKE_CXX_FLAGS "-std=c++11 -m64 -O3 -ffast-math -flto -funroll-loops -march=native -Wall")
+=======
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+	set(CMAKE_CXX_FLAGS "-std=c++11 -m64 -O3 -ffast-math -flto -funroll-loops -march=native -Wall")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+	set(CMAKE_CXX_FLAGS "-std=c++11 -O3 -no-prec-div -ipo -xcore-avx2")
+endif()
+>>>>>>> master
 
 ### external libraries
 
@@ -29,7 +37,14 @@ if (MPI_CXX_FOUND)
     set(CMAKE_CXX_LINK_FLAGS ${CMAKE_CXX_LINK_FLAGS} ${MPI_LINK_FLAGS})
     # COMPILER SETTING IN THIS WAY DOES NOT WORK
     # it must be set before any project().
-    set(CMAKE_CXX_COMPILER ${MPI_CXX_COMPILER}) 
+
+    # if use Intel compiler, then use mpiicpc
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    	set(CMAKE_CXX_COMPILER ${MPI_CXX_COMPILER})
+    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+	    get_filename_component(MPI_CXX_COMPILER_DIR ${MPI_CXX_COMPILER} DIRECTORY)
+	    set(CMAKE_CXX_COMPILER "${MPI_CXX_COMPILER_DIR}/mpiicpc")
+    endif()
 else (MPI_CXX_FOUND)
     message(SEND_ERROR "This application cannot compile without MPI")
 endif (MPI_CXX_FOUND)
