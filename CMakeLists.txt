@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 
 # project name
 project(EWlattice3)
+set(TARGET emlat.out)
 
 # set the output folder where the program being created
 # CMAKE_SOURCE_DIR: by default, it is the top-level source directory
@@ -66,11 +67,16 @@ file(GLOB PARASITE_SRC "${PROJECT_SOURCE_DIR}/ParaSite/*.cpp")
 file(GLOB EWMODEL_SRC "${PROJECT_SOURCE_DIR}/EW_Model/*.cpp")
 set(SRCS "${PARASITE_SRC}" "${EWMODEL_SRC}" "${PROJECT_SOURCE_DIR}/main.cpp")
 
-add_executable(emlat.out ${SRCS})
-target_link_libraries(emlat.out ${MPI_CXX_LIBRARIES})
-target_link_libraries(emlat.out ${HDF5_LIBRARIES})
-target_link_libraries(emlat.out ${FFTW_LIBRARIES})
+add_executable(${TARGET} ${SRCS})
+target_link_libraries(${TARGET} ${MPI_CXX_LIBRARIES})
+target_link_libraries(${TARGET} ${HDF5_LIBRARIES})
+target_link_libraries(${TARGET} ${FFTW_LIBRARIES})
 
+### Intel MKL (optional)
+find_package(MKL MODULE)
+if (MKL_FOUND)
+    target_link_libraries(${TARGET} ${MKL_LIBRARIES})
+endif()
 
 
 # print all variables
