@@ -57,12 +57,6 @@ else (EIGEN3_FOUND)
     message(SEND_ERROR "This application cannot compile without Eigen3")
 endif (EIGEN3_FOUND)
 
-### Intel MKL
-find_package(MKL MODULE)
-if (MKL_FOUND)
-    target_link_libraries(${TARGET} ${MKL_LIBRARIES})
-endif()
-
 # the following folders will be included
 include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${ParaSite})
@@ -78,6 +72,11 @@ target_link_libraries(${TARGET} ${MPI_CXX_LIBRARIES})
 target_link_libraries(${TARGET} ${HDF5_LIBRARIES})
 target_link_libraries(${TARGET} ${FFTW_LIBRARIES})
 
+### Intel MKL (optional)
+find_package(MKL MODULE)
+if (MKL_FOUND)
+    target_link_libraries(${TARGET} ${MKL_LIBRARIES})
+endif()
 
 
 # print all variables
