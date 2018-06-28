@@ -17,7 +17,7 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # set CXX flags
-set(CMAKE_CXX_FLAGS "-std=c++11 -m64 -O2 -ffast-math -flto -funroll-loops -march=native -Wall")
+set(CMAKE_CXX_FLAGS "-std=c++11 -m64 -O3 -ffast-math -flto -funroll-loops -march=native -Wall")
 
 ### external libraries
 
@@ -73,12 +73,12 @@ target_link_libraries(${TARGET} ${HDF5_LIBRARIES})
 target_link_libraries(${TARGET} ${FFTW_LIBRARIES})
 
 ### Intel MKL (optional)
-find_package(MKL MODULE)
-if (MKL_FOUND)
-    include_directories(${MKL_INCLUDE_DIRS})
-    target_link_libraries(${TARGET} ${MKL_LIBRARIES})
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DEIGEN_USE_MKL_ALL")
-endif()
+#find_package(MKL MODULE)
+#if (MKL_FOUND)
+#    include_directories(${MKL_INCLUDE_DIRS})
+#    target_link_libraries(${TARGET} ${MKL_LIBRARIES})
+#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DEIGEN_USE_MKL_ALL")
+#endif()
 
 
 # print all variables
