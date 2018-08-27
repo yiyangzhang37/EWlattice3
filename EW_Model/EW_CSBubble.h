@@ -65,8 +65,8 @@ namespace EW_BubbleNucleation {
 		if (this->time_step_ == 0) {
 			auto T = (this->time_step_ + 1) % CYCLE;
 			SU2vector phi_hat;
-			phi_hat(0) = Cmplx(0,0);
-            phi_hat(1) = Cmplx(1,0);
+			phi_hat(0) = Cmplx(1.0, 0)/sqrt(2.0);
+            phi_hat(1) = Cmplx(0, -1.0)/sqrt(2.0);
 			this->NucleateOneBubble_Exp_WithWinding(T, global_idx, phi_hat, w);
 			this->phi_.update_halo();
             this->U_.update_halo();
