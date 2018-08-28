@@ -54,6 +54,7 @@
         "cwctype": "cpp",
         "eigen": "cpp",
         "__bit_reference": "cpp",
-        "chrono": "cpp"
+        "chrono": "cpp",
+        "cfenv": "cpp"
     }
 }

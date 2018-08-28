@@ -281,7 +281,9 @@ void EW_Random_Nucl_LongTimeSpectrum(const int n_rows, const int n_cols){
     bubble.InitializeSymmetricPhase();
 
     for(auto i = 0; i <= Ntimesteps; ++i){
-        obs.Measure();
+        if(DensityDataSaveFreq == 0 || bubble.get_time_step() % DensityDataSaveFreq == 0){
+            obs.Measure();
+        }
 
         bubble.UpdateFields();
 
@@ -298,6 +300,10 @@ void EW_Random_Nucl_LongTimeSpectrum(const int n_rows, const int n_cols){
         if( bubble.get_time_step() % BFIELD_SAVE_FREQ == 0 ) {
             bfield.Measure();
             bfield.SaveDensityData(id + "_bfield_" + std::to_string(bubble.get_time_step()) + ".h5");
+        }
+
+        if(bubble.get_time_step() % 10000 == 0 && bubble.get_time_step() > 0 ){
+            bubble.SaveFields(std::to_string(bubble.get_time_step()) + ".h5");
         }
         
         bubble.TimeAdvance();

@@ -87,6 +87,8 @@ namespace Electroweak{
         void EvolveU1OneSite_KS(const Site<DIM>& x, const int component, const int nowTime, const int futureTime) const;
         void EvolveSU2OneSite_KS(const Site<DIM>& x, const int component, const int nowTime, const int futureTime) const;
 
+		void SaveFields(const std::string& filename) const;
+
 		/*
 		The constraint region and boundary region can be modified 
 		by specific problems.
@@ -403,6 +405,17 @@ namespace Electroweak{
 		this->F_.update_halo();
 		this->V_.update_halo();
 		this->E_.update_halo();
+		return;
+	}
+
+	template<int DIM>
+	void ElectroweakEvolution<DIM>::SaveFields(const std::string& filename) const{
+		this->phi_.write("phi_" + filename);
+		this->pi_.write("pi_" + filename);
+		this->U_.write("U_" + filename);
+		this->V_.write("V_" + filename);
+		this->F_.write("F_" + filename);
+		this->E_.write("E_" + filename);
 		return;
 	}
 
