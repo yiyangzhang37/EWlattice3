@@ -281,7 +281,7 @@ void EW_Random_Nucl_LongTimeSpectrum(const int n_rows, const int n_cols){
     bubble.InitializeSymmetricPhase();
 
     for(auto i = 0; i <= Ntimesteps; ++i){
-        if(DensityDataSaveFreq == 0 || bubble.get_time_step() % DensityDataSaveFreq == 0){
+        if(DensityDataCalcFreq == 0 || bubble.get_time_step() % DensityDataCalcFreq == 0){
             obs.Measure();
         }
 

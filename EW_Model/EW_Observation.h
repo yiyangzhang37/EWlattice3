@@ -13,9 +13,10 @@ namespace Electroweak{
 
 	namespace ObserverFlags {
 
-		const FlagType OBS_TotalEnergy = 1 << 0;      	// TotalEnergy
-		const FlagType OBS_CSNumber = 1 << 1;         	// CSNumber
-		const FlagType OBS_MagneticEnergy = 1 << 2;   	// MagneticEnergy
+		const FlagType OBS_NONE = 0;                      // Nothing
+		const FlagType OBS_TotalEnergy = 1 << 0;      	  // TotalEnergy
+		const FlagType OBS_CSNumber = 1 << 1;         	  // CSNumber
+		const FlagType OBS_MagneticEnergy = 1 << 2;   	  // MagneticEnergy
 		const FlagType OBS_MagneticHelicity = 1 << 3;     // MagneticHelicity
 		const FlagType OBS_ElectricEnergy = 1 << 4;       // ElectricEnergy
 		const FlagType OBS_GaussConstraint = 1 << 5;      // GaussConstraint
