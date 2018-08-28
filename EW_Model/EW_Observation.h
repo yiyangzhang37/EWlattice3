@@ -640,7 +640,7 @@ namespace Electroweak{
 	void ElectroweakObserver<DIM>::basic_measure(){
 		auto time_step = this->evo_.get_time_step();
 		//add time step value
-		this->data_table_.append_value(find_index(this->data_table_names_, "TimeStep");, time_step);
+		this->data_table_.append_value(find_index(this->data_table_names_, "TimeStep"), time_step);
 
 		if (this->data_table_flags_ & ObserverFlags::OBS_TotalEnergy) {
 			this->CalcEnergy(time_step);
