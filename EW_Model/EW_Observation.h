@@ -223,6 +223,7 @@ namespace Electroweak{
 	void ElectroweakObserver<DIM>::init_data_table() {
 		std::vector<std::string> data_table_names;
 		this->init_name_vector(this->data_table_flags_, data_table_names);
+		data_table_names.insert(data_table_names.begin(), "TimeStep");
 		this->data_table_.initialize(data_table_names);
 		this->data_table_names_ = data_table_names;
 		return;
@@ -638,6 +639,9 @@ namespace Electroweak{
 	template<int DIM>
 	void ElectroweakObserver<DIM>::basic_measure(){
 		auto time_step = this->evo_.get_time_step();
+		//add time step value
+		this->data_table_.append_value(find_index(this->data_table_names_, "TimeStep");, time_step);
+
 		if (this->data_table_flags_ & ObserverFlags::OBS_TotalEnergy) {
 			this->CalcEnergy(time_step);
 		}
