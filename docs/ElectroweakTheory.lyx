@@ -1,0 +1,1679 @@
+#LyX 2.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 508
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Electroweak Theory
+\end_layout
+
+\begin_layout Standard
+This is just a re-summary of GaugeTheoryConvention.pdf.
+\end_layout
+
+\begin_layout Section
+Lagrangian and Energy
+\end_layout
+
+\begin_layout Standard
+The signature of the metric is 
+\begin_inset Formula $(+1,-1,-1,-1)$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The Lagrangian is
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\mathcal{L}=-\frac{1}{4}W_{\mu\nu}^{a}W^{a\mu\nu}-\frac{1}{4}B_{\mu\nu}B^{\mu\nu}+\vert D_{\mu}\Phi\vert^{2}-\lambda(\vert\Phi\vert^{2}-\eta^{2})^{2}\label{eq:ew-lagrangian}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+with the convention
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+D_{\mu} & =\partial_{\mu}-\frac{i}{2}g\sigma^{a}W_{\mu}^{a}-\frac{i}{2}g'B_{\mu}\\
+W_{\mu\nu}^{a} & =\partial_{\mu}W_{\nu}^{a}-\partial_{\nu}W_{\mu}^{a}+g\epsilon^{abc}W_{\mu}^{b}W_{\nu}^{c}\\
+B_{\mu\nu} & =\partial_{\mu}B_{\nu}-\partial_{\nu}B_{\mu}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The field strength is with the convention
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\frac{\sigma^{a}}{2}F_{\mu\nu}^{a}\equiv F_{\mu\nu}=\partial_{\mu}W_{\nu}-\partial_{\nu}W_{\mu}-ig\left[W_{\mu},W_{\nu}\right]=\frac{i}{g}\left[D_{\mu},D_{\nu}\right]
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+For a static configuration, assuming temporal gauge, 
+\begin_inset Formula $W_{0}=B_{0}=0$
+\end_inset
+
+, the energy is 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+E=\frac{1}{4}W_{ij}^{a}W_{ij}^{a}+\frac{1}{4}B_{ij}B_{ij}+\vert D_{i}\Phi\vert^{2}+\lambda(\vert\Phi\vert^{2}-\eta^{2})^{2}\label{eq:ew-static-energy}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Equations of motion
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+D_{\mu}D^{\mu}\phi+\frac{\partial U(\phi)}{\partial\phi^{\dagger}}=0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\partial_{\mu}B^{\mu\nu}=\frac{ig'}{2}\left[\left(D^{\nu}\phi\right)^{\dagger}\phi-\phi^{\dagger}\left(D^{\nu}\phi\right)\right]=g'\text{Im }\left[\phi^{\dagger}\left(D^{\nu}\phi\right)\right]
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{eqnarray*}
+\partial_{\mu}W^{a\mu\nu} & +g\epsilon^{abc}W_{\mu}^{b}W^{c\mu\nu}= & \frac{ig}{2}\left[\left(D^{\nu}\phi\right)^{\dagger}\sigma^{a}\phi-\phi^{\dagger}\sigma^{a}\left(D^{\nu}\phi\right)\right]=g\text{Im }\left[\phi^{\dagger}\sigma^{a}\left(D^{\nu}\phi\right)\right]
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Or written in a covariant way, (with the convention 
+\begin_inset Formula $W^{\mu\nu}=\frac{\sigma^{a}}{2}W^{a\mu\nu}$
+\end_inset
+
+.)
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\left(D_{\mu}W^{\mu\nu}\right)^{a}=\left[\partial_{\mu}W^{\mu\nu}-ig\left[W_{\mu},W^{\mu\nu}\right]\right]^{a}=g\text{Im }\left[\phi^{\dagger}\sigma^{a}\left(D^{\nu}\phi\right)\right]
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+Gauge transform of the SU(2) EOM.
+\end_layout
+
+\begin_layout Plain Layout
+The EOM is 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+D_{\mu}W^{\mu\nu} & =g\frac{\sigma^{a}}{2}\text{Im }\left[\phi^{\dagger}\sigma^{a}\left(D^{\nu}\phi\right)\right]\\
+ & \rightarrow\\
+UD_{\mu}W^{\mu\nu}U^{\dagger} & =g\frac{\sigma^{a}}{2}\text{Im }\left[\phi^{\dagger}U^{\dagger}\sigma^{a}U\left(D^{\nu}\phi\right)\right]
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+The RHS can be proved by noticing that, 
+\begin_inset Formula $\sigma'^{a}\equiv U^{\dagger}\sigma^{a}U$
+\end_inset
+
+, then 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\[
+RHS=g\frac{U\sigma'^{a}U^{\dagger}}{2}\text{Im }\left[\phi^{\dagger}\sigma'^{a}\left(D^{\nu}\phi\right)\right]
+\]
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In temporal gauge, 
+\begin_inset Formula $W_{0}=0$
+\end_inset
+
+, 
+\begin_inset Formula $Y_{0}=0$
+\end_inset
+
+.
+ The equations of motion are (in Euclidean 3-space)
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\partial_{0}^{2}\phi=D_{i}D_{i}\phi-\frac{\partial U(\phi)}{\partial\phi^{\dagger}}-\gamma\partial_{0}\phi
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\partial_{0}^{2}B_{i}=-\partial_{j}B_{ij}+g'\text{Im }\left[\phi^{\dagger}\left(D_{i}\phi\right)\right]-\gamma\partial_{0}B_{i}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\partial_{0}^{2}W_{i}^{a}=-\partial_{k}W_{ik}^{a}-g\epsilon^{abc}W_{k}^{b}W_{ik}^{c}+g\text{Im }\left[\phi^{\dagger}\sigma^{a}\left(D_{i}\phi\right)\right]-\gamma\partial_{0}W_{i}^{a}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+with two Gaussian constraints:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\partial_{0}\partial_{j}B_{j}=g'\text{Im }\left[\phi^{\dagger}\partial_{0}\phi\right]
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\partial_{0}\partial_{j}W_{j}^{a}+g\epsilon^{abc}W_{j}^{b}\partial_{0}W_{j}^{c}=g\text{Im }\left[\phi^{\dagger}\sigma^{a}\partial_{0}\phi\right]
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Adding such damping terms does not violate gauge invariance.
+ Furthermore, if the three 
+\begin_inset Formula $\gamma$
+\end_inset
+
+'s are the same for the three equations, then Gauss's laws will be preserved.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+Proof.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+Suppose the initial condition satisfies the Gauss constraints, then if the
+ Gauss constraints are satisfied at later time, using the EOM's with dampings,
+ the time derivatives should be the same.
+\end_layout
+
+\begin_layout Plain Layout
+Consider the EOMs
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+D_{\mu}D^{\mu}\phi & =0\\
+D_{\mu}B^{\mu\nu} & =g'\text{Im }\left[\phi^{\dagger}\left(D^{\nu}\phi\right)\right]\\
+D_{\mu}W^{\mu\nu} & =g\frac{\sigma^{a}}{2}\text{Im }\left[\phi^{\dagger}\sigma^{a}\left(D^{\nu}\phi\right)\right]
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+The EOMs are tensorial equations, thus all the derivatives need to be covariant
+ derivative.
+\end_layout
+
+\begin_layout Plain Layout
+The covariant derivative acting on Higgs field and 
+\shape italic
+gauge field strength
+\shape default
+ are 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+D_{\mu}\phi & =\left(\partial_{\mu}-\frac{i}{2}g\sigma^{a}W_{\mu}^{a}-\frac{i}{2}g'B_{\mu}\right)\phi\\
+D_{\mu}B^{\mu\nu} & =\partial_{\mu}B^{\mu\nu}-ig'\left[B_{\mu},B^{\mu\nu}\right]=\partial_{\mu}B^{\mu\nu}\\
+D_{\mu}W^{\mu\nu} & =\partial_{\mu}W^{\mu\nu}-ig\left[W_{\mu},W^{\mu\nu}\right]
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+Now we use temporal gauge and the metric 
+\begin_inset Formula $\eta_{\mu\nu}=\left(+1,-1,-1,-1\right)$
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\partial_{0}^{2}\phi & =D_{i}D_{i}\phi\\
+\partial_{0}B^{0\nu}+D_{j}B^{j\nu} & =J^{\nu}\\
+\partial_{0}W^{0\nu}+D_{j}W^{j\nu} & =J_{\sigma}^{\nu}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+The EOMs are 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\partial_{0}^{2}\phi & =D_{i}D_{i}\phi\\
+\partial_{0}^{2}B_{i} & =-D_{j}B_{ij}+g'\text{Im }\left[\phi^{\dagger}\left(D_{i}\phi\right)\right]=-D_{j}B_{ij}+J_{i}\\
+\partial_{0}^{2}W_{i} & =-D_{j}W_{ij}+g\frac{\sigma^{a}}{2}\text{Im }\left[\phi^{\dagger}\sigma^{a}\left(D_{i}\phi\right)\right]=-D_{j}W_{ij}+J_{\sigma i}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+and the Gauss constraints
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+D_{j}\partial_{0}B_{j}=D_{j}B_{0j} & =g'\text{Im }\left[\phi^{\dagger}\left(\partial_{0}\phi\right)\right]=J_{0}\\
+D_{j}\partial_{0}W_{j}=D_{j}W_{0j} & =g\frac{\sigma^{a}}{2}\text{Im }\left[\phi^{\dagger}\sigma^{a}\left(\partial_{0}\phi\right)\right]=J_{\sigma0}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+Suppose we add an extra term in the Higgs equation
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\[
+\partial_{0}^{2}\phi=D_{i}D_{i}\phi+\psi
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+In order to preserve gauge invariance, 
+\begin_inset Formula $\psi$
+\end_inset
+
+ should transform as 
+\begin_inset Formula $\psi\rightarrow U\psi$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Plain Layout
+Take the time derivative of the Guass constraints, we have
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+D_{j}\partial_{0}^{2}B_{j} & =g'\text{Im }\left[\phi^{\dagger}\left(\partial_{0}^{2}\phi\right)\right]\\
+D_{j}\partial_{0}^{2}W_{j} & =g\frac{\sigma^{a}}{2}\text{Im }\left[\phi^{\dagger}\sigma^{a}\left(\partial_{0}^{2}\phi\right)\right]
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+Here we can show that 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\partial_{0}\left(D_{j}\partial_{0}W_{j}\right) & =\partial_{0}\left[\partial_{j}\partial_{0}W_{j}-ig\left[W_{j},\partial_{0}W_{j}\right]\right]\\
+ & =\partial_{j}\partial_{0}^{2}W_{j}-ig\left[W_{j},\partial_{0}^{2}W_{j}\right]\\
+ & =D_{j}\partial_{0}^{2}W_{j}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+Now we can put the EOMs in:
+\end_layout
+
+\begin_layout Plain Layout
+The U1 part gives 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\[
+\text{Im }\left[\phi^{\dagger}\psi\right]=0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+The SU2 part gives 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+-D_{i}D_{j}W_{ij}+g\frac{\sigma^{a}}{2}D_{i}\text{Im }\left[\phi^{\dagger}\sigma^{a}\left(D_{i}\phi\right)\right] & =g\frac{\sigma^{a}}{2}\text{Im }\left[\phi^{\dagger}\sigma^{a}\left(D_{i}D_{i}\phi+\psi\right)\right]\\
+\Rightarrow\\
+\frac{\sigma^{a}}{2}\text{Im }\left[\phi^{\dagger}\sigma^{a}\psi\right] & =0
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+Here, we show that
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+D_{i}D_{j}W_{ij} & =\frac{1}{2}\left(D_{i}D_{j}W_{ij}-D_{j}D_{i}W_{ij}\right)=\frac{1}{2}\left[D_{i},D_{j}\right]W_{ij}\\
+ & =\frac{1}{2}\left[W_{ij},W_{ij}\right]=0
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+In conclusion, 
+\begin_inset Formula $\psi$
+\end_inset
+
+ needs to satisfy the four equations
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\text{Im }\left[\phi^{\dagger}\psi\right] & =0\\
+\frac{\sigma^{a}}{2}\text{Im }\left[\phi^{\dagger}\sigma^{a}\psi\right] & =0
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Suppose we only want damping in the Higgs field, the most general form will
+ be 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\[
+\partial_{0}^{2}\phi^{a}=D_{i}D_{i}\phi^{a}-\frac{\partial U(\phi)}{\partial\phi^{\dagger a}}-\gamma^{a}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+where 
+\begin_inset Formula $\gamma^{a}$
+\end_inset
+
+ is a function of anything (all the fields), and should preserve gauge invarianc
+eThe EOMs for gauge fields are not modified.
+\end_layout
+
+\begin_layout Plain Layout
+Considering Gauss constraints, we will have four equations,
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\text{Im }\left[\phi^{\dagger}\gamma^{a}\right] & =0\\
+\text{Im }\left[\phi^{\dagger}\sigma^{i}\gamma^{a}\right] & =0
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+(Take the time derivative of the Gauss constraints, put the EOMs in to eliminate
+ the second-order derivative.
+ The extra term containing 
+\begin_inset Formula $\gamma^{a}$
+\end_inset
+
+ should be zero.)
+\end_layout
+
+\begin_layout Plain Layout
+Solve the four linear equations, we will have 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\[
+\gamma^{a}=\alpha\phi^{a}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+where 
+\begin_inset Formula $\alpha$
+\end_inset
+
+is some scalar function and transforms trivially in the gauge group.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+Considering a damping term, we may use 
+\begin_inset Formula $\gamma^{a}=\alpha'\phi^{a}\partial_{0}\ln\vert\phi\vert$
+\end_inset
+
+, which is consistent with the SHO radial damping.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+2D Harmonic Oscillator with radial damping.
+\end_layout
+
+\begin_layout Plain Layout
+The SHO in radial direction with damping is 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\ddot{r}-r\dot{\theta}^{2}+c\dot{r}+r & =0\\
+x\dot{y}-y\dot{x} & =L
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+Some intermediate results:
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\ddot{y} & =\frac{y}{x}\ddot{x}\\
+\dot{y} & =\frac{1}{x}\left(L+y\dot{x}\right)\\
+\dot{r} & =\frac{1}{r}\left(x\dot{x}+y\dot{y}\right)\\
+\ddot{r} & =\frac{1}{r}\left(x\ddot{x}+\dot{x}^{2}+y\ddot{y}+\dot{y}^{2}\right)-\frac{1}{r^{3}}\left(x\dot{x}+y\dot{y}\right)^{2}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+The EOM of 
+\begin_inset Formula $x$
+\end_inset
+
+gives
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\ddot{x}+cx\frac{x\dot{x}+y\dot{y}}{r^{2}}+x & =0\\
+\Rightarrow\\
+\ddot{\bm{r}}+c\bm{r}\frac{\bm{r}\cdot\bm{v}}{r^{2}}+\bm{r} & =0
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+Equivalently,
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\[
+\ddot{\bm{r}}+c\bm{r}\frac{\text{d}}{\text{d}t}\ln r+\bm{r}=0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Subsection
+Unitary Gauge and WZ-basis
+\end_layout
+
+\begin_layout Standard
+For a static configuration, can we put both temporal gauge and unitary gauge?
+ In general, we cannot.
+ But there are ansatz in which 
+\begin_inset Formula $W_{0}=B_{0}=0$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The Higgs is 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\Phi=\left(\begin{array}{c}
+0\\
+\varphi
+\end{array}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Some more definitions:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+W_{\mu} & \equiv\frac{1}{\sqrt{2}}\left(W_{\mu}^{1}+iW_{\mu}^{2}\right)\\
+W_{\mu}^{\dagger} & \equiv\frac{1}{\sqrt{2}}\left(W_{\mu}^{1}-iW_{\mu}^{2}\right)\\
+Z_{\mu} & \equiv W_{\mu}^{3}\cos\theta_{w}-B_{\mu}\sin\theta_{w}\\
+A_{\mu} & \equiv W_{\mu}^{3}\sin\theta_{w}+B_{\mu}\cos\theta_{w}\\
+W_{\mu\nu} & \equiv\partial_{\mu}W_{\nu}-\partial_{\nu}W_{\mu}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{eqnarray*}
+W_{\mu}^{3} & = & \cos\theta_{w}Z_{\mu}+\sin\theta_{w}A_{\mu}\\
+B_{\mu} & = & -\sin\theta_{w}Z_{\mu}+\cos\theta_{w}A_{\mu}
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The terms in Eq.
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:ew-static-energy"
+
+\end_inset
+
+ can be written as 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\vert D_{i}\Phi\vert^{2}=\left(\partial_{i}\varphi\right)^{2}+\frac{1}{4}g_{Z}^{2}Z_{i}^{2}\varphi^{2}+\frac{g^{2}}{2}\varphi^{2}W_{i}^{\dagger}W_{i}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\lambda(\vert\Phi\vert^{2}-\eta^{2})^{2}=\lambda(\varphi^{2}-\eta^{2})^{2}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+\frac{1}{4}\left(W_{\mu\nu}^{1}\right)^{2}+\frac{1}{4}\left(W_{\mu\nu}^{2}\right)^{2} & =\frac{1}{2}W_{\mu\nu}^{\dagger}W_{\mu\nu}\\
+ & +(?)\frac{ig}{2}\left[\left(W_{\mu}^{\dagger}W_{\nu}^{3}-W_{\nu}^{\dagger}W_{\mu}^{3}\right)W_{\mu\nu}-c.c.\right]\\
+ & +\frac{g^{2}}{2}\vert W_{\mu}^{\dagger}W_{\nu}^{3}-W_{\nu}^{\dagger}W_{\mu}^{3}\vert^{2}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+\frac{1}{4}\left(W_{\mu\nu}^{3}\right)^{2}+\frac{1}{4}\left(B_{\mu\nu}\right)^{2} & =\frac{1}{4}Z_{\mu\nu}^{2}+\frac{1}{4}f_{\mu\nu}^{2}\\
+ & -\frac{ig}{2}\left(W_{\mu}^{\dagger}W_{\nu}-W_{\nu}^{\dagger}W_{\mu}\right)\left(Z_{\mu\nu}\cos\theta_{w}+A_{\mu\nu}\sin\theta_{w}\right)\\
+ & +\frac{g^{2}}{4}\vert W_{\mu}^{\dagger}W_{\nu}-W_{\nu}^{\dagger}W_{\mu}\vert^{2}\\
+ & =\frac{1}{4}Z_{\mu\nu}^{2}+\frac{1}{4}f_{\mu\nu}^{2}-\frac{ig}{2}\left(W_{\mu}^{\dagger}W_{\nu}-W_{\nu}^{\dagger}W_{\mu}\right)\left(Z_{\mu\nu}\cos\theta_{w}+A_{\mu\nu}\sin\theta_{w}\right)\\
+ & +\frac{g^{2}}{2}\left[\left(W_{\mu}^{\dagger}W_{\mu}\right)^{2}-\left(W_{\mu}^{\dagger}\right)^{2}\left(W_{\nu}\right)^{2}\right]
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+By defining 
+\begin_inset Formula $d_{\mu}\equiv\partial_{\mu}-igW_{\mu}^{3}=\partial_{\mu}-ig\left(\cos\theta_{w}Z_{\mu}+\sin\theta_{w}A_{\mu}\right)$
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+\frac{1}{4}\left(W_{\mu\nu}^{1}\right)^{2}+\frac{1}{4}\left(W_{\mu\nu}^{2}\right)^{2} & =(?)\vert d_{\mu}W_{\nu}\vert^{2}-\left(d_{\mu}W_{\nu}\right)^{\dagger}\left(d_{\nu}W_{\mu}\right)-ig\left[\left(W_{\mu}^{\dagger}W_{\nu}^{3}-W_{\nu}^{\dagger}W_{\mu}^{3}\right)W_{\mu\nu}-c.c.\right]\\
+ & =\frac{1}{2}\vert d_{\mu}W_{\nu}-d_{\nu}W_{\mu}\vert^{2}-ig\left[\left(W_{\mu}^{\dagger}W_{\nu}^{3}-W_{\nu}^{\dagger}W_{\mu}^{3}\right)W_{\mu\nu}-c.c.\right]
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+*I have one problem here: the sign of 
+\begin_inset Formula $ig$
+\end_inset
+
+ term should be reversed.
+ But I don't know where is wrong.
+\end_layout
+
+\begin_layout Standard
+If this is corrected, the final answer is 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+E & =\left(\partial_{i}\varphi\right)^{2}+\frac{1}{4}g_{Z}^{2}Z_{i}^{2}\varphi^{2}+\frac{g^{2}}{2}\varphi^{2}W_{i}^{\dagger}W_{i}+\lambda(\varphi^{2}-\eta^{2})^{2}\\
+ & +\frac{1}{2}\vert d_{i}W_{j}-d_{j}W_{i}\vert^{2}\\
+ & +\frac{1}{4}Z_{ij}^{2}+\frac{1}{4}f_{ij}^{2}\\
+ & +ig\left(W_{i}^{\dagger}W_{j}\right)\left(Z_{ij}\cos\theta_{w}+f_{ij}\sin\theta_{w}\right)\\
+ & +\frac{g^{2}}{2}\left[\left(W_{i}^{\dagger}W_{i}\right)^{2}-\left(W_{i}^{\dagger}\right)^{2}\left(W_{j}\right)^{2}\right]
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Energy-Momentum Tensor
+\end_layout
+
+\begin_layout Standard
+For Lagrangian given in Eq.
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:ew-lagrangian"
+
+\end_inset
+
+, we have the symmetrized EMT
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align}
+T^{\mu\nu} & =W^{a\mu\rho}W_{\ \rho}^{a\ \nu}+\frac{1}{4}\eta^{\mu\nu}W^{a\rho\sigma}W_{\rho\sigma}^{a}\nonumber \\
+ & +B^{\mu\rho}B_{\rho}^{\ \nu}+\frac{1}{4}\eta^{\mu\nu}B^{\rho\sigma}B_{\rho\sigma}\label{eq:ew-EMT}\\
+ & +\left(D^{\mu}\Phi\right)^{\dagger}\left(D^{\nu}\Phi\right)+\left(D^{\nu}\Phi\right)^{\dagger}\left(D^{\mu}\Phi\right)-\eta^{\mu\nu}\left[\vert D_{\rho}\Phi\vert^{2}-\lambda(\vert\Phi\vert^{2}-\eta^{2})^{2}\right]\nonumber 
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Electric and magnetic field conventions:
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+E_{i} & =-\partial_{0}A^{i}-\partial_{i}A^{0}=F_{0i}\\
+B_{i} & =-\epsilon^{ijk}\partial_{j}A_{k}=-\frac{1}{2}\epsilon^{ijk}F_{jk}=-\frac{1}{2}\epsilon_{ijk}F^{jk}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\[
+F^{jk}=-\epsilon^{ijk}B_{i}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+which leads to 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+B_{1} & =-F^{23}\\
+B_{2} & =-F^{31}\\
+B_{3} & =-F^{12}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+T^{00} & =\frac{1}{2}\left(\bm{E}^{a}\cdot\bm{E}^{a}+\bm{B}^{a}\cdot\bm{B}^{a}\right)\\
+ & +\frac{1}{2}\left(\bm{E}\cdot\bm{E}+\bm{B}\cdot\bm{B}\right)\\
+ & +\vert D_{0}\Phi\vert^{2}+\vert D_{i}\Phi\vert^{2}+\lambda\left(\vert\Phi\vert^{2}-\eta^{2}\right)^{2}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+T^{0i} & =\left(\bm{E}^{a}\times\bm{B}^{a}\right)_{i}+\left(\bm{E}\times\bm{B}\right)_{i}-\left(D_{0}\Phi\right)^{\dagger}\left(D_{i}\Phi\right)-\left(D_{i}\Phi\right)^{\dagger}\left(D_{0}\Phi\right)\\
+ & =E_{k}^{a}W_{ki}^{a}+E_{k}B_{ki}-\left(D_{0}\Phi\right)^{\dagger}\left(D_{i}\Phi\right)-\left(D_{i}\Phi\right)^{\dagger}\left(D_{0}\Phi\right)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Angular momentum is defined as 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+M^{\mu\rho\sigma}=x^{\rho}T^{\mu\sigma}-x^{\sigma}T^{\mu\rho}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The total angular momentum
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+Q^{ij}=\int\text{d}^{3}x\ \left(x^{i}T^{0j}-x^{j}T^{0i}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+External Magntic Field Ansatz
+\end_layout
+
+\begin_layout Standard
+The ansatz is 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+W_{2} & =iW_{1}=iW\left(x_{1},x_{2}\right)\\
+W_{3} & =W_{0}=0
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+*I am not sure if this is needed: 
+\begin_inset Formula $Z_{3}=Z_{0}=A_{3}=A_{0}=0$
+\end_inset
+
+, by the requirement of static and axial-symmetric configuration.
+ If we also impose this, then 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align}
+E & =\left(\partial_{i}\varphi\right)^{2}+\frac{1}{4}g_{Z}^{2}Z_{i}^{2}\varphi^{2}+g^{2}\varphi^{2}\vert W\vert^{2}+\lambda(\varphi^{2}-\eta^{2})^{2}\nonumber \\
+ & +\vert\left(d_{1}+id_{2}\right)W\vert^{2}\nonumber \\
+ & +\frac{1}{2}Z_{12}^{2}+\frac{1}{2}f_{12}^{2}\label{eq:energy-EMF-ansatz}\\
+ & -2g\vert W\vert^{2}\left(Z_{12}\cos\theta_{w}+f_{12}\sin\theta_{w}\right)\nonumber \\
+ & +2g^{2}\vert W\vert^{4}\nonumber 
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Bogomolny Limit
+\end_layout
+
+\begin_layout Standard
+The Bogomolny method leads to Eq.(5) in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Ambjorn.Olesen.1989"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The Bogomolny bound is, given periodic boundary conditions,
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+\int E\text{d}^{2}x & \ge\int\left[-\frac{m_{W}^{4}}{2e^{2}}+\frac{m_{W}^{2}}{e}f_{12}-\frac{m_{W}^{2}}{2g\cos\theta_{w}}Z_{12}-\frac{g_{Z}}{2}\partial_{j}\left(\epsilon_{ij}Z_{i}\varphi^{2}\right)\right]\text{d}^{2}x\\
+ & +\left(\lambda-\frac{g^{2}}{8\cos^{2}\theta_{w}}\right)\int\left(\varphi^{2}-\eta^{2}\right)^{2}\text{d}^{2}x\\
+ & \ge\frac{m_{W}^{2}}{e}\int f_{12}\text{d}^{2}x-\frac{m_{W}^{4}}{2e^{2}}A+\left(\lambda-\frac{g^{2}}{8\cos^{2}\theta_{w}}\right)\int\left(\varphi^{2}-\eta^{2}\right)^{2}\text{d}^{2}x
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+*I don't know why the 
+\begin_inset Formula $Z_{12}$
+\end_inset
+
+ term won't produce topological effects.
+ Only massless field can produce topological effects in 2D plane?
+\end_layout
+
+\begin_layout Standard
+The characteristic scale 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Olesen.2017"
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+\frac{m_{W}^{2}}{e}\approx3\times10^{23}Gauss
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The Bogomolny equations are 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align}
+\left(d_{1}+id_{2}\right)W & =0\nonumber \\
+f_{12} & =\frac{g}{2\sin\theta_{w}}\eta^{2}+2g\sin\theta_{w}\vert W\vert^{2}\nonumber \\
+Z_{12} & =\frac{g}{2\cos\theta_{w}}\left(\varphi^{2}-\eta^{2}\right)+2g\cos\theta_{w}\vert W\vert^{2}\label{eq:Bogomolny-eqns}\\
+Z_{i} & =-\frac{2\cos\theta}{g}\epsilon_{ij}\partial_{j}\ln\varphi\nonumber 
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Note that we can always make a gauge transformation on 
+\begin_inset Formula $A_{i}$
+\end_inset
+
+ to make 
+\begin_inset Formula $W$
+\end_inset
+
+ real.
+\end_layout
+
+\begin_layout Standard
+The phase of 
+\begin_inset Formula $W$
+\end_inset
+
+, 
+\begin_inset Formula $W=\vert W\vert e^{i\chi}$
+\end_inset
+
+, is topologically non-trivial.
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Ambjorn.Olesen.1990"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\int_{\text{cell}}f_{12}\text{d}^{2}x=\oint A_{i}\text{d}x_{i}=\oint\partial_{i}\chi\text{d}x_{i}=\frac{2\pi\kappa}{e}\label{eq:flux-quantization}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The equations finally lead to 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align}
+A_{i} & =\frac{\epsilon_{ij}}{e}\partial_{j}\left(\ln\vert W\vert+2\cos^{2}\theta_{w}\ln\varphi\right)\label{eq:eqn-A}\\
+f_{12} & =-\frac{1}{e}\nabla^{2}\left(\ln\vert W\vert+2\cos^{2}\theta_{w}\ln\varphi\right)\nonumber \\
+ & =\frac{g}{2\sin\theta_{w}}\eta^{2}+2e\vert W\vert^{2}=\frac{m_{w}^{2}}{e}+2e\vert W\vert^{2}\label{eq:eqn-f}\\
+Z_{12} & =\frac{2\cos\theta_{w}}{g}\nabla^{2}\ln\varphi\nonumber \\
+ & =\frac{g}{2\cos\theta_{w}}\left(\varphi^{2}-\eta^{2}\right)+2g\cos\theta_{w}\vert W\vert^{2}\label{eq:eqn-Z}
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The two independent equations that determine the configuration are
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+\nabla^{2}\ln\varphi & =\frac{g^{2}}{4\cos^{2}\theta_{w}}\left(\varphi^{2}-\eta^{2}\right)+g^{2}\vert W\vert^{2}\\
+-\nabla^{2}\ln\vert W\vert & =\frac{g^{2}}{2}\varphi^{2}+2g^{2}\vert W\vert^{2}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+A perturbative solution can be shown around 
+\begin_inset Formula $\varphi\approx\eta$
+\end_inset
+
+, but the existence of a non-perturbative periodic solution has not been
+ proved 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Ambjorn.Olesen.1989"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+From Eq.
+ 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:flux-quantization"
+
+\end_inset
+
+, we further have, from Eq.
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:eqn-f"
+
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\int_{\text{cell }}\vert W\vert^{2}\text{d}^{2}x=\frac{2\pi\kappa-m_{w}^{2}A}{2e^{2}}\label{eq:w2-quantization}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+from Eq.
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:eqn-Z"
+
+\end_inset
+
+ and Eq.
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:w2-quantization"
+
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\frac{1}{2}\int_{\text{cell }}\varphi^{2}\text{d}^{2}x=\frac{m_{w}^{2}A-2\pi\kappa\cos^{2}\theta_{w}}{e^{2}}\label{eq:phi2-quantization}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Thus we have
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\frac{2\pi\kappa\cos^{2}\theta_{w}}{m_{w}^{2}}\le A\le\frac{2\pi\kappa}{m_{w}^{2}}\label{eq:area-bound}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Finite Temperature
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Ambjorn.Olesen.1990"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The energy expression, Eq.
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:energy-EMF-ansatz"
+
+\end_inset
+
+, has an additional term
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
++2\lambda\frac{T^{2}}{T_{c}^{2}}\eta^{2}\varphi^{2}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The temperature-dependent VEV is
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\left\langle \phi^{2}\right\rangle =\left(1-\frac{T^{2}}{T_{c}^{2}}\right)\eta^{2}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The area bound, Eq.
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:area-bound"
+
+\end_inset
+
+, is modified to 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+2\pi\kappa\cos^{2}\theta_{w}\le\frac{g^{2}\eta^{2}}{2}\left(1-\frac{T^{2}}{T_{c}^{2}}\right)A\le2\pi\kappa
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+When 
+\begin_inset Formula $T\rightarrow T_{c}$
+\end_inset
+
+, we have 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Ambjorn.Olesen.1990"
+
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+A\propto\left(1-\frac{T}{T_{c}}\right)^{-1}\rightarrow\infty\text{ (pay attention: no square here)}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We can show that above 
+\begin_inset Formula $T_{c}$
+\end_inset
+
+, the electroweak theory selects the trivial vacuum: 
+\begin_inset Formula $\vert W\vert\rightarrow0$
+\end_inset
+
+, 
+\begin_inset Formula $f_{12}\rightarrow0$
+\end_inset
+
+, 
+\begin_inset Formula $Z_{12}\rightarrow0$
+\end_inset
+
+, 
+\begin_inset Formula $\varphi\rightarrow0$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+
+\end_layout
+
+\begin_layout Section
+Physical Quantities
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+m_{H}^{2}=4\lambda\eta^{2}=2\lambda\nu^{2}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+m_{W^{\pm}}^{2}=\frac{g^{2}\eta^{2}}{2}\text{ ; }m_{Z}^{2}=\frac{\eta^{2}}{2}\left(g^{2}+g'^{2}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\eta=\sqrt{\frac{1}{2\sqrt{2}G_{F}}}=174.132GeV
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\nu=\sqrt{2}\eta=246GeV
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+g_{Z}=\sqrt{g^{2}+g'^{2}}=\frac{g}{\cos\theta_{w}}\text{ ; }T_{Z}=\cos^{2}\theta_{w}T^{3}-\sin^{2}\theta_{w}\frac{Y}{2}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+e=\frac{gg'}{\sqrt{g^{2}+g'^{2}}}=g\sin\theta_{w}=g'\cos\theta_{w}\text{ ; }Q=T^{3}+\frac{Y}{2}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+G_{F}=\frac{1}{2\sqrt{2}\eta^{2}}=\frac{\sqrt{2}g^{2}}{8m_{W}^{2}}=1.166\times10^{-5}GeV^{-2}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Standard Model values
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+m_{H}=125GeV
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\lambda=0.128826
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\sin^{2}\theta_{w}=0.22
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+m_{W}=g\frac{\eta}{\sqrt{2}}=\left(\frac{\alpha\pi}{G_{F}\sqrt{2}}\right)^{1/2}\frac{1}{\sin\theta_{w}}=80.385GeV\label{eq:w_mass}
+\end{equation}
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{equation}
+m_{Z}=m_{W}/\cos\theta_{w}=\left(\frac{\alpha\pi}{G_{F}\sqrt{2}}\right)^{1/2}\frac{2}{\sin2\theta_{w}}=91.1876GeV\label{eq:z_mass}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "Ambjorn.Olesen.1989"
+
+\end_inset
+
+Ambjørn, J., & Olesen, P.
+ (1989).
+ On electroweak magnetism.
+ Nuclear Physics B, 315(3), 606-614.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "Ambjorn.Olesen.1990"
+
+\end_inset
+
+Ambjørn, J., & Olesen, P.
+ (1990).
+ A condensate solution of the electroweak theory which interpolates between
+ the broken and the symmetric phase.
+ Nuclear Physics B, 330(1), 193-204.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "Olesen.2017"
+
+\end_inset
+
+Olesen, P.
+ (2017).
+ Estimate of a non-helical electroweak primordial bootstrap field today.
+ arXiv preprint arXiv:1705.02055.
+\end_layout
+
+\end_body
+\end_document
