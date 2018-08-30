@@ -297,7 +297,7 @@ void EW_Random_Nucl_LongTimeSpectrum(const int n_rows, const int n_cols){
 	    obs.SaveDataTable(id+"_dtable.txt", 50);
 
         /*save bfield*/
-        if( bubble.get_time_step() % BFIELD_SAVE_FREQ == 0 ) {
+        if( BFIELD_SAVE_FREQ != 0 && bubble.get_time_step() % BFIELD_SAVE_FREQ == 0 ) {
             bfield.Measure();
             bfield.SaveDensityData(id + "_bfield_" + std::to_string(bubble.get_time_step()) + ".h5");
         }
