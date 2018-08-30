@@ -23,6 +23,8 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 #	set(CMAKE_CXX_FLAGS "-std=c++11 -O3 -no-prec-div -ipo -xcore-avx2")
 #endif()
 set(CMAKE_CXX_FLAGS "-std=c++11 -m64 -O3 -ffast-math -flto -funroll-loops -march=native -Wall")
+set(CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS})
+set(CMAKE_CXX_FLAGS_DEBUG "-std=c++11 -g")
 
 ### external libraries
 

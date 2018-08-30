@@ -4,40 +4,26 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "make",
+            "label": "debug_cmake",
             "type": "shell",
-            "command": "make",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
-        },
-        {
-            "label": "clean",
-            "type": "shell",
-            "command": "make clean",
+            "command": "cmake",
+            "args": [
+                "-DCMAKE_BUILD_TYPE=Debug",
+                "${workspaceFolder}",
+                "-B${workspaceFolder}/debug"
+            ],
             "group": "build"
         },
         {
-            "label": "clean data",
+            "label": "release_cmake",
             "type": "shell",
-            "command": "make cleandata",
-            "group": "build"
-        },
-        {
-            "label": "run 1",
-            "type": "shell",
-            "command": "make run",
-            "group": {
-                "kind": "test",
-                "isDefault": true
-            }
-        },
-        {
-            "label": "run 2",
-            "type": "shell",
-            "command": "make run2",
-            "group": "test"
+            "command": "cmake",
+            "args": [
+                "-DCMAKE_BUILD_TYPE=Release",
+                "${workspaceFolder}",
+                "-B${workspaceFolder}/build"
+            ],
+            "group":"build"
         }
     ]
 }
