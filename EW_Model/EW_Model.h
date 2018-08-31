@@ -11,6 +11,36 @@
 #include "EW_parameter.h"
 #include "EW_functions.h"
 
+namespace HDF5_Wrapper {
+	template<>
+    inline hid_t get_H5_datatype<Electroweak::SU2vector>(){
+		hsize_t arr_size = 4;
+		return H5Tarray_create(
+			get_H5_datatype<Electroweak::Real>(),  /*base type*/
+			1, /*rank of the array*/
+			&arr_size /*size of each array dimension*/
+		);
+	}
+
+	template<>
+    inline hid_t get_H5_datatype<Electroweak::SU2matrix>(){
+		hsize_t arr_size = 8;
+		return H5Tarray_create(
+			get_H5_datatype<Electroweak::Real>(),
+			1,
+			&arr_size);
+	}
+
+	template<>
+	inline hid_t get_H5_datatype<Electroweak::U1matrix>(){
+		hsize_t arr_size = 2;
+		return H5Tarray_create(
+			get_H5_datatype<Electroweak::Real>(),
+			1,
+			&arr_size);
+	}
+}
+
 /*
 The ElectroweakEvolution class shall be the base class,
 implementing the basic evolution and boundary condition.
@@ -20,6 +50,8 @@ namespace Electroweak{
 
     using namespace ParaSite;
 	using namespace MPI_Wrapper;
+
+
     
     template<int DIM>
     class ElectroweakEvolution{
@@ -86,6 +118,8 @@ namespace Electroweak{
         void EvolveScalarOneSite_RadialDamping(const Site<DIM>& x, const int nowTime, const int futureTime) const;
         void EvolveU1OneSite_KS(const Site<DIM>& x, const int component, const int nowTime, const int futureTime) const;
         void EvolveSU2OneSite_KS(const Site<DIM>& x, const int component, const int nowTime, const int futureTime) const;
+
+		void SaveFields(const std::string& filename) const;
 
 		/*
 		The constraint region and boundary region can be modified 
@@ -402,6 +436,17 @@ namespace Electroweak{
 		this->F_.update_halo();
 		this->V_.update_halo();
 		this->E_.update_halo();
+		return;
+	}
+
+	template<int DIM>
+	void ElectroweakEvolution<DIM>::SaveFields(const std::string& filename) const{
+		this->phi_.write("phi_" + filename, nullptr, "phi");
+		this->pi_.write("pi_" + filename, nullptr, "pi");
+		this->U_.write("U_" + filename, nullptr, "U");
+		this->V_.write("V_" + filename, nullptr, "V");
+		this->F_.write("F_" + filename, nullptr, "F");
+		this->E_.write("E_" + filename, nullptr, "E");
 		return;
 	}
 

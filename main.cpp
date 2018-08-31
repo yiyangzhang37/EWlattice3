@@ -34,7 +34,11 @@ int main(int argc, char** argv) {
 		//EW_Nucl_TwoBubbles(n_rows, n_cols);
 		//EW_Nucl_NonRand(n_rows, n_cols);
 		//EW_Random_Nucl(n_rows, n_cols);
+<<<<<<< HEAD
 		//EW_Random_Nucl_LongTimeSpectrum(n_rows, n_cols);
+=======
+		EW_Random_Nucl_LongTimeSpectrum(n_rows, n_cols);
+>>>>>>> master
 		//test_FFT3D_r2cc2r();
 
 		//EW_CSB_OneBubble(n_rows, n_cols);

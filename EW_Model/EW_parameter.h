@@ -42,11 +42,11 @@ namespace Electroweak{
 
     const ParaSite::IndexType N = std::stoi(ReadConfigIni("EWLAT_CUBE_NSIZE"));
     const ParaSite::IndexType nSize[DIM] = { N,N,N }; //evolution only works for Nx=Ny=Nz yet.
-    const int StartStep = std::stoi(ReadConfigIni("EWLAT_START_STEP")); //isContinue: if Continue, startStep = Last time Ntimesteps.
+    //const int StartStep = std::stoi(ReadConfigIni("EWLAT_START_STEP")); //isContinue: if Continue, startStep = Last time Ntimesteps.
     const int Ntimesteps = std::stoi(ReadConfigIni("EWLAT_END_STEP")); //### running steps ###
     //const int isCalc = std::stoi(ReadConfigIni("EWLAT_IS_CALC")); //calculate related quantities every *isCalc* steps
     //const int isSave = std::stoi(ReadConfigIni("EWLAT_IS_SAVE"));//save every *isSave* steps, must be an integer multiple of *isCalc*
-    const int DTCalcFreq = std::stoi(ReadConfigIni("EWLAT_CALC_FREQ"));
+    const int DensityDataCalcFreq = std::stoi(ReadConfigIni("EWLAT_DENSITY_DATA_CALC_FREQ"));
     const int DensityDataSaveFreq = std::stoi(ReadConfigIni("EWLAT_DENSITY_DATA_SAVE_FREQ"));
 
     //const int SAMPLE_NUMBER = std::stoi(ReadConfigIni("SAMPLE_NUMBER"));
