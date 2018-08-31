@@ -1,6 +1,5 @@
 #include "EW_examples.h"
 
-
 void EW_BaseModel_SymmetricInit(const int n_rows, const int n_cols){
 
     Parallel2D parallel(n_rows, n_cols, MPI_COMM_WORLD);
@@ -460,15 +459,17 @@ void EW_CSB_TwoBubbles(const int n_rows, const int n_cols){
     bubble.InitializeSymmetricPhase();
 
     for(auto i = 0; i <= Ntimesteps; ++i){
-        obs.Measure();
+        if(DensityDataCalcFreq == 0 || bubble.get_time_step() % DensityDataCalcFreq == 0){
+            obs.Measure();
+        }
 
         bubble.UpdateFields();
 
-        bubble.TwoBubblesTest_WithWinding(0, 1);
+        bubble.TwoBubblesTest_WithWinding(1, 1);
        
         bubble.EvolveInterior_RadialDamping();
         obs.SaveDensityData(id + "_den_" + std::to_string(i) + ".h5", DensityDataSaveFreq);
-	    obs.SaveDataTable(id+"_dtable.txt", 5);
+	    obs.SaveDataTable(id+"_dtable.txt", 50);
 
         bubble.TimeAdvance();
     }

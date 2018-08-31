@@ -17,13 +17,6 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # set CXX flags
-<<<<<<< HEAD
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-	set(CMAKE_CXX_FLAGS "-std=c++11 -m64 -O2 -ffast-math -flto -funroll-loops -march=native -Wall")
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-	set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -no-prec-div -ipo -xcore-avx2")
-endif()
-=======
 #if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 #	set(CMAKE_CXX_FLAGS "-std=c++11 -m64 -O3 -ffast-math -flto -funroll-loops -march=native -Wall")
 #elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
@@ -32,7 +25,6 @@ endif()
 set(CMAKE_CXX_FLAGS "-std=c++11 -m64 -O3 -ffast-math -flto -funroll-loops -march=native -Wall")
 set(CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS})
 set(CMAKE_CXX_FLAGS_DEBUG "-std=c++11 -g")
->>>>>>> master
 
 ### external libraries
 
