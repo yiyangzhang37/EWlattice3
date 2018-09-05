@@ -403,7 +403,8 @@ void EW_CSB_OneBubble(const int n_rows, const int n_cols){
                         ObserverFlags::OBS_HiggsWinding |
                         ObserverFlags::OBS_NewBubbleCount,
 
-                        ObserverFlags::OBS_TotalEnergy | 
+                        ObserverFlags::OBS_TotalEnergy |
+                        ObserverFlags::OBS_CSNumber | 
                         ObserverFlags::OBS_MagneticEnergy |
                         ObserverFlags::OBS_HiggsMagnitude2);
     
@@ -419,6 +420,7 @@ void EW_CSB_OneBubble(const int n_rows, const int n_cols){
 
         bubble.UpdateFields();
 
+        
         bubble.OneBubbleTest_WithWinding(1, phi_hat);
        
         bubble.EvolveInterior_RadialDamping();

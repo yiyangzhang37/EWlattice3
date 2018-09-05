@@ -21,7 +21,7 @@ namespace Electroweak{
     */
     class SU2GaugeTransform {
     public:
-        SU2GaugeTransform(const double* center);
+        SU2GaugeTransform(const double* center, const double* periods);
         virtual ~SU2GaugeTransform() {}
 
         /*
@@ -57,6 +57,10 @@ namespace Electroweak{
         std::array<double, 3> center_;
         // The current relative (to the reference center) position of the measured point.
         std::array<double, 3> coord_ = {};
+        // The periods (corresponding to periodic boundary conditions) on each direction.
+        // 0  corresponds to non-periodic in that direction.
+        std::array<double, 3> periods_;
+
         // The current relative radius.
         double radius_ = 0;
 
@@ -78,7 +82,7 @@ namespace Electroweak{
     */
     class HedgehogWinding : public SU2GaugeTransform{
     public:
-        HedgehogWinding(const double* center, const int winding, const double r_scale);
+        HedgehogWinding(const double* center, const int winding, const double r_scale, const double* periods);
         ~HedgehogWinding() = default;
 
         virtual double profile_f() const;
@@ -122,9 +126,9 @@ namespace Electroweak{
 
     class HedgehogWinding_Tanh2 : public HedgehogWinding {
     public:
-        HedgehogWinding_Tanh2(const double* center, const int winding, const double r_scale)
+        HedgehogWinding_Tanh2(const double* center, const int winding, const double r_scale, const double* periods)
             :
-            HedgehogWinding(center, winding, r_scale) 
+            HedgehogWinding(center, winding, r_scale, periods) 
         {}
         
         ~HedgehogWinding_Tanh2() = default;

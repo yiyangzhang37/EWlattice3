@@ -5,8 +5,9 @@
 
 namespace Electroweak {
 
-    SU2GaugeTransform::SU2GaugeTransform(const double* center){
+    SU2GaugeTransform::SU2GaugeTransform(const double* center, const double* periods){
         std::copy_n(center, 3, this->center_.begin());
+        std::copy_n(periods, 3, this->periods_.begin());
     }
 
     void SU2GaugeTransform::set_location(const double r, const double* unit_dir) {
@@ -18,6 +19,18 @@ namespace Electroweak {
         std::transform(coord, coord + 3, this->center_.begin(), 
                         this->coord_.begin(), 
                         [](double x, double c){return x-c;});
+        for(int i = 0; i < 3; ++i){
+            auto d1 = coord[i] + this->periods_[i] - this->center_[i];
+            auto d2 = coord[i] - this->center_[i];
+            auto d3 = coord[i] - this->periods_[i] - this->center_[i];
+            auto absd1 = std::abs(d1);
+            auto absd2 = std::abs(d2);
+            auto absd3 = std::abs(d3);
+            if(absd1 <= absd2 && absd1 <= absd3) this->coord_[i] = d1;
+            else if(absd2 <= absd1 && absd2 <= absd3) this->coord_[i] = d2;
+            else if(absd3 <= absd1 && absd3 <= absd2) this->coord_[i] = d3;
+            else std::cout << "SU2GaugeTransform::set_location ERROR." << std::endl;
+        }
         this->set_radius();
     }
 
@@ -43,9 +56,10 @@ namespace Electroweak {
     HedgehogWinding::HedgehogWinding(
         const double* center, 
         const int winding, 
-        const double r_scale)
+        const double r_scale,
+        const double* periods)
         :
-        SU2GaugeTransform(center),
+        SU2GaugeTransform(center, periods),
         r_scale_(r_scale),
         winding_(winding)
     {}

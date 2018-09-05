@@ -53,6 +53,9 @@ namespace EW_BubbleNucleation {
         BubbleNucleation<DIM>(lat, parallel, id)
     {}
 
+    //I have tested that: 
+    //When the bubbls is either at center, surface, edge, or corner,
+    //the evolutions (I did up to 5 steps), yield the same results.
     template<int DIM>
     void CSBubble<DIM>::OneBubbleTest_WithWinding(const int winding, const SU2vector& phi_hat) const {
         if (this->time_step_ == 0) {
@@ -62,7 +65,8 @@ namespace EW_BubbleNucleation {
             std::transform(global_coord, global_coord + DIM, 
                         CENTER_POS, center_coord, 
                         [](IndexType x, Real c){return (x-c)*DX;});
-            HedgehogWinding w(center_coord, winding, NUCLEATION_CS_RADIUS);
+            double periods[DIM] = {nSize[0]*DX, nSize[1]*DX, nSize[2]*DX};
+            HedgehogWinding w(center_coord, winding, NUCLEATION_CS_RADIUS, periods);
             Site<DIM> x(this->lat_);
 		
 			auto T = (this->time_step_ + 1) % CYCLE;
@@ -86,8 +90,9 @@ namespace EW_BubbleNucleation {
             std::transform(c2, c2+DIM, CENTER_POS, 
                         center2, 
                         [](IndexType x, Real c){return (x-c)*DX;});
-            HedgehogWinding w1(center1, winding1, NUCLEATION_CS_RADIUS);
-            HedgehogWinding w2(center2, winding2, NUCLEATION_CS_RADIUS);
+            double periods[DIM] = {nSize[0]*DX, nSize[1]*DX, nSize[2]*DX};
+            HedgehogWinding w1(center1, winding1, NUCLEATION_CS_RADIUS, periods);
+            HedgehogWinding w2(center2, winding2, NUCLEATION_CS_RADIUS, periods);
             Site<DIM> x(this->lat_);
 			auto T = (this->time_step_ + 1) % CYCLE;
             auto global_idx_1 = this->get_lattice().global_coord2index(c1);
@@ -112,6 +117,12 @@ namespace EW_BubbleNucleation {
 
         std::vector<IndexType> region_list;
 		this->GetBubbleRegion(global_index, NUCLEATION_RADIUS_SITE, region_list);
+        // std::cout << region_list.size() << std::endl;
+        // for(auto x : region_list) {
+        //     IndexType coord[DIM];
+        //     this->get_lattice().global_index2coord(x, coord);
+        //     std::cout << "[" << coord[0] << ", " << coord[1] << ", " << coord[2] << "]" << std::endl;
+        // }
         IndexType global_center_coord[DIM];
         this->get_lattice().global_index2coord(global_index, global_center_coord);
 
@@ -139,6 +150,7 @@ namespace EW_BubbleNucleation {
         //x-component
         this->GetLinkFieldRegion(global_index, 0,
                                 NUCLEATION_RADIUS_SITE, region_list);
+        //std::cout << "x-component size: " << region_list.size() << std::endl;
         for(auto gidx : region_list){
 			//check if gidx is a local visible site
 			if(this->lat_.is_local(gidx)){
@@ -153,6 +165,7 @@ namespace EW_BubbleNucleation {
         //y-component
         this->GetLinkFieldRegion(global_index, 1,
                                 NUCLEATION_RADIUS_SITE, region_list);
+        //std::cout << "y-component size: " << region_list.size() << std::endl;
         for(auto gidx : region_list){
 			//check if gidx is a local visible site
 			if(this->lat_.is_local(gidx)){
@@ -167,6 +180,7 @@ namespace EW_BubbleNucleation {
         //z-component
         this->GetLinkFieldRegion(global_index, 2,
                                 NUCLEATION_RADIUS_SITE, region_list);
+        //std::cout << "z-component size: " << region_list.size() << std::endl;
         for(auto gidx : region_list){
 			//check if gidx is a local visible site
 			if(this->lat_.is_local(gidx)){
