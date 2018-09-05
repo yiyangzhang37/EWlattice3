@@ -47,7 +47,7 @@ namespace Electroweak{
     class ElectroweakObserver{
     public:
         ElectroweakObserver(const ElectroweakEvolution<DIM>& evo);
-        ~ElectroweakObserver() = default;
+        virtual ~ElectroweakObserver() {}
 		
 		/*
 		set flags for data_table observations and density_data observations.

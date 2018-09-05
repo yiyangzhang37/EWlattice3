@@ -97,7 +97,7 @@ namespace Electroweak{
 
     public:
 		ElectroweakEvolution(const Lattice<DIM>& lat, const Parallel2D& parallel, const std::string& id);
-        ~ElectroweakEvolution() = default;
+        virtual ~ElectroweakEvolution() {}
 
 		virtual void RecordParameters();
 		void SaveParameters(const std::string& name, const bool is_root_save_only = true) const;

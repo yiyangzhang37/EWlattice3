@@ -17,10 +17,11 @@ namespace EW_BubbleNucleation {
         CSBubble(const Lattice<DIM>& lat, 
                 const Parallel2D& parallel, 
                 const std::string& id);
-        ~CSBubble() = default;
+        virtual ~CSBubble() {}
 
         void OneBubbleTest_WithWinding(const int winding) const;
-        void TwoBubblesTest_WithWinding(const int winding1, const int winding2) const;
+        void TwoBubblesTest_WithWinding(const int winding1, const int winding2, 
+            const SU2vector& phi1_hat, const SU2vector& phi2_hat) const;
         void InitPureGauge(const int winding, const double r_scale) const;
     protected:
         /*
@@ -54,15 +55,16 @@ namespace EW_BubbleNucleation {
 
     template<int DIM>
     void CSBubble<DIM>::OneBubbleTest_WithWinding(const int winding) const {
-        IndexType global_coord[] = {nSize[0] / 2, nSize[1] / 2, nSize[2] / 2};
-        auto global_idx = this->get_lattice().global_coord2index(global_coord);
-        double center_coord[DIM];
-        std::transform(global_coord, global_coord + DIM, 
-                    CENTER_POS, center_coord, 
-                    [](IndexType x, Real c){return (x-c)*DX;});
-        HedgehogWinding w(center_coord, winding, NUCLEATION_CS_RADIUS);
-        Site<DIM> x(this->lat_);
-		if (this->time_step_ == 0) {
+        if (this->time_step_ == 0) {
+            IndexType global_coord[] = {nSize[0] / 2, nSize[1] / 2, nSize[2] / 2};
+            auto global_idx = this->get_lattice().global_coord2index(global_coord);
+            double center_coord[DIM];
+            std::transform(global_coord, global_coord + DIM, 
+                        CENTER_POS, center_coord, 
+                        [](IndexType x, Real c){return (x-c)*DX;});
+            HedgehogWinding w(center_coord, winding, NUCLEATION_CS_RADIUS);
+            Site<DIM> x(this->lat_);
+		
 			auto T = (this->time_step_ + 1) % CYCLE;
 			SU2vector phi_hat;
 			phi_hat(0) = Cmplx(1.0, 0)/sqrt(2.0);
@@ -76,28 +78,25 @@ namespace EW_BubbleNucleation {
     }
 
     template<int DIM>
-    void CSBubble<DIM>::TwoBubblesTest_WithWinding(const int winding1, const int winding2) const {
-        IndexType c1[] = {nSize[0] / 2, nSize[1] / 2, nSize[2] / 2 - BUBBLES_HALF_SEP};
-        IndexType c2[] = {nSize[0] / 2, nSize[1] / 2, nSize[2] / 2 + BUBBLES_HALF_SEP};
-        double center1[DIM], center2[DIM];
-        std::transform(c1, c1+DIM, CENTER_POS, 
-                    center1, 
-                    [](IndexType x, Real c){return (x-c)*DX;});
-        std::transform(c2, c2+DIM, CENTER_POS, 
-                    center2, 
-                    [](IndexType x, Real c){return (x-c)*DX;});
-        HedgehogWinding w1(center1, winding1, NUCLEATION_CS_RADIUS);
-        HedgehogWinding w2(center2, winding2, NUCLEATION_CS_RADIUS);
-        Site<DIM> x(this->lat_);
+    void CSBubble<DIM>::TwoBubblesTest_WithWinding(const int winding1, const int winding2, const SU2vector& phi1_hat, const SU2vector& phi2_hat) const {
         if (this->time_step_ == 0) {
+            IndexType c1[] = {nSize[0] / 2, nSize[1] / 2, nSize[2] / 2 - BUBBLES_HALF_SEP};
+            IndexType c2[] = {nSize[0] / 2, nSize[1] / 2, nSize[2] / 2 + BUBBLES_HALF_SEP};
+            double center1[DIM], center2[DIM];
+            std::transform(c1, c1+DIM, CENTER_POS, 
+                        center1, 
+                        [](IndexType x, Real c){return (x-c)*DX;});
+            std::transform(c2, c2+DIM, CENTER_POS, 
+                        center2, 
+                        [](IndexType x, Real c){return (x-c)*DX;});
+            HedgehogWinding w1(center1, winding1, NUCLEATION_CS_RADIUS);
+            HedgehogWinding w2(center2, winding2, NUCLEATION_CS_RADIUS);
+            Site<DIM> x(this->lat_);
 			auto T = (this->time_step_ + 1) % CYCLE;
-			SU2vector phi_hat;
-			phi_hat(0) = Cmplx(0,0);
-            phi_hat(1) = Cmplx(1,0);
             auto global_idx_1 = this->get_lattice().global_coord2index(c1);
             auto global_idx_2 = this->get_lattice().global_coord2index(c2);
-			this->NucleateOneBubble_Exp_WithWinding(T, global_idx_1, phi_hat, w1);
-            this->NucleateOneBubble_Exp_WithWinding(T, global_idx_2, phi_hat, w2);
+			this->NucleateOneBubble_Exp_WithWinding(T, global_idx_1, phi1_hat, w1);
+            this->NucleateOneBubble_Exp_WithWinding(T, global_idx_2, phi2_hat, w2);
 			this->phi_.update_halo();
             this->U_.update_halo();
 		}

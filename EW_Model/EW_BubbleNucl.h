@@ -44,7 +44,7 @@ namespace EW_BubbleNucleation{
 			const Lattice<DIM>& lat, 
 			const Parallel2D& parallel, 
 			const std::string& id);
-		~BubbleNucleation() = default;
+		virtual ~BubbleNucleation() {}
 
 		void RecordParameters() override;
 		
@@ -164,7 +164,7 @@ namespace EW_BubbleNucleation{
 	class NucleationObserver : public ElectroweakObserver<DIM> {
 	public:
 		NucleationObserver(const BubbleNucleation<DIM>& bubble);
-		~NucleationObserver() = default;
+		virtual ~NucleationObserver() {}
 		
 		void Measure() override;
 

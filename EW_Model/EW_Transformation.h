@@ -22,7 +22,7 @@ namespace Electroweak{
     class SU2GaugeTransform {
     public:
         SU2GaugeTransform(const double* center);
-        ~SU2GaugeTransform() = default;
+        virtual ~SU2GaugeTransform() {}
 
         /*
         set the coordinate to compute the location-dependent transformations.
