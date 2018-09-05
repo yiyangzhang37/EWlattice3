@@ -19,7 +19,7 @@ namespace EW_BubbleNucleation {
                 const std::string& id);
         virtual ~CSBubble() {}
 
-        void OneBubbleTest_WithWinding(const int winding) const;
+        void OneBubbleTest_WithWinding(const int winding, const SU2vector& phi_hat) const;
         void TwoBubblesTest_WithWinding(const int winding1, const int winding2, 
             const SU2vector& phi1_hat, const SU2vector& phi2_hat) const;
         void InitPureGauge(const int winding, const double r_scale) const;
@@ -54,7 +54,7 @@ namespace EW_BubbleNucleation {
     {}
 
     template<int DIM>
-    void CSBubble<DIM>::OneBubbleTest_WithWinding(const int winding) const {
+    void CSBubble<DIM>::OneBubbleTest_WithWinding(const int winding, const SU2vector& phi_hat) const {
         if (this->time_step_ == 0) {
             IndexType global_coord[] = {nSize[0] / 2, nSize[1] / 2, nSize[2] / 2};
             auto global_idx = this->get_lattice().global_coord2index(global_coord);
@@ -66,9 +66,6 @@ namespace EW_BubbleNucleation {
             Site<DIM> x(this->lat_);
 		
 			auto T = (this->time_step_ + 1) % CYCLE;
-			SU2vector phi_hat;
-			phi_hat(0) = Cmplx(1.0, 0)/sqrt(2.0);
-            phi_hat(1) = Cmplx(0, -1.0)/sqrt(2.0);
 			this->NucleateOneBubble_Exp_WithWinding(T, global_idx, phi_hat, w);
 			this->phi_.update_halo();
             this->U_.update_halo();

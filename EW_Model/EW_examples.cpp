@@ -410,12 +410,16 @@ void EW_CSB_OneBubble(const int n_rows, const int n_cols){
     bubble.InitializeSymmetricPhase();
     //bubble.InitPureGauge(3, DX*10);
 
+    SU2vector phi_hat;
+    phi_hat(0) = Cmplx(0, 0);
+    phi_hat(1) = Cmplx(1, 0);
+
     for(auto i = 0; i <= Ntimesteps; ++i){
         obs.Measure();
 
         bubble.UpdateFields();
 
-        bubble.OneBubbleTest_WithWinding(1);
+        bubble.OneBubbleTest_WithWinding(1, phi_hat);
        
         bubble.EvolveInterior_RadialDamping();
         obs.SaveDensityData(id + "_den_" + std::to_string(i) + ".h5", DensityDataSaveFreq);
