@@ -526,7 +526,7 @@ void EW_CSB_ArrayOfTwoBubbles(const int n_rows, const int n_cols){
     phi1_hat(0) = Cmplx(0, 0);
     phi1_hat(1) = Cmplx(1, 0);
 
-    phi2_hat(0) = Cmplx(0, 0)/sqrt(2.0);
+    phi2_hat(0) = Cmplx(1, 0)/sqrt(2.0);
     phi2_hat(1) = Cmplx(0, -1)/sqrt(2.0);
 
     for(auto i = 0; i <= Ntimesteps; ++i){
