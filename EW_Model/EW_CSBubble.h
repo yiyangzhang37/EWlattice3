@@ -116,9 +116,9 @@ namespace EW_BubbleNucleation {
         if (this->time_step_ == 0) {
             Site<DIM> x(this->lat_);
 			auto T = (this->time_step_ + 1) % CYCLE;
-            for(int i = 0; i < nSize[0]; i += 100){
-                for(int j = 0; j < nSize[1]; j += 100){
-                    for(int k = 0; k < nSize[2]; k += 200){
+            for(int i = 0; i < nSize[0]/100; i++){
+                for(int j = 0; j < nSize[1]/100; j++){
+                    for(int k = 0; k < nSize[2]/200; k++){
                         IndexType c1[] = {50 + 100 * i, 50 + 100 * j, 100 + 200 * k - BUBBLES_HALF_SEP};
                         IndexType c2[] = {50 + 100 * i, 50 + 100 * j, 100 + 200 * k + BUBBLES_HALF_SEP};
                         double center1[DIM], center2[DIM];
