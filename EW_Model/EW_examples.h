@@ -25,7 +25,7 @@ void EW_Random_Nucl_FFT(const int n_rows, const int n_cols);
 
 void EW_CSB_OneBubble(const int n_rows, const int n_cols);
 void EW_CSB_TwoBubbles(const int n_rows, const int n_cols);
-
+void EW_CSB_ArrayOfTwoBubbles(const int n_rows, const int n_cols);
 
 // Efficiency tests
 void Lattice_Indexing();

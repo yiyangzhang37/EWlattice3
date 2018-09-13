@@ -22,6 +22,11 @@ namespace EW_BubbleNucleation {
         void OneBubbleTest_WithWinding(const int winding, const SU2vector& phi_hat) const;
         void TwoBubblesTest_WithWinding(const int winding1, const int winding2, 
             const SU2vector& phi1_hat, const SU2vector& phi2_hat) const;
+        //Each pair of bubbles are supposed to be located within a 100*100*200 lattice
+        //If one wants to make the whole configuration symmetric to each pair,
+        //the size of the whole lattice should be a multiple of this size.
+        void ArrayOfTwoBubblesTest_WithWinding(const int winding1, const int winding2, 
+            const SU2vector& phi1_hat, const SU2vector& phi2_hat) const;
         void InitPureGauge(const int winding, const double r_scale) const;
     protected:
         /*
@@ -99,6 +104,40 @@ namespace EW_BubbleNucleation {
             auto global_idx_2 = this->get_lattice().global_coord2index(c2);
 			this->NucleateOneBubble_Exp_WithWinding(T, global_idx_1, phi1_hat, w1);
             this->NucleateOneBubble_Exp_WithWinding(T, global_idx_2, phi2_hat, w2);
+			this->phi_.update_halo();
+            this->U_.update_halo();
+		}
+        return;
+    }
+
+    template<int DIM>
+    void CSBubble<DIM>::ArrayOfTwoBubblesTest_WithWinding(const int winding1, const int winding2, 
+            const SU2vector& phi1_hat, const SU2vector& phi2_hat) const {
+        if (this->time_step_ == 0) {
+            Site<DIM> x(this->lat_);
+			auto T = (this->time_step_ + 1) % CYCLE;
+            for(int i = 0; i < nSize[0]; i += 100){
+                for(int j = 0; j < nSize[1]; j += 100){
+                    for(int k = 0; k < nSize[2]; k += 200){
+                        IndexType c1[] = {50 + 100 * i, 50 + 100 * j, 100 + 200 * k - BUBBLES_HALF_SEP};
+                        IndexType c2[] = {50 + 100 * i, 50 + 100 * j, 100 + 200 * k + BUBBLES_HALF_SEP};
+                        double center1[DIM], center2[DIM];
+                        std::transform(c1, c1+DIM, CENTER_POS, 
+                                    center1, 
+                                    [](IndexType x, Real c){return (x-c)*DX;});
+                        std::transform(c2, c2+DIM, CENTER_POS, 
+                                    center2, 
+                                    [](IndexType x, Real c){return (x-c)*DX;});
+                        double periods[DIM] = {nSize[0]*DX, nSize[1]*DX, nSize[2]*DX};
+                        HedgehogWinding w1(center1, winding1, NUCLEATION_CS_RADIUS, periods);
+                        HedgehogWinding w2(center2, winding2, NUCLEATION_CS_RADIUS, periods);
+                        auto global_idx_1 = this->get_lattice().global_coord2index(c1);
+                        auto global_idx_2 = this->get_lattice().global_coord2index(c2);
+                        this->NucleateOneBubble_Exp_WithWinding(T, global_idx_1, phi1_hat, w1);
+                        this->NucleateOneBubble_Exp_WithWinding(T, global_idx_2, phi2_hat, w2);
+                    }
+                }
+            }
 			this->phi_.update_halo();
             this->U_.update_halo();
 		}
