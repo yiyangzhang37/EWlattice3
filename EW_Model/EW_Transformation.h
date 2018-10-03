@@ -31,7 +31,7 @@ namespace Electroweak{
         The locations are different.
         */
         void set_location(const double r, const double* unit_dir);
-        //coord shall just be the absolute (physical, not lattice) coordinate. 
+        //coord shall just be the absolute (physical, not lattice) coordinate, in the global lattice.
         void set_location(const double* coord);
 
         virtual SU2matrix transform_mat() const {return Ident;}
@@ -39,46 +39,50 @@ namespace Electroweak{
         virtual SU2matrix d_transform_mat(const int dir) const {return SU2matrix::Zero();}
         virtual SU2matrix d_inv_transform_mat(const int dir) const {return SU2matrix::Zero();}
 
-        //compute gW_i = U d_i(U^-1)
-        SU2matrix pure_gauge(const int dir) const;
-        //compute the component gW_i^a
-        double pure_gauge(const int dir, const int wa) const;
+        //compute pure gauge SU(2) link fields.
+        SU2matrix pure_gauge(const int dir, const double dx);
+
+        //compute the SU2 field gauge transform: T(x)*U_i(x)*T^dagger(x+i)
+        //for the gauge transform of link fields, the location should be set at the center 
+        //of the link. 
+        //we also need to supplement dx (the spacing of the lattice), to compute this transform.
+        //return: SU(2) link fields.
+        SU2matrix gauge_transform(const SU2matrix& su2_link, const int dir, const double dx);
 
         //compute the Higgs field gauge transform: U*phi.
         SU2vector gauge_transform(const SU2vector& phi) const;
-        //compute the SU2 field gauge transform: U*gW_i*U^-1 + U*d_i(U^-1). 
-        SU2matrix gauge_transform(const SU2matrix& gw, const int dir) const;
 
-        const double r() const {return this->radius_;}
-        const double coord(const int i) const {return this->coord_[i];}
+        double radius() const {
+            return std::sqrt(
+                std::inner_product(this->coord_.begin(), this->coord_.end(), 
+                this->coord_.begin(), 0.0));
+        } 
+
+        double coord(const int i) const {return this->coord_[i];}
+
+        std::array<double, 3> get_center() const { return this->center_; }
+        std::array<double, 3> get_coords() const { return this->coord_; }
+        std::array<double, 3> get_periods() const { return this->periods_; }
     
     protected:
         // The referece center of the gauge transformation.
         std::array<double, 3> center_;
         // The current relative (to the reference center) position of the measured point.
-        std::array<double, 3> coord_ = {};
+        mutable std::array<double, 3> coord_ = {};
         // The periods (corresponding to periodic boundary conditions) on each direction.
         // 0  corresponds to non-periodic in that direction.
         std::array<double, 3> periods_;
 
-        // The current relative radius.
-        double radius_ = 0;
-
-        void set_radius(){
-            this->radius_ = std::sqrt(
-                std::inner_product(this->coord_.begin(), this->coord_.end(), 
-                this->coord_.begin(), 0.0));
-        } 
-
         //This function does not check if this->radius_ is 0.
         double unit_dir(const int i) const {
-            return this->coord_[i] / this->radius_;
+            return this->coord_[i] / this->radius();
         }
 
     };
 
     /*
     Gauge transformtion with winding number, with Hedgehog ansatz.
+    tanh function.
     */
     class HedgehogWinding : public SU2GaugeTransform{
     public:
@@ -92,11 +96,6 @@ namespace Electroweak{
         SU2matrix inv_transform_mat() const override;
         SU2matrix d_transform_mat(const int dir) const override;
         SU2matrix d_inv_transform_mat(const int dir) const override;
-
-        SU2matrix winding_mat() const {return this->transform_mat();}
-        SU2matrix inv_winding_mat() const {return this->inv_transform_mat();}
-        SU2matrix d_winding_mat(const int dir) const {return this->d_transform_mat(dir);}
-        SU2matrix d_inv_winding_mat(const int dir) const {return this->d_inv_transform_mat(dir);}
         
         //compute gW_i = U d_i(U^-1)
         SU2matrix pure_gauge_direct(const int dir) const;
@@ -116,7 +115,7 @@ namespace Electroweak{
             return this->unit_dir(i);
         }
         double dw(const int i, const int wa) const {
-            return (static_cast<double>(i==wa) - this->unit_dir(wa)*this->unit_dir(i))/this->radius_;
+            return (static_cast<double>(i==wa) - this->unit_dir(wa)*this->unit_dir(i))/this->radius();
         }
 
         SU2matrix d_mat_impl(const int dir, const int sign) const;
@@ -134,10 +133,10 @@ namespace Electroweak{
         ~HedgehogWinding_Tanh2() = default;
 
         double profile_f() const override {
-            return 2.0 * PI * this->winding_ * tanh( pow(this->radius_/this->r_scale_, 2) );
+            return 2.0 * PI * this->winding_ * tanh( pow(this->radius()/this->r_scale_, 2) );
         }
         double profile_df() const override {
-            auto& r = this->radius_;
+            auto r = this->radius();
             auto& rg = this->r_scale_;
             return 4.0*PI*this->winding_ * r / (rg*rg) / pow( cosh(pow(r/rg, 2)), 2 );
         }

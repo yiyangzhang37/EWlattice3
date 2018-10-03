@@ -419,8 +419,7 @@ void EW_CSB_OneBubble(const int n_rows, const int n_cols){
         obs.Measure();
 
         bubble.UpdateFields();
-
-        
+     
         bubble.OneBubbleTest_WithWinding(1, phi_hat);
        
         bubble.EvolveInterior_RadialDamping();
@@ -526,8 +525,9 @@ void EW_CSB_ArrayOfTwoBubbles(const int n_rows, const int n_cols){
     phi1_hat(0) = Cmplx(0, 0);
     phi1_hat(1) = Cmplx(1, 0);
 
-    phi2_hat(0) = Cmplx(1, 0)/sqrt(2.0);
-    phi2_hat(1) = Cmplx(0, -1)/sqrt(2.0);
+    //phi2_hat(0) = Cmplx(1, 0)/sqrt(2.0);
+    //phi2_hat(1) = Cmplx(0, -1)/sqrt(2.0);
+    phi2_hat = phi1_hat;
 
     for(auto i = 0; i <= Ntimesteps; ++i){
         if(DensityDataCalcFreq == 0 || bubble.get_time_step() % DensityDataCalcFreq == 0){
@@ -536,7 +536,7 @@ void EW_CSB_ArrayOfTwoBubbles(const int n_rows, const int n_cols){
 
         bubble.UpdateFields();
 
-        bubble.ArrayOfTwoBubblesTest_WithWinding(0, 0, phi1_hat, phi2_hat);
+        bubble.ArrayOfTwoBubblesTest_WithWinding(1, 1, phi1_hat, phi2_hat);
        
         bubble.EvolveInterior_RadialDamping();
         obs.SaveDensityData(id + "_den_" + std::to_string(i) + ".h5", DensityDataSaveFreq);

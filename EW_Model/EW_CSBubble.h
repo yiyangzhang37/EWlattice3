@@ -189,7 +189,6 @@ namespace EW_BubbleNucleation {
         //x-component
         this->GetLinkFieldRegion(global_index, 0,
                                 NUCLEATION_RADIUS_SITE, region_list);
-        //std::cout << "x-component size: " << region_list.size() << std::endl;
         for(auto gidx : region_list){
 			//check if gidx is a local visible site
 			if(this->lat_.is_local(gidx)){
@@ -198,13 +197,12 @@ namespace EW_BubbleNucleation {
                 x.set_index(mem_idx);
                 Real gc_x[] = {rgx(x, 0), rx(x, 1), rx(x, 2)};
                 w.set_location(gc_x);
-                this->U_(x, 0, nowTime) = su2_W2U(w.pure_gauge(0));
+                this->U_(x, 0, nowTime) = w.pure_gauge(0, DX);
             } else continue;
         }
         //y-component
         this->GetLinkFieldRegion(global_index, 1,
                                 NUCLEATION_RADIUS_SITE, region_list);
-        //std::cout << "y-component size: " << region_list.size() << std::endl;
         for(auto gidx : region_list){
 			//check if gidx is a local visible site
 			if(this->lat_.is_local(gidx)){
@@ -213,7 +211,7 @@ namespace EW_BubbleNucleation {
                 x.set_index(mem_idx);
                 Real gc_y[] = {rx(x, 0), rgx(x, 1), rx(x, 2)};
                 w.set_location(gc_y);
-                this->U_(x, 1, nowTime) = su2_W2U(w.pure_gauge(1));
+                this->U_(x, 1, nowTime) = w.pure_gauge(1, DX);
             } else continue;
         }
         //z-component
@@ -228,7 +226,7 @@ namespace EW_BubbleNucleation {
                 x.set_index(mem_idx);
                 Real gc_z[] = {rx(x, 0), rx(x, 1), rgx(x, 2)};
                 w.set_location(gc_z);
-                this->U_(x, 2, nowTime) = su2_W2U(w.pure_gauge(2));
+                this->U_(x, 2, nowTime) = w.pure_gauge(2, DX);
             } else continue;
         }
 		return;
@@ -242,7 +240,8 @@ namespace EW_BubbleNucleation {
                     CENTER_POS, center_coord, 
                     [](IndexType x, Real c){return (x-c)*DX;});
         Site<DIM> x(this->lat_);
-        HedgehogWinding w(center_coord, winding, r_scale);
+        double periods[DIM] = {nSize[0]*DX, nSize[1]*DX, nSize[2]*DX};
+        HedgehogWinding w(center_coord, winding, r_scale, periods);
         //HedgehogWinding_Tanh2 w(winding, r_scale);
 		for (auto t = 0; t < CYCLE; ++t) {
 			for (x.first(); x.test(); x.next()) {
@@ -255,18 +254,17 @@ namespace EW_BubbleNucleation {
 				}
                 Real gc_x[] = {rgx(x, 0), rx(x, 1), rx(x, 2)};
                 w.set_location(gc_x);
-                SU2matrix gWx = w.pure_gauge(0);
-                this->U_(x, 0, t) = su2_W2U(gWx);
+                //SU2matrix gWx = w.pure_gauge(0, dx);
+                //this->U_(x, 0, t) = su2_W2U(gWx);
+                this->U_(x, 0, t) = w.pure_gauge(0, DX);
                 
                 Real gc_y[] = {rx(x, 0), rgx(x, 1), rx(x, 2)};
                 w.set_location(gc_y);
-                SU2matrix gWy = w.pure_gauge(1);
-                this->U_(x, 1, t) = su2_W2U(gWy);
+                this->U_(x, 1, t) = w.pure_gauge(1, DX);
 
                 Real gc_z[] = {rx(x, 0), rx(x, 1), rgx(x, 2)};
                 w.set_location(gc_z);
-                SU2matrix gWz = w.pure_gauge(2);
-                this->U_(x, 2, t) = su2_W2U(gWz);
+                this->U_(x, 2, t) = w.pure_gauge(2, DX);
 			}
 		}
 		this->phi_.update_halo();
