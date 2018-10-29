@@ -490,6 +490,63 @@ void EW_CSB_TwoBubbles(const int n_rows, const int n_cols){
     return;
 }
 
+void EW_CSB_TwoBubbles_Perturbed(const int n_rows, const int n_cols){
+    using namespace EW_BubbleNucleation;
+    Parallel2D parallel(n_rows, n_cols, MPI_COMM_WORLD);
+    GridIndexType node_size[] = { n_rows, n_cols };
+    GridIndexType grid_rank[] = { parallel.get_grid_rank()[0], parallel.get_grid_rank()[1] };
+
+    GridIndexType grid_loc[2];
+	transform_gridrank_to_gridloc(grid_rank, grid_loc);
+
+    Lattice<DIM> lat(nSize, halo, node_size, grid_loc);
+    std::string id = ReadConfigIni("RUN_ID");
+    CSBubble<DIM> bubble(lat, parallel, id);
+    bubble.RecordParameters();
+    bubble.SaveParameters(id+"_param.txt");
+    
+    NucleationObserver<DIM> obs(bubble);
+    obs.SetObservables(ObserverFlags::OBS_EnergyAllParts |
+                        ObserverFlags::OBS_CSNumber |
+                        ObserverFlags::OBS_MagneticEnergy |
+                        ObserverFlags::OBS_HiggsMagnitude2 |
+                        ObserverFlags::OBS_MinHiggsMagnitude2 |
+                        ObserverFlags::OBS_HiggsWinding |
+                        ObserverFlags::OBS_NewBubbleCount,
+
+                        ObserverFlags::OBS_TotalEnergy | 
+                        ObserverFlags::OBS_MagneticEnergy |
+                        ObserverFlags::OBS_HiggsMagnitude2);
+    
+    bubble.InitializeSymmetricPhase();
+
+    SU2vector phi1_hat, phi2_hat;
+    phi1_hat(0) = Cmplx(0, 0);
+    phi1_hat(1) = Cmplx(1, 0);
+
+    phi2_hat(0) = Cmplx(0, 0);
+    phi2_hat(1) = Cmplx(1, 0);
+
+    for(auto i = 0; i <= Ntimesteps; ++i){
+        if(DensityDataCalcFreq == 0 || bubble.get_time_step() % DensityDataCalcFreq == 0){
+            obs.Measure();
+        }
+
+        bubble.UpdateFields();
+
+        bubble.TwoBubblesTest_WithWinding_Perturbed(0, 0, phi1_hat, phi2_hat);
+       
+        bubble.EvolveInterior_RadialDamping();
+        obs.SaveDensityData(id + "_den_" + std::to_string(i) + ".h5", DensityDataSaveFreq);
+	    obs.SaveDataTable(id+"_dtable.txt", 50);
+
+        bubble.TimeAdvance();
+    }
+    obs.SaveDataTable(id+"_dtable.txt");
+    bubble.ConcludeEvolution(id+"_param.txt");
+    return;
+}
+
 
 void EW_CSB_ArrayOfTwoBubbles(const int n_rows, const int n_cols){
     using namespace EW_BubbleNucleation;

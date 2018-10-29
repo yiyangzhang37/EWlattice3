@@ -22,6 +22,10 @@ namespace EW_BubbleNucleation {
         void OneBubbleTest_WithWinding(const int winding, const SU2vector& phi_hat) const;
         void TwoBubblesTest_WithWinding(const int winding1, const int winding2, 
             const SU2vector& phi1_hat, const SU2vector& phi2_hat) const;
+        //Two bubble collision, similar with the above function.
+        //But with some small purturbations inside one bubble.
+        void TwoBubblesTest_WithWinding_Perturbed(const int winding1, const int winding2, 
+            const SU2vector& phi1_hat, const SU2vector& phi2_hat) const;
         //Each pair of bubbles are supposed to be located within a 100*100*200 lattice
         //If one wants to make the whole configuration symmetric to each pair,
         //the size of the whole lattice should be a multiple of this size.
@@ -104,6 +108,49 @@ namespace EW_BubbleNucleation {
             auto global_idx_2 = this->get_lattice().global_coord2index(c2);
 			this->NucleateOneBubble_Exp_WithWinding(T, global_idx_1, phi1_hat, w1);
             this->NucleateOneBubble_Exp_WithWinding(T, global_idx_2, phi2_hat, w2);
+			this->phi_.update_halo();
+            this->U_.update_halo();
+		}
+        return;
+    }
+
+    template<int DIM>
+    void CSBubble<DIM>::TwoBubblesTest_WithWinding_Perturbed(const int winding1, const int winding2, const SU2vector& phi1_hat, const SU2vector& phi2_hat) const {
+        if (this->time_step_ == 0) {
+            IndexType c1[] = {nSize[0] / 2, nSize[1] / 2, nSize[2] / 2 - BUBBLES_HALF_SEP};
+            IndexType c2[] = {nSize[0] / 2, nSize[1] / 2, nSize[2] / 2 + BUBBLES_HALF_SEP};
+            double center1[DIM], center2[DIM];
+            std::transform(c1, c1+DIM, CENTER_POS, 
+                        center1, 
+                        [](IndexType x, Real c){return (x-c)*DX;});
+            std::transform(c2, c2+DIM, CENTER_POS, 
+                        center2, 
+                        [](IndexType x, Real c){return (x-c)*DX;});
+            double periods[DIM] = {nSize[0]*DX, nSize[1]*DX, nSize[2]*DX};
+            HedgehogWinding w1(center1, winding1, NUCLEATION_CS_RADIUS, periods);
+            HedgehogWinding w2(center2, winding2, NUCLEATION_CS_RADIUS, periods);
+            
+			auto T = (this->time_step_ + 1) % CYCLE;
+            auto global_idx_1 = this->get_lattice().global_coord2index(c1);
+            auto global_idx_2 = this->get_lattice().global_coord2index(c2);
+			this->NucleateOneBubble_Exp_WithWinding(T, global_idx_1, phi1_hat, w1);
+            this->NucleateOneBubble_Exp_WithWinding(T, global_idx_2, phi2_hat, w2);
+
+            //set a purturbation inside one bubble
+            IndexType c_pt[] = {nSize[0] / 2 - 2, nSize[1] / 2, nSize[2] / 2 - BUBBLES_HALF_SEP};
+            IndexType c_local[] = {0,0,0};
+            IndexType c_mem[] = {0,0,0};
+            this->lat_.global_coord_to_local_vis_coord(c_pt, c_local);
+            this->lat_.local_vis_coord_to_local_mem_coord(c_local, c_mem);
+            Site<DIM> x(this->lat_);
+            x.set_index(this->lat_.local_mem_coord2index(c_mem));
+            auto phi_ori = this->phi_(x, T); //unpurturbed field.
+            auto phi_mag = phi_ori.norm();
+            SU2vector phi_pt;
+            phi_pt(0) = Cmplx(0.141067, 0);
+            phi_pt(1) = Cmplx(0.99, 0);
+            this->phi_(x, T) = phi_mag *phi_pt;
+
 			this->phi_.update_halo();
             this->U_.update_halo();
 		}
