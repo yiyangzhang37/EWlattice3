@@ -4,6 +4,7 @@
 #include <cmath>
 #include "EW_BubbleNucl.h"
 #include "EW_Transformation.h"
+#include <cstdlib>
 
 namespace EW_BubbleNucleation {
     using namespace Electroweak;
@@ -40,6 +41,16 @@ namespace EW_BubbleNucleation {
         and the SU(2) gauge field.
         */
         void NucleateOneBubble_Exp_WithWinding(
+            const int nowTime,
+            const IndexType global_index,
+            const SU2vector& phi_hat,
+            const HedgehogWinding& winding) const;
+        /*
+        based on the function BubbleNucleation<DIM>::NucleateOneBubble_Exp(...).
+        added some perturbations.
+        The winding parameter is dumb.
+        */
+        void NucleateOneBubble_Exp_Perturbed(
             const int nowTime,
             const IndexType global_index,
             const SU2vector& phi_hat,
@@ -133,9 +144,11 @@ namespace EW_BubbleNucleation {
 			auto T = (this->time_step_ + 1) % CYCLE;
             auto global_idx_1 = this->get_lattice().global_coord2index(c1);
             auto global_idx_2 = this->get_lattice().global_coord2index(c2);
-			this->NucleateOneBubble_Exp_WithWinding(T, global_idx_1, phi1_hat, w1);
-            this->NucleateOneBubble_Exp_WithWinding(T, global_idx_2, phi2_hat, w2);
-
+            this->NucleateOneBubble_Exp_Perturbed(T, global_idx_1, phi1_hat, w1);
+            this->NucleateOneBubble_Exp_Perturbed(T, global_idx_2, phi2_hat, w2);
+			//this->NucleateOneBubble_Exp_WithWinding(T, global_idx_1, phi1_hat, w1);
+            //this->NucleateOneBubble_Exp_WithWinding(T, global_idx_2, phi2_hat, w2);
+            /*
             //set a purturbation inside one bubble
             IndexType c_pt[] = {nSize[0] / 2 - 2, nSize[1] / 2, nSize[2] / 2 - BUBBLES_HALF_SEP};
             IndexType c_local[] = {0,0,0};
@@ -150,7 +163,7 @@ namespace EW_BubbleNucleation {
             phi_pt(0) = Cmplx(0.141067, 0);
             phi_pt(1) = Cmplx(0.99, 0);
             this->phi_(x, T) = phi_mag *phi_pt;
-
+            */
 			this->phi_.update_halo();
             this->U_.update_halo();
 		}
@@ -203,12 +216,6 @@ namespace EW_BubbleNucleation {
 
         std::vector<IndexType> region_list;
 		this->GetBubbleRegion(global_index, NUCLEATION_RADIUS_SITE, region_list);
-        // std::cout << region_list.size() << std::endl;
-        // for(auto x : region_list) {
-        //     IndexType coord[DIM];
-        //     this->get_lattice().global_index2coord(x, coord);
-        //     std::cout << "[" << coord[0] << ", " << coord[1] << ", " << coord[2] << "]" << std::endl;
-        // }
         IndexType global_center_coord[DIM];
         this->get_lattice().global_index2coord(global_index, global_center_coord);
 
@@ -264,7 +271,6 @@ namespace EW_BubbleNucleation {
         //z-component
         this->GetLinkFieldRegion(global_index, 2,
                                 NUCLEATION_RADIUS_SITE, region_list);
-        //std::cout << "z-component size: " << region_list.size() << std::endl;
         for(auto gidx : region_list){
 			//check if gidx is a local visible site
 			if(this->lat_.is_local(gidx)){
@@ -278,6 +284,37 @@ namespace EW_BubbleNucleation {
         }
 		return;
     }
+
+    template<int DIM>
+	void CSBubble<DIM>::NucleateOneBubble_Exp_Perturbed(
+		const int nowTime,
+		const IndexType global_index, 
+		const SU2vector& phi_hat,
+        const HedgehogWinding& winding) const {
+
+		std::vector<IndexType> region_list;
+		this->GetBubbleRegion(global_index, NUCLEATION_RADIUS_SITE, region_list);
+
+        srand(123);
+
+		Site<DIM> x(this->lat_);
+		for(auto gidx : region_list){
+			//check if gidx is a local visible site
+			if(this->lat_.is_local(gidx)){
+				//radial part
+				auto r = this->lat_.global_lat_distance(global_index, gidx) * DX; //distance to bubble center
+				auto mag = (1.0 + pow(sqrt(2.0) - 1.0, 2)) * exp(-mH * r / sqrt(2.0));
+				mag /= 1 + pow(sqrt(2.0) - 1, 2)*exp(-sqrt(2.0)*mH*r);
+				auto vis_idx = this->lat_.global_index_to_local_vis_index(gidx);
+				auto mem_idx = this->lat_.local_vis_index_to_local_mem_index(vis_idx);
+				x.set_index(mem_idx);
+                auto theta = rand() % 1000 / 100.0;
+                SU2matrix p = Ident * cos(theta / 2) - iPauli[0] * sin(theta / 2);
+				this->phi_(x, nowTime) = mag * v * (p * phi_hat);
+			} else continue;
+		}
+		return;
+	}
 
     template<int DIM>
     void CSBubble<DIM>::InitPureGauge(const int winding, const double r_scale) const {
