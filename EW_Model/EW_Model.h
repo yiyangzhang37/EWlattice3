@@ -51,7 +51,13 @@ namespace Electroweak{
     using namespace ParaSite;
 	using namespace MPI_Wrapper;
 
-
+	constexpr int PHI_FIELD = 1 << 0;
+	constexpr int PI_FIELD = 1 << 1;
+	constexpr int U_FIELD = 1 << 2;
+	constexpr int F_FIELD = 1 << 3;
+	constexpr int V_FIELD = 1 << 4;
+	constexpr int E_FIELD = 1 << 5;
+	constexpr int ALL_FIELDS = PHI_FIELD | PI_FIELD | U_FIELD | F_FIELD | V_FIELD | E_FIELD;
     
     template<int DIM>
     class ElectroweakEvolution{
@@ -119,7 +125,7 @@ namespace Electroweak{
         void EvolveU1OneSite_KS(const Site<DIM>& x, const int component, const int nowTime, const int futureTime) const;
         void EvolveSU2OneSite_KS(const Site<DIM>& x, const int component, const int nowTime, const int futureTime) const;
 
-		void SaveFields(const std::string& filename) const;
+		void SaveFields(const std::string& filename, const int field_type = ALL_FIELDS) const;
 
 		/*
 		The constraint region and boundary region can be modified 
@@ -440,13 +446,14 @@ namespace Electroweak{
 	}
 
 	template<int DIM>
-	void ElectroweakEvolution<DIM>::SaveFields(const std::string& filename) const{
-		this->phi_.write("phi_" + filename, nullptr, "phi");
-		this->pi_.write("pi_" + filename, nullptr, "pi");
-		this->U_.write("U_" + filename, nullptr, "U");
-		this->V_.write("V_" + filename, nullptr, "V");
-		this->F_.write("F_" + filename, nullptr, "F");
-		this->E_.write("E_" + filename, nullptr, "E");
+	void ElectroweakEvolution<DIM>::SaveFields(const std::string& filename, const int field_type) const{
+		
+		if(field_type & PHI_FIELD) this->phi_.write("phi_" + filename, nullptr, "phi");
+		if(field_type & PI_FIELD) this->pi_.write("pi_" + filename, nullptr, "pi");
+		if(field_type & U_FIELD) this->U_.write("U_" + filename, nullptr, "U");
+		if(field_type & V_FIELD) this->V_.write("V_" + filename, nullptr, "V");
+		if(field_type & F_FIELD) this->F_.write("F_" + filename, nullptr, "F");
+		if(field_type & E_FIELD) this->E_.write("E_" + filename, nullptr, "E");
 		return;
 	}
 
