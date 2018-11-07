@@ -539,7 +539,9 @@ void EW_CSB_TwoBubbles_Perturbed(const int n_rows, const int n_cols){
         bubble.EvolveInterior_RadialDamping();
         obs.SaveDensityData(id + "_den_" + std::to_string(i) + ".h5", DensityDataSaveFreq);
 	    obs.SaveDataTable(id+"_dtable.txt", 50);
-
+        if(bubble.get_time_step() % 100 == 0){
+            bubble.get_phi().write("phi_"+std::to_string(bubble.get_time_step())+".dat");
+        }
         bubble.TimeAdvance();
     }
     obs.SaveDataTable(id+"_dtable.txt");

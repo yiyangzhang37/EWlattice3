@@ -144,11 +144,11 @@ namespace EW_BubbleNucleation {
 			auto T = (this->time_step_ + 1) % CYCLE;
             auto global_idx_1 = this->get_lattice().global_coord2index(c1);
             auto global_idx_2 = this->get_lattice().global_coord2index(c2);
-            this->NucleateOneBubble_Exp_Perturbed(T, global_idx_1, phi1_hat, w1);
-            this->NucleateOneBubble_Exp_Perturbed(T, global_idx_2, phi2_hat, w2);
-			//this->NucleateOneBubble_Exp_WithWinding(T, global_idx_1, phi1_hat, w1);
-            //this->NucleateOneBubble_Exp_WithWinding(T, global_idx_2, phi2_hat, w2);
-            /*
+            //this->NucleateOneBubble_Exp_Perturbed(T, global_idx_1, phi1_hat, w1);
+            //this->NucleateOneBubble_Exp_Perturbed(T, global_idx_2, phi2_hat, w2);
+            
+            this->NucleateOneBubble_Exp_WithWinding(T, global_idx_1, phi1_hat, w1);
+            this->NucleateOneBubble_Exp_WithWinding(T, global_idx_2, phi2_hat, w2);
             //set a purturbation inside one bubble
             IndexType c_pt[] = {nSize[0] / 2 - 2, nSize[1] / 2, nSize[2] / 2 - BUBBLES_HALF_SEP};
             IndexType c_local[] = {0,0,0};
@@ -163,7 +163,7 @@ namespace EW_BubbleNucleation {
             phi_pt(0) = Cmplx(0.141067, 0);
             phi_pt(1) = Cmplx(0.99, 0);
             this->phi_(x, T) = phi_mag *phi_pt;
-            */
+            
 			this->phi_.update_halo();
             this->U_.update_halo();
 		}
