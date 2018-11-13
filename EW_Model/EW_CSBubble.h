@@ -151,19 +151,21 @@ namespace EW_BubbleNucleation {
             this->NucleateOneBubble_Exp_WithWinding(T, global_idx_2, phi2_hat, w2);
             //set a purturbation inside one bubble
             IndexType c_pt[] = {nSize[0] / 2 - 2, nSize[1] / 2, nSize[2] / 2 - BUBBLES_HALF_SEP};
-            IndexType c_local[] = {0,0,0};
-            IndexType c_mem[] = {0,0,0};
-            this->lat_.global_coord_to_local_vis_coord(c_pt, c_local);
-            this->lat_.local_vis_coord_to_local_mem_coord(c_local, c_mem);
-            Site<DIM> x(this->lat_);
-            x.set_index(this->lat_.local_mem_coord2index(c_mem));
-            auto phi_ori = this->phi_(x, T); //unpurturbed field.
-            auto phi_mag = phi_ori.norm();
-            SU2vector phi_pt;
-            phi_pt(0) = Cmplx(0.141067, 0);
-            phi_pt(1) = Cmplx(0.99, 0);
-            this->phi_(x, T) = phi_mag *phi_pt;
-            
+            auto gidx = this->lat_.global_coord2index(c_pt);
+            if(this->lat_.is_local(gidx)){
+                IndexType c_local[] = {0,0,0};
+                IndexType c_mem[] = {0,0,0};
+                this->lat_.global_coord_to_local_vis_coord(c_pt, c_local);
+                this->lat_.local_vis_coord_to_local_mem_coord(c_local, c_mem);
+                Site<DIM> x(this->lat_);
+                x.set_index(this->lat_.local_mem_coord2index(c_mem));
+                auto phi_ori = this->phi_(x, T); //unpurturbed field.
+                auto phi_mag = phi_ori.norm();
+                SU2vector phi_pt;
+                phi_pt(0) = Cmplx(0.141067, 0);
+                phi_pt(1) = Cmplx(0.99, 0);
+                this->phi_(x, T) = phi_mag *phi_pt;
+            }
 			this->phi_.update_halo();
             this->U_.update_halo();
 		}
