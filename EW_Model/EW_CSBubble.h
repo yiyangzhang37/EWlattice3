@@ -237,7 +237,8 @@ namespace EW_BubbleNucleation {
                 //Higgs field is transformed.
                 Real coord[] = {rx(x, 0), rx(x, 1), rx(x, 2)};
                 w.set_location(coord);
-				this->phi_(x, nowTime) = mag * v * w.gauge_transform(phi_hat);
+                //allow overlap bubbles by linear superposition of Phi fields.
+				this->phi_(x, nowTime) += mag * v * w.gauge_transform(phi_hat);
 			} else continue;
 		}
 
