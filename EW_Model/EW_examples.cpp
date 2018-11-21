@@ -477,7 +477,7 @@ void EW_CSB_TwoBubbles(const int n_rows, const int n_cols){
 
         bubble.UpdateFields();
 
-        bubble.TwoBubblesTest_WithWinding(1, 1, phi1_hat, phi2_hat);
+        bubble.TwoBubblesTest_WithWinding(0, 0, phi1_hat, phi2_hat);
        
         bubble.EvolveInterior_RadialDamping();
         obs.SaveDensityData(id + "_den_" + std::to_string(i) + ".h5", DensityDataSaveFreq);
