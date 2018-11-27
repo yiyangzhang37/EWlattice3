@@ -79,9 +79,10 @@ include_directories(${EW_Model})
 # add source files
 file(GLOB PARASITE_SRC "${PROJECT_SOURCE_DIR}/ParaSite/*.cpp")
 file(GLOB EWMODEL_SRC "${PROJECT_SOURCE_DIR}/EW_Model/*.cpp")
-set(SRCS "${PARASITE_SRC}" "${EWMODEL_SRC}" "${PROJECT_SOURCE_DIR}/main.cpp")
+set(SRCS "${PARASITE_SRC}" "${EWMODEL_SRC}")
+set(MAIN_PROGRAM "${SRCS}" "${PROJECT_SOURCE_DIR}/main.cpp")
 
-add_executable(${TARGET} ${SRCS})
+add_executable(${TARGET} ${MAIN_PROGRAM})
 target_link_libraries(${TARGET} ${MPI_CXX_LIBRARIES})
 target_link_libraries(${TARGET} ${HDF5_LIBRARIES})
 target_link_libraries(${TARGET} ${FFTW_LIBRARIES})

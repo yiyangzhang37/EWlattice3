@@ -21,6 +21,7 @@ namespace EW_BubbleNucleation {
         virtual ~CSBubble() {}
 
         void OneBubbleTest_WithWinding(const int winding, const SU2vector& phi_hat) const;
+        void OneBubbleTest_WithWinding_Perturbed(const int winding, const SU2vector& phi_hat) const;
         void TwoBubblesTest_WithWinding(const int winding1, const int winding2, 
             const SU2vector& phi1_hat, const SU2vector& phi2_hat) const;
         //Two bubble collision, similar with the above function.
@@ -41,16 +42,6 @@ namespace EW_BubbleNucleation {
         and the SU(2) gauge field.
         */
         void NucleateOneBubble_Exp_WithWinding(
-            const int nowTime,
-            const IndexType global_index,
-            const SU2vector& phi_hat,
-            const HedgehogWinding& winding) const;
-        /*
-        based on the function BubbleNucleation<DIM>::NucleateOneBubble_Exp(...).
-        added some perturbations.
-        The winding parameter is dumb.
-        */
-        void NucleateOneBubble_Exp_Perturbed(
             const int nowTime,
             const IndexType global_index,
             const SU2vector& phi_hat,
@@ -92,6 +83,45 @@ namespace EW_BubbleNucleation {
 			auto T = (this->time_step_ + 1) % CYCLE;
 			this->NucleateOneBubble_Exp_WithWinding(T, global_idx, phi_hat, w);
 			this->phi_.update_halo();
+            this->U_.update_halo();
+		}
+		return;
+        
+    }
+
+    template<int DIM>
+    void CSBubble<DIM>::OneBubbleTest_WithWinding_Perturbed(const int winding, const SU2vector& phi_hat) const {
+        if (this->time_step_ == 0) {
+            IndexType global_coord[] = {nSize[0] / 2, nSize[1] / 2, nSize[2] / 2};
+            auto global_idx = this->get_lattice().global_coord2index(global_coord);
+            double center_coord[DIM];
+            std::transform(global_coord, global_coord + DIM, 
+                        CENTER_POS, center_coord, 
+                        [](IndexType x, Real c){return (x-c)*DX;});
+            double periods[DIM] = {nSize[0]*DX, nSize[1]*DX, nSize[2]*DX};
+            HedgehogWinding w(center_coord, winding, NUCLEATION_CS_RADIUS, periods);
+            Site<DIM> x(this->lat_);
+		
+			auto T = (this->time_step_ + 1) % CYCLE;
+			this->NucleateOneBubble_Exp_WithWinding(T, global_idx, phi_hat, w);
+            //set a purturbation inside one bubble
+            IndexType c_pt[] = {nSize[0] / 2 - 2, nSize[1] / 2, nSize[2] / 2};
+            auto gidx = this->lat_.global_coord2index(c_pt);
+            if(this->lat_.is_local(gidx)){
+                IndexType c_local[] = {0,0,0};
+                IndexType c_mem[] = {0,0,0};
+                this->lat_.global_coord_to_local_vis_coord(c_pt, c_local);
+                this->lat_.local_vis_coord_to_local_mem_coord(c_local, c_mem);
+                Site<DIM> x(this->lat_);
+                x.set_index(this->lat_.local_mem_coord2index(c_mem));
+                auto phi_ori = this->phi_(x, T); //unpurturbed field.
+                auto phi_mag = phi_ori.norm();
+                SU2vector phi_pt;
+                phi_pt(0) = Cmplx(0.141067, 0);
+                phi_pt(1) = Cmplx(0.99, 0);
+                this->phi_(x, T) = phi_mag *phi_pt;
+            }
+            this->phi_.update_halo();
             this->U_.update_halo();
 		}
 		return;
@@ -144,8 +174,6 @@ namespace EW_BubbleNucleation {
 			auto T = (this->time_step_ + 1) % CYCLE;
             auto global_idx_1 = this->get_lattice().global_coord2index(c1);
             auto global_idx_2 = this->get_lattice().global_coord2index(c2);
-            //this->NucleateOneBubble_Exp_Perturbed(T, global_idx_1, phi1_hat, w1);
-            //this->NucleateOneBubble_Exp_Perturbed(T, global_idx_2, phi2_hat, w2);
             
             this->NucleateOneBubble_Exp_WithWinding(T, global_idx_1, phi1_hat, w1);
             this->NucleateOneBubble_Exp_WithWinding(T, global_idx_2, phi2_hat, w2);
@@ -287,37 +315,6 @@ namespace EW_BubbleNucleation {
         }
 		return;
     }
-
-    template<int DIM>
-	void CSBubble<DIM>::NucleateOneBubble_Exp_Perturbed(
-		const int nowTime,
-		const IndexType global_index, 
-		const SU2vector& phi_hat,
-        const HedgehogWinding& winding) const {
-
-		std::vector<IndexType> region_list;
-		this->GetBubbleRegion(global_index, NUCLEATION_RADIUS_SITE, region_list);
-
-        srand(123);
-
-		Site<DIM> x(this->lat_);
-		for(auto gidx : region_list){
-			//check if gidx is a local visible site
-			if(this->lat_.is_local(gidx)){
-				//radial part
-				auto r = this->lat_.global_lat_distance(global_index, gidx) * DX; //distance to bubble center
-				auto mag = (1.0 + pow(sqrt(2.0) - 1.0, 2)) * exp(-mH * r / sqrt(2.0));
-				mag /= 1 + pow(sqrt(2.0) - 1, 2)*exp(-sqrt(2.0)*mH*r);
-				auto vis_idx = this->lat_.global_index_to_local_vis_index(gidx);
-				auto mem_idx = this->lat_.local_vis_index_to_local_mem_index(vis_idx);
-				x.set_index(mem_idx);
-                auto theta = rand() % 1000 / 100.0;
-                SU2matrix p = Ident * cos(theta / 2) - iPauli[0] * sin(theta / 2);
-				this->phi_(x, nowTime) = mag * v * (p * phi_hat);
-			} else continue;
-		}
-		return;
-	}
 
     template<int DIM>
     void CSBubble<DIM>::InitPureGauge(const int winding, const double r_scale) const {
