@@ -82,7 +82,6 @@ void EW_Nucl_OneBubble(const int n_rows, const int n_cols){
     return;
 }
 
-
 void EW_Nucl_TwoBubbles(const int n_rows, const int n_cols){
     using namespace EW_BubbleNucleation;
     Parallel2D parallel(n_rows, n_cols, MPI_COMM_WORLD);

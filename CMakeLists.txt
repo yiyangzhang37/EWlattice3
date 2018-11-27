@@ -87,6 +87,16 @@ target_link_libraries(${TARGET} ${MPI_CXX_LIBRARIES})
 target_link_libraries(${TARGET} ${HDF5_LIBRARIES})
 target_link_libraries(${TARGET} ${FFTW_LIBRARIES})
 
+# add executable for each cpp file
+file(GLOB EXEC_SRCS "${PROJECT_SOURCE_DIR}/examples/*.cpp")
+foreach(example_cpp ${EXEC_SRCS})
+    get_filename_component(EXE_NAME ${example_cpp} NAME_WE)
+    add_executable(${EXE_NAME} ${SRCS} ${example_cpp})
+    target_link_libraries(${EXE_NAME} ${MPI_CXX_LIBRARIES})
+    target_link_libraries(${EXE_NAME} ${HDF5_LIBRARIES})
+    target_link_libraries(${EXE_NAME} ${FFTW_LIBRARIES})
+endforeach(example_cpp ${EXEC_SRCS})
+
 ### Intel MKL (optional)
 #find_package(MKL MODULE)
 #if (MKL_FOUND)
