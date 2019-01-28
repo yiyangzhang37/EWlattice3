@@ -378,6 +378,7 @@ void EW_Random_Nucl_FFT(const int n_rows, const int n_cols){
     return;
 }
 
+
 void EW_CSB_OneBubble(const int n_rows, const int n_cols, const std::string& method){
     using namespace EW_BubbleNucleation;
     Parallel2D parallel(n_rows, n_cols, MPI_COMM_WORLD);
